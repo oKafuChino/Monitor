@@ -42,3 +42,7 @@ komari
 
 # Generated embedded frontend; built from the checked-in komari-web source.
 /web/public/defaultTheme/
+
+# Temporary installer state
+.deploy.lock
+.env.deploy.*

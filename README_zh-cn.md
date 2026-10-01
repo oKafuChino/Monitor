@@ -6,18 +6,32 @@
 
 本版本使用固定内置界面，已移除第三方主题、插件、网页终端和远程命令执行。仍保留远程文件管理（含写入）和 SQL 管理，不影响操作系统自身的 SSH 服务。
 
-## Docker Compose 安装
+## 一键安装
 
-安装 Docker 和 Docker Compose，获取本仓库源码后，在仓库根目录执行：
+获取本仓库源码，在仓库根目录执行。脚本会检查环境、构建镜像、启动服务并等待网页就绪。
+
+Linux（已安装 Docker、Docker Compose，以及 curl 或 wget）：
 
 ```sh
-docker compose up -d --build
+bash install.sh
 ```
+
+Debian/Ubuntu 尚未安装 Docker 时，可执行 `sudo bash install.sh --install-docker`，通过 Docker 官方 APT 仓库安装依赖。
+
+Windows（先启动 Docker Desktop，使用 Linux 容器模式）：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+指定端口时，在命令后追加 `--port 8080`（Linux）或 `-Port 8080`（Windows）。仅检查环境可使用 `--check` / `-Check`；完整参数见 `--help` / `-Help`。
+
+也可手动执行 `docker compose up -d --build` 部署。
 
 浏览器访问 `http://服务器IP:25774`，按安装向导创建管理员账号并完成站点配置。
 
 - 数据保存在仓库的 `data/` 目录，重建容器不会清空该目录。
-- 如需更改对外端口，在仓库根目录的 `.env` 文件中设置 `MONITOR_PORT=8080`，再启动服务。
+- 脚本成功后将端口保存到 `.env`，下次运行自动沿用，保留其他配置。
 - 查看日志：`docker compose logs -f monitor`。
 - 停止服务：`docker compose down`。
 
@@ -51,6 +65,6 @@ Windows 原生构建产物为 `dist/komari.exe`，其他原生构建产物为 `d
 
 ## 更新与备份
 
-更新前先通过后台下载备份。获取本仓库的新版本源码后，按所选安装方式重新构建并启动；源码方式需先退出当前服务再构建。保留原有 `data/` 目录，不要用空目录覆盖。
+更新前先通过后台下载备份。获取新版本源码后，重新运行对应安装脚本即可更新；源码构建方式需先退出当前服务，再构建并启动。保留原有 `data/` 目录，不要用空目录覆盖。
 
 许可证见 [LICENSE](./LICENSE)。

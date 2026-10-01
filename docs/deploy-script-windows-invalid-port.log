@@ -1,0 +1,5 @@
+E:\Github\Monitor\install.ps1 : Cannot validate argument on parameter 'Port'. The 0 argument is less than the minimum 
+allowed range of 1. Supply an argument that is greater than or equal to 1 and then try the command again.
+    + CategoryInfo          : InvalidData: (:) [install.ps1], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ParameterArgumentValidationError,install.ps1
+ 

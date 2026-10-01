@@ -14,3 +14,7 @@ docs
 **/*.log
 komari-web/bundle-analysis.html
 web/public/defaultTheme
+
+# Temporary installer state
+.deploy.lock
+.env.deploy.*

@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Test deployment installer
+        run: bash -n install.sh && bash scripts/tests/install.sh
       - uses: ./.github/actions/build-frontend
       - name: Check frontend
         run: npm run lint

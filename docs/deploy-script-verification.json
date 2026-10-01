@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-01",
+  "linux": {
+    "syntax": "passed",
+    "mock_cases": 11,
+    "system_docker_install": "not executed on a clean host"
+  },
+  "windows": {
+    "runtime": "Windows PowerShell 5.1",
+    "actual_image_build": "passed",
+    "actual_deployment": "passed",
+    "config_write": "passed",
+    "port_change": "passed",
+    "repeat_run": "passed",
+    "data_preserved": "passed",
+    "other_settings_preserved": "passed",
+    "readonly_check": "passed",
+    "invalid_port": "rejected",
+    "lock_cleanup": "passed"
+  },
+  "test_scope": "Dedicated Compose project; loopback ports 25820/25821; dist/install-verification only",
+  "production_changed": false
+}

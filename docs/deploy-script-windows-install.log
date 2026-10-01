@@ -1,0 +1,5 @@
+启动服务，端口 25820
+ Container komari-installer-verification-monitor-1 Running 
+部署完成：http://127.0.0.1:25820（远程访问请替换为服务器 IP）
+首次访问按向导创建管理员账号；数据目录: E:\Github\Monitor\dist\install-verification\data
+端口已保存到 .env；更新源码后重复运行即可。日志: docker compose logs -f monitor

@@ -6,18 +6,32 @@ A self-hosted server monitoring panel with real-time metrics, history charts, Pi
 
 This version uses a fixed built-in interface. Third-party themes, plugins, web terminals and remote command execution are removed. Remote file management, including file writes, and SQL administration remain available. The operating system's SSH service is unaffected.
 
-## Install with Docker Compose
+## One-command installation
 
-Install Docker and Docker Compose, obtain this repository's source code, then run the following from the repository root:
+Obtain this repository's source code and run the installer from its root. It checks dependencies, builds the image, starts the service and waits for the web interface to respond.
+
+Linux (requires Docker, Docker Compose, and curl or wget):
 
 ```sh
-docker compose up -d --build
+bash install.sh
 ```
+
+On Debian/Ubuntu without Docker, use `sudo bash install.sh --install-docker` to install dependencies from Docker's official APT repository.
+
+Windows (start Docker Desktop in Linux container mode first):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+Append `--port 8080` (Linux) or `-Port 8080` (Windows) to choose a port. Use `--check` / `-Check` for a read-only preflight, or `--help` / `-Help` for all options.
+
+Alternatively, deploy manually with `docker compose up -d --build`.
 
 Open `http://<server-ip>:25774` and follow the installation wizard to create an administrator account and configure the site.
 
 - Data is stored in the repository's `data/` directory and persists across container replacement.
-- To change the exposed port, set `MONITOR_PORT=8080` in a `.env` file at the repository root before starting.
+- After a successful deployment, the installer saves the port to `.env` for subsequent runs and preserves other settings.
 - View logs: `docker compose logs -f monitor`.
 - Stop the service: `docker compose down`.
 
@@ -51,6 +65,6 @@ The native Windows binary is `dist/komari.exe`; other native builds produce `dis
 
 ## Update and back up
 
-Download a backup from the administration panel before updating. After updating this repository's source code, rerun the installation/build commands for your chosen method. For source-based installations, stop the running service before rebuilding. Keep the `data/` directory; do not replace it with an empty directory.
+Download a backup from the administration panel before updating. After updating this repository's source code, rerun the installer. For source-based installations, stop the running service before rebuilding and starting it. Keep the `data/` directory; do not replace it with an empty directory.
 
 See [LICENSE](./LICENSE) for licensing terms.

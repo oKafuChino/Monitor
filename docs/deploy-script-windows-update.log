@@ -1,0 +1,8 @@
+启动服务，端口 25821
+ Container komari-installer-verification-monitor-1 Recreate 
+ Container komari-installer-verification-monitor-1 Recreated 
+ Container komari-installer-verification-monitor-1 Starting 
+ Container komari-installer-verification-monitor-1 Started 
+部署完成：http://127.0.0.1:25821（远程访问请替换为服务器 IP）
+首次访问按向导创建管理员账号；数据目录: E:\Github\Monitor\dist\install-verification\data
+端口已保存到 .env；更新源码后重复运行即可。日志: docker compose logs -f monitor

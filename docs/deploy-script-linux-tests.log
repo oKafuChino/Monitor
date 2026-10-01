@@ -1,0 +1,11 @@
+PASS successful deploy preserves other settings and data
+PASS repeat deployment reuses saved port
+PASS check mode is read-only
+PASS invalid ports fail before Docker or filesystem changes
+PASS build failure keeps saved config/data and cleans installer state
+PASS up failure keeps saved config/data and cleans installer state
+PASS readiness failure keeps saved config/data and cleans installer state
+PASS skip-build uses only the existing image
+PASS existing deployment lock is not removed
+PASS symlink configuration is rejected without touching its target
+PASS fresh install persists the default port with private file permissions
