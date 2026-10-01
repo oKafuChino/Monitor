@@ -78,11 +78,6 @@
           "labelKey": "account.title",
           "path": "/admin/account",
           "icon": "UserCircle"
-        },
-        {
-          "labelKey": "common.about",
-          "path": "/admin/about",
-          "icon": "AtSign"
         }
       ]
     },
