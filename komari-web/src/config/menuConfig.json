@@ -72,14 +72,7 @@
     {
       "labelKey": "account.menu",
       "path": "/admin/account",
-      "icon": "UserCircle",
-      "children": [
-        {
-          "labelKey": "account.title",
-          "path": "/admin/account",
-          "icon": "UserCircle"
-        }
-      ]
+      "icon": "UserCircle"
     },
     {
       "labelKey": "common.documentation",
