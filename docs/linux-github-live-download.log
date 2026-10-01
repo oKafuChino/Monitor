@@ -1,0 +1,16 @@
+
+[Komari] 从 GitHub 下载 oKafuChino/Monitor (main) 到 /tmp/monitor-live-download.HA91EN/source
+Cloning into '/tmp/monitor-live-download.HA91EN/.monitor-download.pt9nrR/source'...
+
+[Komari] 构建整合镜像；已有服务会继续运行到构建完成
+
+[Komari] 启动服务，端口 25774
+
+[Komari] 部署完成：http://127.0.0.1:25774（远程访问请替换为服务器 IP）
+首次访问请按页面向导创建管理员账号。
+数据目录: /tmp/monitor-live-download.HA91EN/source/data
+端口已保存到 .env；获取并部署新版本: bash install.sh --update。
+查看日志: docker compose logs -f monitor（在源码根目录执行）
+PASS real GitHub checkout: 5065d89
+Source downloaded and validated; no real service was deployed.
+

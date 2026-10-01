@@ -20,7 +20,11 @@ for (const value of [port, devPort]) {
 }
 const goVersion = fs.readFileSync(path.join(root, "go.mod"), "utf8").match(/^go\s+(\S+)/m)[1];
 const goImage = `golang:${goVersion}-bookworm`;
-const binaryName = !docker && process.platform === "win32" ? "komari.exe" : "komari";
+const binaryName = "komari";
+const backendCommands = new Set(["build", "build-server", "dev", "start", "test", "test-server", "check"]);
+if (process.platform !== "linux" && !docker && backendCommands.has(command)) {
+  throw new Error("Native server builds and execution require Linux. Use Linux or --docker for Linux containers.");
+}
 const binary = path.join(root, "dist", binaryName);
 const npmCLI = process.env.npm_execpath || path.join(path.dirname(process.execPath), "node_modules/npm/bin/npm-cli.js");
 

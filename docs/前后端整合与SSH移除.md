@@ -39,7 +39,7 @@ Agent 出站事件现在只允许固定的文件操作、Ping、启动配置读�
 npm run setup
 ```
 
-当前 Windows 环境没有本机 Go，已实测以下方式：
+Linux 环境可使用 Docker 提供 Go/CGO 工具链：
 
 ```sh
 npm run dev -- --docker
@@ -62,7 +62,7 @@ npm run build -- --docker
 npm start -- --docker
 ```
 
-有本机 Go/CGO 时去掉 `-- --docker` 即可。原生 Windows 产物为 `dist/komari.exe`；Docker 工具链产物为 Linux `dist/komari`，通过 Docker 启动或部署到兼容 Linux 环境。
+Linux 本机具备 Go/CGO 时去掉 `-- --docker` 即可。服务端产物统一为 Linux `dist/komari`；不再提供 Windows 原生安装或发行产物。
 
 生产启动的默认运行目录为项目根目录（数据在 `data/`）；可通过以下环境变量调整本地运行，不写入源码：
 

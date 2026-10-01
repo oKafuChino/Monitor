@@ -44,15 +44,15 @@ export PATH="$TEST_ROOT/bin:$PATH"
 unset MONITOR_PORT
 new_case() {
   case_root="$TEST_ROOT/$1 with spaces"
-  mkdir -p "$case_root/komari-web" "$case_root/data"
+  mkdir -p "$case_root/komari-web" "$case_root/data" "$case_root/scripts"
   printf 'fixture' > "$case_root/data/keep.txt"
   printf '# keep comment\nOTHER_SETTING=keep=value\nMONITOR_PORT="28000"\n' > "$case_root/.env"
-  for file in compose.yaml Dockerfile komari-web/package.json komari-web/package-lock.json; do printf '{}\n' > "$case_root/$file"; done
+  for file in install.sh compose.yaml Dockerfile go.mod scripts/embed-frontend.mjs komari-web/package.json komari-web/package-lock.json; do printf '{}\n' > "$case_root/$file"; done
   export MOCK_LOG="$case_root/commands.log"
   : > "$MOCK_LOG"
   unset MOCK_FAIL
 }
-run_install() { bash "$REPO/install.sh" --dir "$case_root" "$@" > "$case_root/output.log" 2>&1; }
+run_install() { bash "$REPO/install.sh" --dir "$case_root" "$@" > "$TEST_ROOT/last-install.log" 2>&1; }
 assert_preserved() {
   [[ $(cat "$case_root/data/keep.txt") == fixture ]]
   [[ ! -e "$case_root/.deploy.lock" ]]
@@ -117,3 +117,122 @@ run_install
 [[ $(stat -c '%a' "$case_root/.env") == 600 ]]
 assert_preserved
 echo 'PASS fresh install persists the default port with private file permissions'
+
+# Exercise bootstrap/update with real Git repositories; only network and Docker
+# are substituted. No production source or containers are touched.
+REAL_GIT=$(command -v git)
+export REAL_GIT
+export MOCK_REMOTE="$TEST_ROOT/remote"
+export GIT_LOG="$TEST_ROOT/git.log"
+mkdir -p "$MOCK_REMOTE/komari-web" "$MOCK_REMOTE/scripts"
+for file in install.sh compose.yaml Dockerfile go.mod scripts/embed-frontend.mjs komari-web/package.json komari-web/package-lock.json; do printf '{}\n' > "$MOCK_REMOTE/$file"; done
+printf '.env\ndata/\n.deploy.lock\n.env.deploy.*\n' > "$MOCK_REMOTE/.gitignore"
+printf 'v1\n' > "$MOCK_REMOTE/version.txt"
+"$REAL_GIT" init -q -b main "$MOCK_REMOTE"
+"$REAL_GIT" -C "$MOCK_REMOTE" config user.name 'Installer test'
+"$REAL_GIT" -C "$MOCK_REMOTE" config user.email 'installer@example.invalid'
+"$REAL_GIT" -C "$MOCK_REMOTE" add .
+"$REAL_GIT" -C "$MOCK_REMOTE" -c commit.gpgsign=false commit -qm 'fixture v1'
+"$REAL_GIT" -C "$MOCK_REMOTE" tag v1
+cat > "$TEST_ROOT/bin/git" <<'MOCK'
+#!/usr/bin/env bash
+set -eu
+printf '%s\n' "$*" >> "$GIT_LOG"
+if [[ $1 == clone ]]; then
+  [[ ${MOCK_GIT_FAIL:-} != clone ]] || exit 28
+  args=("$@")
+  url=${args[${#args[@]}-2]}
+  dest=${args[${#args[@]}-1]}
+  [[ $url == 'https://github.com/oKafuChino/Monitor.git' ]] || exit 98
+  args[${#args[@]}-2]="file://$MOCK_REMOTE"
+  "$REAL_GIT" "${args[@]}"
+  "$REAL_GIT" -C "$dest" remote set-url origin "$url"
+elif [[ $1 == -C && $3 == fetch ]]; then
+  root=$2; shift 2
+  "$REAL_GIT" -C "$root" -c "url.file://$MOCK_REMOTE.insteadOf=https://github.com/oKafuChino/Monitor.git" "$@"
+else
+  "$REAL_GIT" "$@"
+fi
+MOCK
+chmod +x "$TEST_ROOT/bin/git"
+export MOCK_LOG="$TEST_ROOT/bootstrap-docker.log"
+: > "$MOCK_LOG"
+case_root="$TEST_ROOT/piped checkout"
+cat "$REPO/install.sh" | bash -s -- --dir "$case_root" --port 28010 > "$TEST_ROOT/bootstrap.log" 2>&1 || { cat "$TEST_ROOT/bootstrap.log"; exit 1; }
+[[ -d $case_root/.git && $(cat "$case_root/version.txt") == v1 ]]
+[[ $("$REAL_GIT" -C "$case_root" config monitor.installRepo) == oKafuChino/Monitor ]]
+[[ $("$REAL_GIT" -C "$case_root" config monitor.installRef) == main ]]
+printf 'fixture' > "$case_root/data/keep.txt"
+assert_preserved
+echo 'PASS piped installer clones the default GitHub repository into a new directory'
+printf 'v2\n' > "$MOCK_REMOTE/version.txt"
+"$REAL_GIT" -C "$MOCK_REMOTE" -c commit.gpgsign=false commit -qam 'fixture v2'
+cat "$REPO/install.sh" | bash -s -- --dir "$case_root" --update > "$TEST_ROOT/update.log" 2>&1 || { cat "$TEST_ROOT/update.log"; exit 1; }
+[[ $(cat "$case_root/version.txt") == v2 ]]
+[[ $(cat "$case_root/.env") == MONITOR_PORT=28010 ]]
+assert_preserved
+echo 'PASS shallow Git checkout fast-forwards while preserving data and port'
+printf 'local edit\n' > "$case_root/version.txt"
+if run_install --update; then echo 'dirty checkout was overwritten' >&2; exit 1; fi
+[[ $(cat "$case_root/version.txt") == 'local edit' ]]
+"$REAL_GIT" -C "$case_root" restore -- version.txt
+printf 'local untracked' > "$case_root/untracked.txt"
+if run_install --update; then echo 'untracked files ignored' >&2; exit 1; fi
+[[ $(cat "$case_root/untracked.txt") == 'local untracked' ]]
+rm -- "$case_root/untracked.txt"
+assert_preserved
+echo 'PASS updates reject modified and untracked source files'
+"$REAL_GIT" -C "$case_root" remote set-url origin 'https://github.com/example/another.git'
+if run_install --update; then echo 'wrong origin accepted' >&2; exit 1; fi
+"$REAL_GIT" -C "$case_root" remote set-url origin 'https://github.com/oKafuChino/Monitor.git'
+echo 'PASS updates reject a mismatched Git origin'
+for args in '--repo https://example.com/repo' '--ref ../main'; do
+  # Controlled test tokens, deliberately split as command-line arguments.
+  if run_install $args; then echo 'invalid GitHub source accepted' >&2; exit 1; fi
+done
+echo 'PASS repository and ref arguments are validated'
+case_root="$TEST_ROOT/tag checkout"
+cat "$REPO/install.sh" | bash -s -- --dir "$case_root" --ref v1 > "$TEST_ROOT/tag.log" 2>&1 || { cat "$TEST_ROOT/tag.log"; exit 1; }
+[[ $(cat "$case_root/version.txt") == v1 ]]
+[[ $("$REAL_GIT" -C "$case_root" config monitor.installRef) == v1 ]]
+echo 'PASS tagged installation records the selected ref'
+case_root="$TEST_ROOT/failed clone"
+export MOCK_GIT_FAIL=clone
+if cat "$REPO/install.sh" | bash -s -- --dir "$case_root" > "$TEST_ROOT/failed-clone.log" 2>&1; then echo 'clone failure ignored' >&2; exit 1; fi
+unset MOCK_GIT_FAIL
+[[ ! -e $case_root && ! -e "$TEST_ROOT/.failed clone.install.lock" ]]
+[[ -z $(find "$TEST_ROOT" -maxdepth 1 -name '.monitor-download.*' -print) ]]
+echo 'PASS failed downloads remove only their staging directory and lock'
+case_root="$TEST_ROOT/nonempty target"
+mkdir -p "$case_root"
+printf 'retain' > "$case_root/user-file"
+if cat "$REPO/install.sh" | bash -s -- --dir "$case_root" > "$TEST_ROOT/nonempty.log" 2>&1; then echo 'nonempty target overwritten' >&2; exit 1; fi
+[[ $(cat "$case_root/user-file") == retain ]]
+echo 'PASS bootstrap refuses an unrelated nonempty target'
+case_root="$TEST_ROOT/check missing"
+if cat "$REPO/install.sh" | bash -s -- --dir "$case_root" --check > "$TEST_ROOT/check-missing.log" 2>&1; then echo 'missing checkout accepted' >&2; exit 1; fi
+[[ ! -e $case_root ]]
+echo 'PASS read-only checks never download missing source'
+cat > "$TEST_ROOT/bin/uname" <<'MOCK'
+#!/usr/bin/env bash
+printf 'MINGW64_NT\n'
+MOCK
+chmod +x "$TEST_ROOT/bin/uname"
+if bash "$REPO/install.sh" --dir "$TEST_ROOT/piped checkout" --check > "$TEST_ROOT/platform.log" 2>&1; then echo 'non-Linux host accepted' >&2; exit 1; fi
+rm -- "$TEST_ROOT/bin/uname"
+echo 'PASS unsupported host platforms are rejected'
+
+case_root="$TEST_ROOT/piped checkout"
+if run_install --update --ref v1; then echo 'downgrade reported success' >&2; exit 1; fi
+grep -q '未降级' "$TEST_ROOT/last-install.log"
+[[ $(cat "$case_root/version.txt") == v2 ]]
+[[ $("$REAL_GIT" -C "$case_root" config monitor.installRef) == main ]]
+echo 'PASS an older ref cannot silently succeed as a downgrade'
+printf 'MONITOR_PORT=1\n' > "$MOCK_REMOTE/.env"
+"$REAL_GIT" -C "$MOCK_REMOTE" add -f .env
+"$REAL_GIT" -C "$MOCK_REMOTE" -c commit.gpgsign=false commit -qm 'fixture accidentally tracks runtime config'
+if run_install --update; then echo 'remote runtime config overwrote local settings' >&2; exit 1; fi
+grep -q '远端源码包含运行数据路径 .env' "$TEST_ROOT/last-install.log"
+[[ $(cat "$case_root/.env") == MONITOR_PORT=28010 ]]
+assert_preserved
+echo 'PASS upstream runtime files cannot overwrite local persistence'

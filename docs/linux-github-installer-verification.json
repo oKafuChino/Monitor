@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-01",
+  "repository": "oKafuChino/Monitor",
+  "defaultRef": "main",
+  "scriptTests": 23,
+  "liveGitHubCheckout": "5065d89",
+  "liveDeployment": "stubbed; no production deployment",
+  "windowsInstallerRemoved": true,
+  "linuxOnlyWorkflowTargets": 19,
+  "nativeWindowsBuildRejected": true,
+  "readmeLanguages": [
+    "en",
+    "zh-CN"
+  ],
+  "automaticSystemPackageInstallation": "not exercised on a clean host",
+  "pushed": false
+}

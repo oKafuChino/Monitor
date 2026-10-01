@@ -1,8 +1,18 @@
 #!/usr/bin/env bash
-# Deploy the source checkout without installing Node.js or Go on the host.
+# Linux installer. Parse the complete main function before running a piped download.
+main() {
 set -Eeuo pipefail
-
-ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
+SCRIPT_SOURCE=${BASH_SOURCE[0]:-}
+ROOT=''
+GITHUB_REPO='oKafuChino/Monitor'
+GITHUB_REF='main'
+REPO_EXPLICIT=0
+REF_EXPLICIT=0
+UPDATE_SOURCE=0
+SOURCE_TEMP=''
+SOURCE_PARENT=''
+BOOTSTRAP_LOCK=''
+BOOTSTRAP_LOCK_OWNED=0
 PORT=''
 TIMEOUT=180
 INSTALL_DOCKER=0
@@ -15,16 +25,21 @@ DOCKER=(docker)
 
 usage() {
   cat <<'HELP'
-Komari 一键部署（在 Docker 中构建前后端）
+Komari Linux 一键部署（在 Docker 中构建前后端）
+默认 GitHub: https://github.com/oKafuChino/Monitor，分支 main
 用法: bash install.sh [选项]
   --port PORT        服务端口，默认沿用已有配置或 25774
   --install-docker   缺少 Docker 时，通过官方 APT 仓库安装（Debian/Ubuntu）
   --skip-build       使用已有 Compose 镜像，不重新构建
   --timeout SECONDS  启动就绪超时，默认 180 秒
-  --dir DIRECTORY   指定本地源码目录，默认脚本所在目录
+  --dir DIRECTORY   安装目录；本地默认源码目录，远程默认 /opt/monitor（root）或 ~/monitor
+  --repo OWNER/REPO  GitHub 仓库，默认 oKafuChino/Monitor
+  --ref REF          分支或标签，默认 main；后续沿用已保存值
+  --update           获取并快进更新源码；拒绝覆盖未提交改动
   --check            只检查依赖与配置，不安装、不启动、不写文件
   -h, --help         显示帮助
-更新: 获取新版本源码后重复运行脚本；保留 data/ 目录。
+远程安装会下载源码；--install-docker 可在 Debian/Ubuntu 补齐 Git 和 Docker。
+已有安装默认重新部署当前源码，获取新版本请使用 --update；保留 data/ 与 .env。
 HELP
 }
 fail() { printf '\n错误: %s\n' "$*" >&2; exit 1; }
@@ -38,6 +53,9 @@ while (( $# )); do
     --port) need_value "$@"; PORT=$2; shift 2 ;;
     --timeout) need_value "$@"; TIMEOUT=$2; shift 2 ;;
     --dir) need_value "$@"; ROOT=$2; shift 2 ;;
+    --repo) need_value "$@"; GITHUB_REPO=$2; REPO_EXPLICIT=1; shift 2 ;;
+    --ref) need_value "$@"; GITHUB_REF=$2; REF_EXPLICIT=1; shift 2 ;;
+    --update) UPDATE_SOURCE=1; shift ;;
     --install-docker) INSTALL_DOCKER=1; shift ;;
     --skip-build) SKIP_BUILD=1; shift ;;
     --check) CHECK_ONLY=1; shift ;;
@@ -48,10 +66,38 @@ done
 [[ -z $PORT ]] || number_in_range "$PORT" 1 65535 || fail '端口必须是 1–65535 的整数'
 number_in_range "$TIMEOUT" 1 86400 || fail '超时必须是 1–86400 秒'
 TIMEOUT=$((10#$TIMEOUT))
-ROOT=$(cd -- "$ROOT" && pwd -P) || fail '源码目录不存在'
-for file in compose.yaml Dockerfile komari-web/package.json komari-web/package-lock.json; do
-  [[ -f "$ROOT/$file" ]] || fail "缺少 $file，请获取完整仓库源码后运行"
-done
+[[ $(uname -s) == Linux ]] || fail '仅支持 Linux 部署'
+(( ! CHECK_ONLY || ! UPDATE_SOURCE )) || fail '--check 不会更新源码，请去掉 --update'
+SOURCE_FILES=(install.sh compose.yaml Dockerfile go.mod scripts/embed-frontend.mjs komari-web/package.json komari-web/package-lock.json)
+source_complete() {
+  local file
+  for file in "${SOURCE_FILES[@]}"; do
+    [[ -f "$1/$file" ]] || return 1
+  done
+}
+if [[ -z $ROOT ]]; then
+  if [[ -n $SCRIPT_SOURCE && -f $SCRIPT_SOURCE ]] && source_complete "$(dirname -- "$SCRIPT_SOURCE")"; then ROOT=$(dirname -- "$SCRIPT_SOURCE")
+  elif source_complete "$PWD"; then ROOT=$PWD
+  elif (( EUID == 0 )); then ROOT=/opt/monitor
+  else ROOT="${HOME:?请设置 HOME 或使用 --dir}/monitor"
+  fi
+fi
+[[ ! -L $ROOT ]] || fail '安装目录不能是符号链接'
+[[ ! -e $ROOT || -d $ROOT ]] || fail '安装路径已被文件占用'
+ROOT=$(realpath -m -- "$ROOT")
+if (( CHECK_ONLY )) && ! source_complete "$ROOT"; then fail '源码目录不存在或不完整；--check 不会下载文件，请先安装'; fi
+validate_source_options() {
+  [[ $GITHUB_REPO =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*$ && $GITHUB_REPO != *..* ]] || fail '--repo 必须是 GitHub 的 OWNER/REPO'
+  [[ $GITHUB_REF =~ ^[A-Za-z0-9][A-Za-z0-9._/-]*$ && $GITHUB_REF != *..* && $GITHUB_REF != */ && $GITHUB_REF != *//* ]] || fail '--ref 必须是有效的分支或标签'
+}
+if source_complete "$ROOT" && [[ -d $ROOT/.git ]] && command -v git >/dev/null; then
+  if (( ! REPO_EXPLICIT )); then GITHUB_REPO=$(git -C "$ROOT" config --get monitor.installRepo || printf '%s' "$GITHUB_REPO"); fi
+  if (( ! REF_EXPLICIT )); then GITHUB_REF=$(git -C "$ROOT" config --get monitor.installRef || printf '%s' "$GITHUB_REF"); fi
+fi
+validate_source_options
+if source_complete "$ROOT" && (( (REPO_EXPLICIT || REF_EXPLICIT) && ! UPDATE_SOURCE && ! CHECK_ONLY )); then
+  fail "已有源码选择仓库或版本时需配合 --update，或使用新的空安装目录"
+fi
 ENV_FILE="$ROOT/.env"
 LOCK_DIR="$ROOT/.deploy.lock"
 [[ ! -L $ENV_FILE ]] || fail '.env 是符号链接，请改用源码目录内的普通配置文件'
@@ -61,6 +107,10 @@ cleanup() {
   [[ -z $ENV_TEMP ]] || rm -f -- "$ENV_TEMP"
   [[ -z $KEY_TEMP ]] || rm -f -- "$KEY_TEMP"
   if (( LOCK_OWNED )); then rmdir -- "$LOCK_DIR" 2>/dev/null || true; fi
+  if [[ -n $SOURCE_TEMP ]]; then
+    case "$SOURCE_TEMP" in "$SOURCE_PARENT"/.monitor-download.*) rm -rf -- "$SOURCE_TEMP" ;; esac
+  fi
+  if (( BOOTSTRAP_LOCK_OWNED )); then rmdir -- "$BOOTSTRAP_LOCK" 2>/dev/null || true; fi
 }
 trap cleanup EXIT
 trap 'exit 130' INT
@@ -111,9 +161,67 @@ install_docker() {
   fi
 }
 
+ensure_git() {
+  command -v git >/dev/null && return 0
+  if (( ! INSTALL_DOCKER || CHECK_ONLY )); then fail '需要 Git 下载源码；请先安装 Git，或在 Debian/Ubuntu 使用 --install-docker'; fi
+  local ID=''
+  [[ -r /etc/os-release ]] || fail '无法识别系统，请手动安装 Git'
+  . /etc/os-release
+  case "$ID" in debian|ubuntu) ;; *) fail '自动安装 Git 仅支持 Debian/Ubuntu' ;; esac
+  if (( EUID != 0 )); then command -v sudo >/dev/null || fail '请使用 root 或安装 sudo'; sudo -v; fi
+  info '安装 Git 和 HTTPS 证书'
+  as_root apt-get update
+  as_root apt-get install -y git ca-certificates
+}
+reject_persistent_source_paths() {
+  local path tracked type
+  for path in "${SOURCE_FILES[@]}"; do
+    type=$(git -C "$1" cat-file -t "$2:$path" 2>/dev/null) || fail "远端版本缺少 $path，未应用更新"
+    [[ $type == blob ]] || fail "远端版本的 $path 不是文件"
+  done
+  for path in .env data cache backup .deploy.lock; do
+    tracked=$(git -C "$1" ls-tree --name-only "$2" -- "$path") || fail "无法检查远端文件，已停止"
+    [[ -z $tracked ]] || fail "远端源码包含运行数据路径 $path，拒绝覆盖"
+  done
+}
+if ! source_complete "$ROOT"; then
+  (( ! SKIP_BUILD )) || fail '首次下载源码不能使用 --skip-build'
+  [[ ! -d $ROOT || -z $(find "$ROOT" -mindepth 1 -maxdepth 1 -print -quit) ]] || fail '目标目录非空且不是完整源码目录；请选择空目录，下载脚本可放在 /tmp'
+  ensure_git
+  SOURCE_PARENT=$(dirname -- "$ROOT")
+  mkdir -p -- "$SOURCE_PARENT"
+  BOOTSTRAP_LOCK="$SOURCE_PARENT/.$(basename -- "$ROOT").install.lock"
+  mkdir -- "$BOOTSTRAP_LOCK" 2>/dev/null || fail '已有进程正在下载到此安装目录'
+  BOOTSTRAP_LOCK_OWNED=1
+  SOURCE_TEMP=$(mktemp -d "$SOURCE_PARENT/.monitor-download.XXXXXX")
+  info "从 GitHub 下载 $GITHUB_REPO ($GITHUB_REF) 到 $ROOT"
+  GIT_TERMINAL_PROMPT=0 git clone --depth 1 --single-branch --branch "$GITHUB_REF" -- "https://github.com/$GITHUB_REPO.git" "$SOURCE_TEMP/source"
+  source_complete "$SOURCE_TEMP/source" || fail '下载的源码不完整，请检查仓库与分支'
+  reject_persistent_source_paths "$SOURCE_TEMP/source" HEAD
+  git -C "$SOURCE_TEMP/source" config monitor.installRepo "$GITHUB_REPO"
+  git -C "$SOURCE_TEMP/source" config monitor.installRef "$GITHUB_REF"
+  if [[ -d $ROOT ]]; then rmdir -- "$ROOT"; fi
+  mv -- "$SOURCE_TEMP/source" "$ROOT"
+fi
 if (( ! CHECK_ONLY )); then
   mkdir -- "$LOCK_DIR" 2>/dev/null || fail '已有部署锁 .deploy.lock；请确认没有其他部署进程运行后再处理该锁'
   LOCK_OWNED=1
+fi
+if (( UPDATE_SOURCE )); then
+  ensure_git
+  [[ -d $ROOT/.git && ! -L $ROOT/.git ]] || fail '--update 需要普通 Git 克隆目录；源码压缩包请手动更新'
+  origin=$(git -C "$ROOT" remote get-url origin)
+  [[ ${origin%.git} == "https://github.com/$GITHUB_REPO" ]] || fail 'Git origin 与指定仓库不一致，拒绝更新；请核对 --repo'
+  [[ -z $(git -C "$ROOT" status --porcelain --untracked-files=normal) ]] || fail '源码有未提交改动或未跟踪文件，请先提交/备份；脚本不会覆盖'
+  info "获取并快进更新 $GITHUB_REPO ($GITHUB_REF)"
+  GIT_TERMINAL_PROMPT=0 git -C "$ROOT" fetch --no-tags origin "$GITHUB_REF"
+  target_commit=$(git -C "$ROOT" rev-parse FETCH_HEAD)
+  reject_persistent_source_paths "$ROOT" "$target_commit"
+  git -C "$ROOT" merge --ff-only "$target_commit"
+  [[ $(git -C "$ROOT" rev-parse HEAD) == "$target_commit" ]] || fail "指定版本早于当前版本，未降级；请使用独立安装目录或手动处理版本"
+  source_complete "$ROOT" || fail '更新后的源码不完整，未启动服务'
+  git -C "$ROOT" config monitor.installRepo "$GITHUB_REPO"
+  git -C "$ROOT" config monitor.installRef "$GITHUB_REF"
 fi
 if ! command -v docker >/dev/null || ! docker compose version >/dev/null 2>&1; then
   if (( INSTALL_DOCKER && ! CHECK_ONLY )); then install_docker; else
@@ -143,7 +251,7 @@ compose config --quiet
 if command -v curl >/dev/null; then
   http_ready() { curl --noproxy '*' -fsSL --max-time 5 -o /dev/null "http://127.0.0.1:$PORT/"; }
 elif command -v wget >/dev/null; then
-  http_ready() { wget -q --no-proxy -T 5 -O /dev/null "http://127.0.0.1:$PORT/"; }
+  http_ready() { http_proxy= https_proxy= HTTP_PROXY= HTTPS_PROXY= ALL_PROXY= all_proxy= wget -q -T 5 -O /dev/null "http://127.0.0.1:$PORT/"; }
 else
   fail '需要 curl 或 wget 检查网页就绪状态'
 fi
@@ -187,4 +295,8 @@ fi
 mv -f -- "$ENV_TEMP" "$ENV_FILE"
 ENV_TEMP=''
 info "部署完成：http://127.0.0.1:$PORT（远程访问请替换为服务器 IP）"
-printf '首次访问请按页面向导创建管理员账号。\n数据目录: %s/data\n端口已保存到 .env；更新源码后重复运行本脚本即可。\n查看日志: docker compose logs -f monitor（在源码根目录执行）\n' "$ROOT"
+printf '首次访问请按页面向导创建管理员账号。\n数据目录: %s/data\n端口已保存到 .env；获取并部署新版本: bash install.sh --update。\n查看日志: docker compose logs -f monitor（在源码根目录执行）\n' "$ROOT"
+
+}
+
+main "$@"

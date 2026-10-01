@@ -1,0 +1,23 @@
+PASS successful deploy preserves other settings and data
+PASS repeat deployment reuses saved port
+PASS check mode is read-only
+PASS invalid ports fail before Docker or filesystem changes
+PASS build failure keeps saved config/data and cleans installer state
+PASS up failure keeps saved config/data and cleans installer state
+PASS readiness failure keeps saved config/data and cleans installer state
+PASS skip-build uses only the existing image
+PASS existing deployment lock is not removed
+PASS symlink configuration is rejected without touching its target
+PASS fresh install persists the default port with private file permissions
+PASS piped installer clones the default GitHub repository into a new directory
+PASS shallow Git checkout fast-forwards while preserving data and port
+PASS updates reject modified and untracked source files
+PASS updates reject a mismatched Git origin
+PASS repository and ref arguments are validated
+PASS tagged installation records the selected ref
+PASS failed downloads remove only their staging directory and lock
+PASS bootstrap refuses an unrelated nonempty target
+PASS read-only checks never download missing source
+PASS unsupported host platforms are rejected
+PASS an older ref cannot silently succeed as a downgrade
+PASS upstream runtime files cannot overwrite local persistence

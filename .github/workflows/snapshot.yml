@@ -78,48 +78,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        goos: [windows, linux]
-        goarch: [amd64, arm64, 386, riscv64]
         include:
-          # Windows
-          - goos: windows
-            goarch: amd64
-            zig_target_triple: x86_64-windows-gnu
-            binary_extension: .exe
-          - goos: windows
-            goarch: arm64
-            zig_target_triple: aarch64-windows-gnu
-            binary_extension: .exe
-          - goos: windows
-            goarch: 386
-            zig_target_triple: x86-windows-gnu
-            binary_extension: .exe
-
           # Linux
           - goos: linux
             goarch: amd64
             zig_target_triple: x86_64-linux-musl
-            binary_extension: ""
           - goos: linux
             goarch: arm64
             zig_target_triple: aarch64-linux-musl
-            binary_extension: ""
           - goos: linux
             goarch: 386
             zig_target_triple: x86-linux-musl
-            binary_extension: ""
           - goos: linux
             goarch: riscv64
             zig_target_triple: riscv64-linux-musl
-            binary_extension: ""
           - goos: linux
             goarch: loong64
             zig_target_triple: loongarch64-linux-musl
-            binary_extension: ""
-
-        exclude:
-          - goos: windows
-            goarch: riscv64
 
     steps:
       - name: Checkout code
@@ -145,9 +120,6 @@ jobs:
           GIN_MODE: release
         run: |
           BINARY_NAME=komari-${{ matrix.goos }}-${{ matrix.goarch }}
-          if [ "${{ matrix.binary_extension }}" != "" ]; then
-            BINARY_NAME=${BINARY_NAME}${{ matrix.binary_extension }}
-          fi
           VERSION="${{ needs.prepare.outputs.version }}"
           VERSION_HASH="${{ github.sha }}" # Use commit SHA for hash
           LDFLAGS="-s -w -X github.com/komari-monitor/komari/utils.CurrentVersion=${VERSION} -X github.com/komari-monitor/komari/utils.VersionHash=${VERSION_HASH}"
