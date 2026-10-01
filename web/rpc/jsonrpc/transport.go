@@ -6,11 +6,9 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/komari-monitor/komari/database/accounts"
-	"github.com/komari-monitor/komari/internal/config"
 	"github.com/komari-monitor/komari/pkg/rpc"
 	"github.com/komari-monitor/komari/web/api"
 )
@@ -181,24 +179,5 @@ func buildContextMeta(c *gin.Context) *rpc.ContextMeta {
 		}
 	}
 
-	// 临时分享访问许可。
-	meta.TempShareValid = hasTempShareAccess(c)
 	return meta
-}
-
-// hasTempShareAccess 校验 temp_key cookie 是否为有效的临时分享访问许可。
-func hasTempShareAccess(c *gin.Context) bool {
-	tempKey, err := c.Cookie("temp_key")
-	if err != nil || tempKey == "" {
-		return false
-	}
-	expireAt, err := config.GetAs[int64]("tempory_share_token_expire_at", 0)
-	if err != nil {
-		return false
-	}
-	allowKey, err := config.GetAs[string]("tempory_share_token", "")
-	if err != nil || allowKey == "" || tempKey != allowKey {
-		return false
-	}
-	return expireAt >= time.Now().Unix()
 }

@@ -16,6 +16,8 @@ const (
 	PrincipalUser
 	// PrincipalAPIKey 通过 API Key 认证的调用方
 	PrincipalAPIKey
+	// PrincipalShare is an isolated capability; it has no implicit guest access.
+	PrincipalShare
 )
 
 // Principal 调用主体,携带身份信息和能力。
@@ -34,6 +36,10 @@ type Principal struct {
 	//   - PrincipalUser / PrincipalAPIKey → [RoleAdmin]
 	// 未来可扩展为多角色(只读 admin / API Key scope 等)。
 	Roles []string
+}
+
+func NewSharePrincipal(nodeUUID string) *Principal {
+ return &Principal{Type:PrincipalShare, ClientUUID:nodeUUID, Roles:[]string{"share"}}
 }
 
 // NewAnonymousPrincipal 创建匿名访客主体

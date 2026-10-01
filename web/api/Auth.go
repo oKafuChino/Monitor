@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/komari-monitor/komari/database/accounts"
@@ -135,34 +134,9 @@ func PrivateSiteMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// 临时访问许可
-		if hasTempAccess(c) {
-			c.Next()
-			return
-		}
-
 		RespondError(c, http.StatusUnauthorized, "Private site is enabled, please login first.")
 		c.Abort()
 	}
-}
-
-func hasTempAccess(c *gin.Context) bool {
-	tempKey, err := c.Cookie("temp_key")
-	if err != nil {
-		return false
-	}
-	expireAt, err := config.GetAs[int64]("tempory_share_token_expire_at", 0)
-	if err != nil {
-		return false
-	}
-	allowKey, err := config.GetAs[string]("tempory_share_token", "")
-	if err != nil {
-		return false
-	}
-	if allowKey == "" || tempKey != allowKey {
-		return false
-	}
-	return expireAt >= time.Now().Unix()
 }
 
 func extractClientToken(c *gin.Context) string {

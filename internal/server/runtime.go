@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net"
+	"strings"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +14,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/komari-monitor/komari/database"
+	"github.com/komari-monitor/komari/database/dbcore"
+	"github.com/komari-monitor/komari/internal/sharing"
+	"github.com/komari-monitor/komari/web/share"
 	"github.com/komari-monitor/komari/database/accounts"
 	"github.com/komari-monitor/komari/database/auditlog"
 	"github.com/komari-monitor/komari/database/tasks"
@@ -77,6 +82,16 @@ func (a *App) registerReloadHandlers(cors *security.CorsController) {
 
 // BuildRouter constructs the normal application router and starts reloads.
 func (a *App) BuildRouter() error {
+	origin, err := sharing.ValidateConfig(a.listenAddr, a.shareListen, a.sharePublicBase)
+	if err != nil { return err }
+	sharing.Configure("")
+	if origin != nil {
+		var proxies []string
+		if a.shareTrustedProxy != "" { for _, p := range strings.Split(a.shareTrustedProxy, ",") { proxies = append(proxies, strings.TrimSpace(p)) } }
+		a.shareEngine, err = share.New(sharing.New(dbcore.GetDBInstance()), origin, proxies)
+		if err != nil { return err }
+		sharing.Configure(origin.String())
+	}
 	r := gin.New()
 	r.Use(logger.GinLogger(), logger.GinRecovery())
 	cors := security.NewCorsController(a.settings.CorsOriginCheckEnabled, a.settings.CorsAllowedOrigins)
@@ -97,10 +112,21 @@ func (a *App) BuildRouter() error {
 // Run starts the normal HTTP server and blocks until shutdown or fatal error.
 func (a *App) Run() error {
 	a.server = &http.Server{Addr: a.listenAddr, Handler: a.engine}
-	serverErr := make(chan error, 1)
+	serverErr := make(chan error, 2)
+	// Bind both ports before serving either; a conflict rolls back atomically.
+	mainListener, err := net.Listen("tcp", a.listenAddr)
+	if err != nil { _ = a.Shutdown(); return fmt.Errorf("main listener: %w", err) }
+	var shareListener net.Listener
+	if a.shareEngine != nil {
+		shareListener, err = net.Listen("tcp", a.shareListen)
+		if err != nil { _ = mainListener.Close(); _ = a.Shutdown(); return fmt.Errorf("share listener: %w", err) }
+		a.shareServer = &http.Server{Addr:a.shareListen, Handler:a.shareEngine, ReadHeaderTimeout:5*time.Second, ReadTimeout:15*time.Second, WriteTimeout:15*time.Second, IdleTimeout:60*time.Second}
+		logger.Infof("server", "Starting share server on %s", a.shareListen)
+		go func() { if err := a.shareServer.Serve(shareListener); err != nil && err != http.ErrServerClosed { serverErr <- err } }()
+	}
 	logger.Infof("server", "Starting server on %s ...", a.listenAddr)
 	go func() {
-		if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := a.server.Serve(mainListener); err != nil && err != http.ErrServerClosed {
 			serverErr <- err
 		}
 	}()
@@ -110,7 +136,7 @@ func (a *App) Run() error {
 	defer signal.Stop(quit)
 	select {
 	case err := <-serverErr:
-		a.onFatal(err)
+		_ = a.Shutdown()
 		return fmt.Errorf("listen: %w", err)
 	case reason := <-lifecycle.RestartRequests():
 		logger.Infof("server", "Restarting service for %s", reason)
@@ -130,8 +156,11 @@ func (a *App) Shutdown() error {
 	}
 	httpCtx, cancelHTTP := context.WithTimeout(context.Background(), httpShutdownTimeout)
 	defer cancelHTTP()
+	sharing.Configure("")
+	if a.shareServer != nil { if err := a.shareServer.Shutdown(httpCtx); err != nil { _ = a.shareServer.Close() } }
 	if a.server != nil {
 		if err := a.server.Shutdown(httpCtx); err != nil {
+			_ = a.server.Close()
 			logger.Infof("server", "HTTP server forced to shutdown: %v", err)
 		}
 	}
@@ -182,6 +211,7 @@ func registerScheduledWork() {
 func cleanupScheduledData() {
 	auditlog.RemoveOldLogs()
 	accounts.RemoveExpiredSessions()
+	if err := sharing.New(dbcore.GetDBInstance()).CleanupSessions(); err != nil { logger.Errorf("server", "Share session cleanup failed") }
 }
 
 func compactMetricStore(ctx context.Context) {

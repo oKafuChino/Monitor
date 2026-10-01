@@ -1,0 +1,10 @@
+# Opt-in: docker compose -f compose.yaml -f compose.share.yaml up -d --build
+services:
+  monitor:
+    environment:
+      KOMARI_SHARE_LISTEN: "0.0.0.0:25775"
+      KOMARI_SHARE_PUBLIC_BASE_URL: "${KOMARI_SHARE_PUBLIC_BASE_URL:?Set the HTTPS share origin}"
+      KOMARI_SHARE_TRUSTED_PROXY: "${KOMARI_SHARE_TRUSTED_PROXY:-}"
+    ports: !override
+      - "127.0.0.1:${MONITOR_PORT:-25774}:25774"
+      - "127.0.0.1:${MONITOR_SHARE_PORT:-25775}:25775"

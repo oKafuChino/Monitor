@@ -13,11 +13,14 @@ import (
 	"github.com/komari-monitor/komari/utils"
 
 	"github.com/google/uuid"
+ "gorm.io/gorm"
 )
 
 func DeleteClient(clientUuid string) error {
 	db := dbcore.GetDBInstance()
-	err := db.Delete(&models.Client{}, "uuid = ?", clientUuid).Error
+	err := db.Transaction(func(tx *gorm.DB) error {
+ if err := models.RevokeNodeShares(tx, clientUuid); err != nil { return err }; return tx.Delete(&models.Client{}, "uuid = ?", clientUuid).Error
+ })
 	if err != nil {
 		return err
 	}
@@ -114,7 +117,7 @@ func SaveClientInfo(update map[string]interface{}) error {
 		return err
 	}
 
-	err := db.Model(&models.Client{}).Where("uuid = ?", clientUUID).Updates(update).Error
+	err := updateWithShareRevocation(db, clientUUID, update)
 	if err != nil {
 		return err
 	}
@@ -254,9 +257,21 @@ func SaveClient(updates map[string]interface{}) error {
 
 	updates["updated_at"] = time.Now().UTC()
 
-	err := db.Model(&models.Client{}).Where("uuid = ?", clientUUID).Updates(updates).Error
+	err := updateWithShareRevocation(db, clientUUID, updates)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func updateWithShareRevocation(db *gorm.DB, uuid string, updates map[string]interface{}) error {
+ return db.Transaction(func(tx *gorm.DB) error {
+  if err := tx.Model(&models.Client{}).Where("uuid = ?",uuid).Updates(updates).Error; err != nil { return err }
+  if _, exists := updates["hidden"]; exists {
+   var node models.Client
+   if err := tx.Select("hidden").Where("uuid = ?",uuid).First(&node).Error; err != nil { return err }
+   if node.Hidden { return models.RevokeNodeShares(tx, uuid) }
+  }
+  return nil
+ })
 }

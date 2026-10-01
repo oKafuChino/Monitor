@@ -14,7 +14,7 @@ ENV GIN_MODE=release
 ENV KOMARI_LISTEN=0.0.0.0:25774
 ENV GODEBUG=disablethp=1
 
-EXPOSE 25774
+EXPOSE 25774 25775
 
 CMD ["/app/komari", "server"]
 
@@ -25,6 +25,7 @@ COPY komari-web/package.json komari-web/package-lock.json ./komari-web/
 RUN npm ci --prefix komari-web
 COPY komari-web ./komari-web
 COPY scripts/embed-frontend.mjs ./scripts/embed-frontend.mjs
+COPY scripts/share-archive.mjs ./scripts/share-archive.mjs
 RUN npm run build --prefix komari-web && node scripts/embed-frontend.mjs
 
 FROM golang:1.25.0-bookworm AS backend
@@ -41,5 +42,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 WORKDIR /app
 COPY --from=backend /out/komari /app/komari
 ENV GIN_MODE=release KOMARI_LISTEN=0.0.0.0:25774 GODEBUG=disablethp=1
-EXPOSE 25774
+EXPOSE 25774 25775
 CMD ["/app/komari", "server"]

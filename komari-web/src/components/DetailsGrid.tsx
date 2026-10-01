@@ -18,6 +18,7 @@ type DetailsGridProps = {
   align?: "start" | "center" | "end";
   node?: NodeBasicInfo;
   liveRecord?: LiveRecord;
+  ioOnline?: boolean;
 };
 
 export const DetailsGrid = ({
@@ -27,6 +28,7 @@ export const DetailsGrid = ({
   align,
   node: nodeProp,
   liveRecord,
+  ioOnline: ioOnlineProp,
 }: DetailsGridProps) => {
   const { t } = useTranslation();
 
@@ -36,7 +38,7 @@ export const DetailsGrid = ({
     nodeProp ?? nodeListContext?.nodeList?.find((n) => n.uuid === uuid);
   const currentRecord = liveRecord ?? live_data?.data.data[uuid ?? ""];
   const io = currentRecord?.disk_io;
-  const ioOnline = live_data?.data.online.includes(uuid) === true;
+  const ioOnline = ioOnlineProp ?? (live_data?.data.online.includes(uuid) === true);
 
   const Container: any = box ? Card : 'div';
 

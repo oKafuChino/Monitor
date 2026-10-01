@@ -188,6 +188,9 @@ func CheckPermission(group, method string) bool {
 // 该模型使 agent 与 admin 成为正交主体:admin 不再自动获得 client 能力(反之亦然),
 // 从而堵住"admin 会话冒充 agent 调用 client:* 上报方法"等越权路径。
 func CheckPrincipal(p *Principal, method string) bool {
+	if p != nil && p.Type == PrincipalShare {
+		return method == "share:getNode" || method == "share:getLatestStatus" || method == "share:queryMetrics"
+	}
 	if p == nil {
 		p = NewAnonymousPrincipal()
 	}

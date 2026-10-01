@@ -14,13 +14,14 @@ import { toast } from "sonner";
 import Loading from "@/components/loading";
 import { DownloadIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import ShareLinksPanel from "@/components/admin/ShareLinksPanel";
 import UploadDialog from "@/components/UploadDialog";
 import { createChunkUploadTask, type ChunkUploadTask } from "@/lib/chunkUpload";
 
 export default function SiteSettings() {
   const { t } = useTranslation();
-  const { settings, loading, error, refetch } = useSettings();
-  const [shareHours, setShareHours] = useState(1);
+  const { settings, loading, error } = useSettings();
+
 
   // 恢复备份对话框与上传状态
   const [restoreOpen, setRestoreOpen] = useState(false);
@@ -174,86 +175,7 @@ export default function SiteSettings() {
         }}
         className="km-setting-card"
       />
-      <SettingCardCollapse
-        title={t("settings.site.temporary_share")}
-        description={t("settings.site.temporary_share_description")}
-      >
-        <div className="flex w-full flex-col gap-4">
-          <SettingCardShortTextInput
-            title={t("settings.site.temporary_share_current_link")}
-            value={
-              settings.tempory_share_token
-                ? `${window.location.origin}/?temp_key=${settings.tempory_share_token}`
-                : ""
-            }
-            showSaveButton={false}
-            description={`${t("admin.nodeTable.expiredAt")}: ${new Date((settings.tempory_share_token_expire_at || 0) * 1000).toLocaleString()}`}
-            disabled
-            bordless
-          >
-            <Button
-              onClick={() => {
-                if (!settings.tempory_share_token) return;
-                navigator.clipboard.writeText(
-                  `${window.location.origin}/?temp_key=${settings.tempory_share_token}`,
-                );
-                toast.success(t("common.copy"));
-              }}
-            >
-              {t("common.copy")}
-            </Button>
-          </SettingCardShortTextInput>
-          <SettingCardShortTextInput
-            title={t("settings.site.temporary_share_hours")}
-            bordless
-            showSaveButton={false}
-            value={shareHours}
-            type="number"
-            onChange={(e) => {
-              const val = Number.parseInt(e.target.value, 10);
-              if (!Number.isNaN(val)) {
-                setShareHours(val);
-              }
-            }}
-          ></SettingCardShortTextInput>
-          <div className="flex flex-row w-full gap-2">
-            <Button
-              onClick={async () => {
-                const chars =
-                  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-                let key = "";
-                for (let i = 0; i < 8; i++) {
-                  key += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                await updateSettingsWithToast(
-                  {
-                    tempory_share_token: key,
-                    tempory_share_token_expire_at:
-                      Math.floor(Date.now() / 1000) + shareHours * 3600,
-                  },
-                  t,
-                );
-                await refetch();
-              }}
-            >
-              {t("common.generate")}
-            </Button>
-            <Button
-              color="red"
-              variant="soft"
-              onClick={async () => {
-                await updateSettingsWithToast(
-                  { tempory_share_token: "", tempory_share_token_expire_at: 0 },
-                  t,
-                );
-                await refetch();
-              }}
-            >
-              {t("settings.site.temporary_share_revoke")}
-            </Button>
-          </div>
-        </div>
-      </SettingCardCollapse>
+      <SettingCardCollapse title={t("share.title")} description={t("share.once")}><ShareLinksPanel /></SettingCardCollapse>
       <SettingCardLabel>{t("settings.site.custom")}</SettingCardLabel>
       <label className="text-sm text-muted-foreground -mt-4">
         {t("settings.custom.note")}

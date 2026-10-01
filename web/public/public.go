@@ -9,7 +9,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/komari-monitor/komari/internal/config"
@@ -37,6 +36,9 @@ const (
 // mistaken for valid client-side routes by the SPA fallback.
 func isRetiredFrontendPath(requestPath string) bool {
 	for _, prefix := range []string{
+		"/s",
+		"/node",
+		"/api/share",
 		"/admin/files",
 		"/admin/notification",
 		"/admin/settings/notification",
@@ -230,42 +232,6 @@ func static(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFunc), force
 			c.Status(http.StatusNotFound)
 			return
 		}
-		//
-		func() {
-			tempKey := c.Query("temp_key")
-			if tempKey == "" {
-				return
-			}
-
-			tempKeyExpireTime, err := config.GetAs[int64]("tempory_share_token_expire_at", 0)
-			if err != nil {
-				return
-			}
-			allowTempKey, err := config.GetAs[string]("tempory_share_token", "")
-			if err != nil {
-				return
-			}
-
-			if allowTempKey == "" || tempKey != allowTempKey {
-				return
-			}
-			now := time.Now().Unix()
-			if tempKeyExpireTime < now {
-				return
-			}
-			expireSeconds := int(tempKeyExpireTime - now)
-			if expireSeconds > 0 {
-				c.SetCookie(
-					"temp_key",    // key
-					tempKey,       // value
-					expireSeconds, // maxAge（秒）
-					"/",           // path
-					"",            // domain
-					false,         // secure
-					false,         // httpOnly
-				)
-			}
-		}()
 		reqPath := c.Request.URL.Path
 		if isRetiredFrontendPath(reqPath) {
 			c.Status(http.StatusNotFound)

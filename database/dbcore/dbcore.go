@@ -340,6 +340,7 @@ func Close() error {
 
 func doInitialize() error {
 	var err error
+	restored := false
 
 	// 在数据库初始化前执行：如果存在 ./data/backup.zip，则进行恢复逻辑
 	func() {
@@ -368,6 +369,7 @@ func doInitialize() error {
 			if unzipErr := unzipToDir(backupZipPath, "./data"); unzipErr != nil {
 				logger.Errorf("dbcore", "[restore] failed to unzip backup into data: %v", unzipErr)
 			} else {
+				restored = true
 				logger.Infof("dbcore", "[restore] backup.zip extracted to ./data")
 			}
 
@@ -449,6 +451,8 @@ func doInitialize() error {
 	err = instance.AutoMigrate(
 		&models.User{},
 		&models.Client{},
+		&models.ShareLink{},
+		&models.ShareSession{},
 		&models.Log{},
 		&models.PingTask{},
 		&models.OidcProvider{},
@@ -463,6 +467,14 @@ func doInitialize() error {
 	); err != nil {
 		logger.Errorf("dbcore", "Failed to create Session table, it may already exist: %v", err)
 	}
+	// Backup restoration must never resurrect revoked capabilities.
+	if restored {
+		if err := instance.Model(&models.ShareLink{}).Where("revoked_at IS NULL").Update("revoked_at", time.Now().UTC()).Error; err != nil { return err }
+		if err := instance.Where("1 = 1").Delete(&models.ShareSession{}).Error; err != nil { return err }
+	}
+	// Keep legacy config keys readable but permanently disable access.
+	if err := config.Set("tempory_share_token", ""); err != nil { return err }
+	if err := config.Set("tempory_share_token_expire_at", int64(0)); err != nil { return err }
 	// Retired command-task tables, if present, remain inert backup history.
 
 	return nil

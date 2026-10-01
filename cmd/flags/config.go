@@ -12,6 +12,9 @@ var (
 	DatabaseFile string // SQLite数据库文件路径
 
 	Listen string
+	ShareListen string
+	SharePublicBase string
+	ShareTrustedProxy string
 )
 
 func NormalizeDatabaseType(databaseType string) string {

@@ -21,6 +21,11 @@ type App struct {
 	settings                *config.Settings
 	engine                  *gin.Engine
 	server                  *http.Server
+	shareEngine             *gin.Engine
+	shareServer             *http.Server
+	shareListen             string
+	sharePublicBase         string
+	shareTrustedProxy       string
 	reload                  *ReloadManager
 	dbReady                 bool
 	oauthReady              bool
@@ -32,12 +37,15 @@ type App struct {
 // Options configures the process-wide application runtime.
 type Options struct {
 	ListenAddr string
+	ShareListen string
+	SharePublicBase string
+	ShareTrustedProxy string
 }
 
 // New constructs an empty application. Initialization happens in the
 // explicit lifecycle phases called by the command entrypoint.
 func New(options Options) *App {
-	return &App{listenAddr: options.ListenAddr, reload: NewReloadManager()}
+	return &App{listenAddr: options.ListenAddr, shareListen: options.ShareListen, sharePublicBase: options.SharePublicBase, shareTrustedProxy: options.ShareTrustedProxy, reload: NewReloadManager()}
 }
 
 // addCleanup registers a cleanup action. Shutdown executes actions in LIFO

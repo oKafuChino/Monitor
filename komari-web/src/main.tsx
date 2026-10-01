@@ -33,20 +33,6 @@ const App = () => {
     "/install",
     "/database-recovery",
   ].includes(restrictedPath);
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tempKey = params.get("temp_key");
-
-    if (tempKey) {
-      document.cookie = `temp_key=${tempKey}; path=/; max-age=${60 * 60 * 24 * 365 * 100}`;
-      params.delete("temp_key");
-      window.history.replaceState(
-        {},
-        document.title,
-        `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`,
-      );
-    }
-  }, []);
   const [appearance, setAppearance] = useLocalStorage<Appearance>(
     "appearance",
     THEME_DEFAULTS.appearance,

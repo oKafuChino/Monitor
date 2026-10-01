@@ -8,6 +8,8 @@ A self-hosted monitoring panel with real-time metrics, history charts and Ping m
 
 Repository: [oKafuChino/Monitor](https://github.com/oKafuChino/Monitor). The default installation branch is `main`.
 
+Optional single-node sharing uses a separate listener and domain, with revocable links. See [configuration and deployment](docs/临时分享节点部署.md). Keep the main listener on loopback/private networking; a different sharing port does not hide a public main port.
+
 ## 1. Requirements
 
 - A Linux server and a root account or an account with sudo access.

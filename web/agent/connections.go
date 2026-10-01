@@ -25,6 +25,17 @@ var (
 
 const recentReportRetention = time.Minute
 
+// GetNodeSnapshot reads only the requested node under the runtime lock.
+func GetNodeSnapshot(uuid string) (*v2.Report, bool) {
+ mu.RLock()
+ defer mu.RUnlock()
+ online := connectedClients[uuid] != nil || presenceOnly[uuid].expire.After(time.Now())
+ if latestReport[uuid] == nil { return nil, online }
+ item := *latestReport[uuid]
+ item.DiskIO = item.DiskIO.Clone()
+ return &item, online
+}
+
 func GetConnectedClients() map[string]*connection.SafeConn {
 	mu.RLock()
 	defer mu.RUnlock()

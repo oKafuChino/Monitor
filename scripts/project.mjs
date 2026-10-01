@@ -67,7 +67,7 @@ async function buildWeb() {
   await run(process.execPath, [path.join(root, "scripts/embed-frontend.mjs")]);
 }
 function requireEmbeddedUI() {
-  for (const name of ["dist.tar.zst", "komari-theme.json"]) {
+  for (const name of ["dist.tar.zst", "share.zip", "komari-theme.json"]) {
     if (!fs.existsSync(path.join(root, "web/public/defaultTheme", name))) {
       throw new Error("Build the embedded UI first: npm run build:web");
     }
@@ -81,6 +81,7 @@ async function buildServer() {
 async function testWeb() {
   await npm("run", "test:ui");
   await run(process.execPath, ["--test", path.join(root, "scripts/integration.test.mjs")]);
+  await run(process.execPath, ["--test", path.join(root, "scripts/share.test.mjs")]);
 }
 function serverProcess(runtimeDir, development = false) {
   if (!fs.existsSync(binary)) throw new Error("Build the application first: npm run build" + (docker ? " -- --docker" : ""));
@@ -181,7 +182,7 @@ try {
     case "check":
       await npm("run", "lint");
       // fall through to the full source-to-embedded regression pipeline
-    case "test": await buildWeb(); await testWeb(); await go(["test", "./..."]); await testAgent(); break;
+    case "test": await buildWeb(); await testWeb(); await go(["test", "./..."]); await go(["test", "-race", "./internal/sharing", "./web/share", "./internal/server", "./pkg/rpc"]); await testAgent(); break;
     case "help": console.log("npm run setup | dev | build | start | test | check; append -- --docker to use containerized Go/CGO"); break;
     default: throw new Error(`Unknown command: ${command}`);
   }
