@@ -1,0 +1,16 @@
+.git
+**/.git
+.codex
+.agents
+**/.codex
+**/.agents
+**/node_modules
+**/dist
+docs
+/data
+/cache
+/backup
+**/.env*
+**/*.log
+komari-web/bundle-analysis.html
+web/public/defaultTheme

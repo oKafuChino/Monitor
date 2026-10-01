@@ -8,7 +8,6 @@ import (
 	"github.com/komari-monitor/komari/web/api/admin"
 	"github.com/komari-monitor/komari/web/api/client"
 	public_api "github.com/komari-monitor/komari/web/api/public"
-	"github.com/komari-monitor/komari/web/api/terminal"
 	"github.com/komari-monitor/komari/web/filemanager"
 	"github.com/komari-monitor/komari/web/public"
 	jsonRpc "github.com/komari-monitor/komari/web/rpc/jsonrpc"
@@ -19,6 +18,8 @@ import (
 // 设计：JSON 类接口统一经声明式路由桥 jsonRpc.Bind 绑定到对应 RPC2 方法，
 // 不再有 per-resource gin handler 层。仅二进制/流/重定向/特殊鉴权类接口保留为 REST handler。
 func Register(r *gin.Engine) {
+	// Retired capabilities always fail as JSON, including authenticated direct requests.
+	r.Use(rejectRetiredCapabilities)
 	r.Any("/ping", func(c *gin.Context) {
 		c.String(200, "pong")
 	})
@@ -42,8 +43,6 @@ func registerPublicRoutes(r *gin.Engine) {
 	r.GET("/api/logout", public_api.Logout)
 	r.GET("/api/oauth", public_api.OAuth)
 	r.GET("/api/oauth_callback", public_api.OAuthCallback)
-	// 插件公开页面（visibility=public 的 iframe 页面），无需鉴权。
-	r.GET("/api/plugin/:short/*filepath", public_api.ServePluginFile)
 	// 短期文件预览令牌公开下载入口，供 Office 在线预览等服务端抓取。
 	r.GET("/api/preview/client/:uuid/file/download", filemanager.PreviewDownload)
 	r.HEAD("/api/preview/client/:uuid/file/download", filemanager.PreviewDownload)
@@ -79,7 +78,6 @@ func registerAgentRoutes(r *gin.Engine) {
 		// File data uses a short-lived, raw HTTP stream opened by a file RPC.
 		tokenAuthorized.GET("/transfer/:id", filemanager.AgentTransfer)
 		tokenAuthorized.POST("/transfer/:id", filemanager.AgentTransfer)
-		tokenAuthorized.GET("/terminal", terminal.EstablishConnection)
 	}
 }
 
@@ -87,6 +85,8 @@ func registerAgentRoutes(r *gin.Engine) {
 func registerAdminRoutes(r *gin.Engine) {
 	g := r.Group("/api/admin", api.RequireRole(api.RoleAdmin))
 	admin.RegisterPprofRoutes(g)
+	g.GET("/ui/settings", admin.GetUISettings)
+	g.PATCH("/ui/settings", admin.PatchUISettings)
 
 	// --- 二进制/流/重定向类，保留 REST handler ---
 	g.GET("/download/backup", admin.DownloadBackup)
@@ -105,23 +105,6 @@ func registerAdminRoutes(r *gin.Engine) {
 	g.PUT("/update/favicon", admin.UploadFavicon)
 	g.POST("/update/favicon", admin.DeleteFavicon)
 
-	// theme 的安装流程通过统一的分片上传接口；其余主题接口保留 REST handler。
-	theme := g.Group("/theme")
-	{
-		theme.GET("/list", admin.ListThemes)
-		theme.POST("/delete", admin.DeleteTheme)
-		theme.GET("/set", admin.SetTheme)
-		theme.POST("/update", admin.UpdateTheme)
-		theme.POST("/import", admin.ImportTheme)
-		theme.POST("/settings", admin.UpdateThemeSettings)
-		theme.GET("/market/sources", admin.ListThemeMarketSources)
-		theme.POST("/market/sources", admin.CreateThemeMarketSource)
-		theme.PUT("/market/sources/:id", admin.UpdateThemeMarketSource)
-		theme.DELETE("/market/sources/:id", admin.DeleteThemeMarketSource)
-		theme.GET("/market/catalog", admin.ListThemeMarketCatalog)
-		theme.POST("/market/install", admin.InstallThemeFromMarket)
-	}
-
 	// 2FA 含二维码 PNG / 敏感操作，保留 REST handler。
 	twoFactor := g.Group("/2fa")
 	{
@@ -138,17 +121,6 @@ func registerAdminRoutes(r *gin.Engine) {
 	}
 
 	// --- 以下全部 JSON -> RPC2 ---
-
-	// tasks（远程执行）
-	task := g.Group("/task")
-	{
-		task.GET("/all", jsonRpc.Bind("admin:getTasks"))
-		task.POST("/exec", api.RequireSensitive2FA(), jsonRpc.Bind("admin:exec"))
-		task.GET("/:task_id", jsonRpc.Bind("admin:getTaskById", jsonRpc.WithPath("task_id")))
-		task.GET("/:task_id/result", jsonRpc.Bind("admin:getTaskResultsByTaskId", jsonRpc.WithPath("task_id")))
-		task.GET("/:task_id/result/:uuid", jsonRpc.Bind("admin:getSpecificTaskResult", jsonRpc.WithPath("task_id", "uuid")))
-		task.GET("/client/:uuid", jsonRpc.Bind("admin:getTasksByClientId", jsonRpc.WithPath("uuid")))
-	}
 
 	// settings
 	settings := g.Group("/settings")
@@ -176,10 +148,6 @@ func registerAdminRoutes(r *gin.Engine) {
 		clientGroup.POST("/:uuid/remove", jsonRpc.Bind("admin:removeClient", jsonRpc.WithPath("uuid")))
 		clientGroup.GET("/:uuid/token", jsonRpc.Bind("admin:getClientToken", jsonRpc.WithPath("uuid"), jsonRpc.WithFlat()))
 		clientGroup.POST("/order", jsonRpc.Bind("admin:orderClients"))
-		// RequestTerminal validates 2FA only when creating a new session. Reattach
-		// requests are authenticated against the existing session owner so a short
-		// network flap does not depend on the current TOTP window.
-		clientGroup.GET("/:uuid/terminal", terminal.RequestTerminal)
 		clientGroup.POST("/:uuid/file/upload", filemanager.Upload)
 		clientGroup.GET("/:uuid/file/download", filemanager.Download)
 		clientGroup.HEAD("/:uuid/file/download", filemanager.Download)
@@ -202,25 +170,6 @@ func registerAdminRoutes(r *gin.Engine) {
 	}
 
 	g.GET("/logs", jsonRpc.Bind("admin:getLogs", jsonRpc.WithQuery("limit", "page")))
-
-	// plugins: 安装流程通过统一的分片上传接口，启停/列表/日志走 RPC2，市场对齐主题市场。
-	pluginGroup := g.Group("/plugin")
-	{
-		pluginGroup.GET("/list", jsonRpc.Bind("admin:listPlugins"))
-		pluginGroup.POST("/enabled", jsonRpc.Bind("admin:setPluginEnabled"))
-		pluginGroup.GET("/logs", jsonRpc.Bind("admin:getPluginLogs", jsonRpc.WithQuery("short")))
-		pluginGroup.GET("/market/sources", admin.ListPluginMarketSources)
-		pluginGroup.POST("/market/sources", admin.CreatePluginMarketSource)
-		pluginGroup.PUT("/market/sources/:id", admin.UpdatePluginMarketSource)
-		pluginGroup.DELETE("/market/sources/:id", admin.DeletePluginMarketSource)
-		pluginGroup.GET("/market/catalog", admin.ListPluginMarketCatalog)
-		pluginGroup.POST("/market/install", admin.InstallPluginFromMarket)
-		pluginGroup.POST("/delete", jsonRpc.Bind("admin:deletePlugin"))
-		pluginGroup.GET("/configuration", jsonRpc.Bind("admin:getPluginConfiguration", jsonRpc.WithQuery("short")))
-		pluginGroup.POST("/configuration", jsonRpc.Bind("admin:setPluginConfiguration"))
-		// 插件注入的管理页面静态文件
-		pluginGroup.GET("/:short/*filepath", admin.ServePluginFile)
-	}
 
 	// notifications
 	notificationGroup := g.Group("/notification")

@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-01",
+  "checks": [
+    "fresh installation accepts password login",
+    "authenticated account endpoint",
+    "fixed UI settings patch",
+    "independent UI patch",
+    "independent patches preserve values",
+    "public settings remain compatible and exclude admin layout",
+    "retired JSON 404 /api/admin/theme/list",
+    "retired JSON 404 /api/admin/plugin/list",
+    "retired JSON 404 /api/admin/client/fixture/terminal",
+    "retired JSON 404 /themes/old/dist/index.html",
+    "removed RPC listPlugins",
+    "removed RPC setPluginEnabled",
+    "removed RPC getPluginLogs",
+    "removed RPC deletePlugin",
+    "removed RPC getPluginConfiguration",
+    "removed RPC setPluginConfiguration",
+    "binary serves exact locally built frontend entry",
+    "embedded local entry is accessible",
+    "built-in webhook is registered",
+    "isolated backup download"
+  ],
+  "restoreChecks": [
+    "restored account login",
+    "default settings preserved",
+    "missing supported settings copied from legacy active theme",
+    "unknown legacy keys excluded",
+    "restored active theme fixed to default",
+    "restored removed routes remain JSON 404"
+  ]
+}

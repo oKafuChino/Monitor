@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "Vite proxies installer API to the local backend",
+    "development UI serves Vite HMR",
+    "login through Vite authenticates against the same backend",
+    "authenticated retired shell REST and six command RPCs rejected",
+    "fixed UI settings persist through the integrated proxy",
+    "authenticated Agent WebSocket works through Vite; retired task result is rejected"
+  ]
+}

@@ -142,6 +142,9 @@ func adminEditSettings(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc.
 	if err := req.BindParams(&cfg); err != nil {
 		return nil, rpc.MakeError(rpc.InvalidParams, "Invalid or missing request body: "+err.Error(), nil)
 	}
+	if value, ok := cfg[config.ThemeKey]; ok && value != "default" {
+		return nil, rpc.MakeError(rpc.InvalidParams, "only the built-in interface is supported", nil)
+	}
 	removeRetiredLowResourceMode(cfg)
 	if err := validateMetricRollupSettingChanges(cfg); err != nil {
 		return nil, rpc.MakeError(rpc.InvalidParams, err.Error(), nil)

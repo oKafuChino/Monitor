@@ -1,0 +1,10 @@
+services:
+  monitor:
+    build:
+      context: .
+      target: runtime
+    ports:
+      - "${MONITOR_PORT:-25774}:25774"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

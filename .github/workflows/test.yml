@@ -1,0 +1,19 @@
+name: Regression tests
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-frontend
+      - name: Check frontend
+        run: npm run lint
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Test backend
+        env:
+          CGO_ENABLED: '1'
+        run: npm run test:server

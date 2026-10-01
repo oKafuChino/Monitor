@@ -2,18 +2,12 @@ package database
 
 import (
 	"context"
-	"encoding/json"
-	"os"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/komari-monitor/komari/database/dbcore"
-	"github.com/komari-monitor/komari/database/models"
 	"github.com/komari-monitor/komari/internal/config"
-	"github.com/komari-monitor/komari/internal/managedconfig"
 	"github.com/komari-monitor/komari/internal/metricstore"
-	logger "github.com/komari-monitor/komari/utils/log"
-	"github.com/komari-monitor/komari/web/public"
+	"github.com/komari-monitor/komari/internal/uisettings"
 )
 
 func GetPublicInfo() (map[string]interface{}, error) {
@@ -59,29 +53,8 @@ func GetPublicInfo() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	db := dbcore.GetDBInstance()
-	tc := models.ThemeConfiguration{}
-	err = db.Model(&models.ThemeConfiguration{}).Where("short = ?", cst.Theme).First(&tc).Error
+	tc_data, err := uisettings.Public(dbcore.GetDBInstance())
 	if err != nil {
-		tc.Data = "{}"
-	}
-	tc_data := gin.H{}
-	err = json.Unmarshal([]byte(tc.Data), &tc_data)
-	if err != nil {
-		logger.Infof("database", "%v", err)
-	}
-	items := themeConfigurationItems(cst.Theme)
-	if cst.Theme != "default" {
-		for _, item := range items {
-			if item.Key == "" {
-				continue
-			}
-			if _, exists := tc_data[item.Key]; !exists {
-				tc_data[item.Key] = managedconfig.DefaultValue(item)
-			}
-		}
-	}
-	if err := managedconfig.ResolveForOutput(tc_data, items); err != nil {
 		return nil, err
 	}
 
@@ -98,23 +71,7 @@ func GetPublicInfo() (map[string]interface{}, error) {
 		"record_preserve_time":      retention.MaxDays * 24,
 		"ping_record_preserve_time": retention.MaxDays * 24,
 		"private_site":              cst.PrivateSite,
-		"theme":                     cst.Theme,
+		"theme":                     "default",
 		"theme_settings":            tc_data,
 	}, nil
-}
-
-func themeConfigurationItems(short string) []models.ManagedThemeConfigurationItem {
-	var manifest models.Theme
-	if short == "default" {
-		data, err := public.PublicFS.ReadFile("defaultTheme/komari-theme.json")
-		if err != nil || json.Unmarshal(data, &manifest) != nil {
-			return nil
-		}
-	} else {
-		data, err := os.ReadFile(filepath.Join("./data/theme", short, "komari-theme.json"))
-		if err != nil || json.Unmarshal(data, &manifest) != nil {
-			return nil
-		}
-	}
-	return managedconfig.Items(manifest.Configuration)
 }

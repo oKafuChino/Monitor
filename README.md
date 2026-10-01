@@ -1,67 +1,56 @@
 # Komari
 
-![Badge](https://hitscounter.dev/api/hit?url=https%3A%2F%2Fgithub.com%2Fkomari-monitor%2Fkomari&label=&icon=github&color=%23a370f7&message=&style=flat&tz=UTC)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/komari-monitor/komari)
-
-![komari](https://socialify.git.ci/komari-monitor/komari/image?description=1&font=Inter&forks=1&issues=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fkomari-monitor%2Fkomari-web%2Fd54ce1288df41ead08aa19f8700186e68028a889%2Fpublic%2Ffavicon.png&name=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Auto)
-
 [English](./README.md) | [简体中文](./README_zh-cn.md)
 
-Komari is a lightweight, self-hosted server monitoring solution. It provides a simple and efficient way to track server performance through a web interface, with metrics collected by a lightweight agent.
+A self-hosted server monitoring panel with real-time metrics, history charts, Ping monitoring and notifications. The frontend is bundled into the Go server, so deployment requires only one service.
 
-> [!WARNING]
-> Komari is a self-hosted monitoring and control application. Deploy it only on systems you own or are authorized to manage. You are solely responsible for how you deploy and use Komari. The developers accept no liability for unauthorized access, persistence, command execution, other misuse, or any resulting consequences.
+This version uses a fixed built-in interface. Third-party themes, plugins, web terminals and remote command execution are removed. Remote file management, including file writes, and SQL administration remain available. The operating system's SSH service is unaffected.
 
-[Documentation](https://www.komari.wiki/) | [Telegram Group](https://t.me/komari_monitor)
+## Install with Docker Compose
 
-## Features
+Install Docker and Docker Compose, obtain this repository's source code, then run the following from the repository root:
 
-- **Real-time monitoring**: Displays monitoring data at one-second intervals.
-- **Lightweight and efficient**: Uses minimal system resources and works well on servers of any size.
-- **Self-hosted**: Keeps you in control of your data and privacy.
-- **Web interface**: Provides an intuitive, easy-to-use monitoring dashboard.
-- **Extensible**: Supports custom themes and plugins.
+```sh
+docker compose up -d --build
+```
 
-## Quick Start
+Open `http://<server-ip>:25774` and follow the installation wizard to create an administrator account and configure the site.
 
-| Platform                                                                                                                                                                                                  | Description                                                                                                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <a href="https://app.rainyun.com/apps/rca/store/6780/NzYxNzAz_"><img src="https://rainyun-apps.cn-nb1.rains3.com/materials/deploy-on-rainyun-cn.svg" alt="Rainyun" width="180"></a>                       | Deploy websites, databases, and hundreds of popular apps in seconds with flexible hourly billing. [Get started for just ¥5/month. Deploy now!](https://app.rainyun.com/apps/rca/store/6780/NzYxNzAz_) |
-| <a href="https://apps.fit2cloud.com/1panel/komari"><img src="https://raw.githubusercontent.com/komari-monitor/public/refs/heads/main/images/1panel-logo-blue.png" alt="1Panel App Store" width="180"></a> | A modern, open-source Linux server management panel for websites, databases, containers, files, backups, security, and AI, with one-click deployment from its app store.                              |
+- Data is stored in the repository's `data/` directory and persists across container replacement.
+- To change the exposed port, set `MONITOR_PORT=8080` in a `.env` file at the repository root before starting.
+- View logs: `docker compose logs -f monitor`.
+- Stop the service: `docker compose down`.
 
-For instructions on Docker deployment, binary installation, building from source, and updates, see the [installation guide](https://www.komari.wiki/en/install/quick-start).
+## Build from source
 
-## Screenshots
+Requires Node.js 24+, `tar`, and Docker. Run all commands from the repository root:
 
-| Page                | Screenshot                                                                                                                                                             |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Home Dashboard      | <img src="https://b2.akz.moe/awesome-pictures/komari-screenshot/%E4%B8%BB%E9%A1%B5%E4%BB%AA%E8%A1%A8%E7%9B%98-en.webp" width="800" alt="Home Dashboard">               |
-| Admin Dashboard     | <img src="https://b2.akz.moe/awesome-pictures/komari-screenshot/%E5%90%8E%E5%8F%B0%E4%BB%AA%E8%A1%A8%E7%9B%98-en.webp" width="800" alt="Admin Dashboard">              |
-| History Charts      | <img src="https://b2.akz.moe/awesome-pictures/komari-screenshot/%E5%8E%86%E5%8F%B2%E5%9B%BE%E8%A1%A8-en.webp" width="800" alt="History Charts">                        |
-| Web Terminal        | <img src="https://b2.akz.moe/awesome-pictures/komari-screenshot/%E7%BD%91%E9%A1%B5%E7%BB%88%E7%AB%AF.webp" width="800" alt="Web Terminal">                             |
-| Customizable Themes | <img src="https://b2.akz.moe/awesome-pictures/komari-screenshot/%E4%B8%BB%E9%A2%98%E5%8F%AF%E8%87%AA%E5%AE%9A%E4%B9%89-en.webp" width="800" alt="Customizable Themes"> |
-| Theme Market        | <img src="https://b2.akz.moe/awesome-pictures/komari-screenshot/%E4%B8%BB%E9%A2%98%E5%B8%82%E5%9C%BA-en.webp" width="800" alt="Theme Market">                          |
+```sh
+npm run setup
+npm run build -- --docker
+npm start -- --docker
+```
 
-## Sponsors
+Docker supplies the Go/CGO toolchain. The resulting Linux binary is `dist/komari`; it includes the frontend. Open `http://127.0.0.1:25774` to complete setup. This startup method binds to localhost by default and stores data in `data/`.
 
-Interested in sponsoring Komari? Contact the developer via [email](mailto:komari@akz.moe) or [Telegram](https://t.me/mamomoe).
+If Go 1.25.0 (as specified in `go.mod`) and a C compiler are installed locally, build and run without Docker:
 
-| Sponsor                                                                                                                                                                                          | Description                                                                                                                                                                                                                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <a href="https://axisnow.io/zh?utm=komari"><img src="https://raw.githubusercontent.com/komari-monitor/public/refs/heads/main/images/AxisNow.jpg" alt="AxisNow" width="180"></a> | [Self-Hosted Private CDN \| Subscription-Based CDN-Like Service \| A Fully Controlled, Flexible, Modular CDN Network](https://axisnow.io/zh?utm=komari) |
-| <a href="https://whmcs.as211392.com/aff.php?aff=110"><img src="https://raw.githubusercontent.com/komari-monitor/public/refs/heads/main/images/dreamcloud.png" alt="Dream Cloud" width="180"></a> | Cost-effective Asia-Pacific hosting with direct connectivity and robust DDoS protection, backed by transparent capacity claims.                                                                                                                                               |
-| <a href="https://sharon.io"><img src="https://raw.githubusercontent.com/komari-monitor/public/refs/heads/main/images/sharon-networks.webp" alt="Sharon Networks" width="180"></a>                | Premium China-optimized connectivity from Asia-Pacific data centers, featuring low latency, high bandwidth, and Tbps-scale local DDoS mitigation. Join the [Telegram community](https://t.me/SharonNetwork) to participate in charitable initiatives and community giveaways. |
+```sh
+npm run setup
+npm run build
+npm start
+```
 
-## Contributors
+The native Windows binary is `dist/komari.exe`; other native builds produce `dist/komari`.
 
-Thanks to everyone who has contributed code, themes, plugins, documentation, translations, bug reports, or feedback to Komari.
+## Add monitored servers
 
-<a href="https://github.com/komari-monitor/komari/graphs/contributors"><img src="https://contributors-img.web.app/image?repo=komari-monitor/komari" alt="Komari contributors" width="600"></a>
+1. Sign in to the panel using an address reachable from the servers you want to monitor.
+2. Open **Server List**, add a node and copy its installation command for the target operating system.
+3. Run the command on that server. Once its Agent connects, monitoring data appears in the panel.
 
-## Support the Project
+## Update and back up
 
-If Komari has been useful to you, consider buying me a coffee. Thank you for your support!
+Download a backup from the administration panel before updating. After updating this repository's source code, rerun the installation/build commands for your chosen method. For source-based installations, stop the running service before rebuilding. Keep the `data/` directory; do not replace it with an empty directory.
 
-| WeChat Pay                                                                                                   | TRON Network                                                                                |
-| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| ![WeChat Pay QR code](https://b2.akz.moe/awesome-pictures/%E5%BE%AE%E4%BF%A1%E8%B5%9E%E8%B5%8F%E7%A0%81.png) | ![TRON Network QR code](https://b2.akz.moe/awesome-pictures/PixPin_2026-08-07_15-16-52.png) |
+See [LICENSE](./LICENSE) for licensing terms.

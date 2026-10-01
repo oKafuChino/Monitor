@@ -39,3 +39,6 @@ komari
 .codex
 
 /web/filemanager/data
+
+# Generated embedded frontend; built from the checked-in komari-web source.
+/web/public/defaultTheme/

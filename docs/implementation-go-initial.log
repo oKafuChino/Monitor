@@ -1,0 +1,35 @@
+go: downloading gorm.io/gorm v1.26.1
+go: downloading github.com/gorilla/websocket v1.5.3
+go: downloading github.com/gin-gonic/gin v1.10.0
+go: downloading github.com/klauspost/compress v1.17.11
+go: downloading gorm.io/driver/sqlite v1.5.7
+go: downloading github.com/go-sql-driver/mysql v1.10.0
+go: downloading github.com/mattn/go-sqlite3 v1.14.27
+go: downloading filippo.io/edwards25519 v1.2.0
+go: downloading github.com/jinzhu/now v1.1.5
+go: downloading golang.org/x/text v0.33.0
+go: downloading github.com/jinzhu/inflection v1.0.0
+go: downloading github.com/gin-contrib/sse v1.0.0
+go: downloading google.golang.org/protobuf v1.36.6
+go: downloading github.com/ugorji/go/codec v1.2.12
+go: downloading golang.org/x/net v0.41.0
+go: downloading gopkg.in/yaml.v3 v3.0.1
+go: downloading github.com/mattn/go-isatty v0.0.20
+go: downloading github.com/go-playground/validator/v10 v10.26.0
+go: downloading github.com/pelletier/go-toml/v2 v2.2.3
+go: downloading golang.org/x/sys v0.33.0
+go: downloading github.com/go-playground/universal-translator v0.18.1
+go: downloading github.com/leodido/go-urn v1.4.0
+go: downloading github.com/gabriel-vasile/mimetype v1.4.8
+go: downloading golang.org/x/crypto v0.39.0
+go: downloading github.com/go-playground/locales v0.14.1
+?   	github.com/komari-monitor/komari/internal/uisettings	[no test files]
+
+2026/10/01 06:40:32 [31;1m/workspace/internal/config/config.go:378 [35;1mrecord not found
+[0m[33m[0.026ms] [34;1m[rows:0][0m SELECT * FROM `configs` WHERE key = "theme" ORDER BY `configs`.`key` LIMIT 1
+--- FAIL: TestStaticRestrictedDoesNotServeCustomAssetOverride (0.03s)
+    public_test.go:131: restricted asset /assets/about-D4JKo971.css status = 404, want 200
+FAIL
+FAIL	github.com/komari-monitor/komari/web/public	0.070s
+ok  	github.com/komari-monitor/komari/web/connection	0.008s
+FAIL

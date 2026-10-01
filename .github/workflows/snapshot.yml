@@ -131,7 +131,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
+          go-version-file: go.mod
 
       - name: Install Zig cross-compiler toolchain
         uses: ./.github/actions/setup-zig
@@ -289,6 +289,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          target: release
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}

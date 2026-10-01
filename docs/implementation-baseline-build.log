@@ -1,0 +1,272 @@
+
+> komari-web@0.0.1 build
+> tsc -b && vite build
+
+vite v6.4.2 building for production...
+transforming...
+✓ 4839 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/registerSW.js                                           0.13 kB
+dist/manifest.webmanifest                                    0.43 kB
+dist/index.html                                              3.03 kB │ gzip:   1.08 kB
+dist/assets/codicon-Brq4_Ui5.ttf                           140.96 kB
+dist/assets/editor.worker-C7zlFRnD.js                      273.52 kB
+dist/assets/useGuideState-DFQVd-4I.css                       1.14 kB │ gzip:   0.52 kB
+dist/assets/NodeDisplay-B499_hnQ.css                         1.83 kB │ gzip:   0.68 kB
+dist/assets/dashboard-CUJhNng5.css                           3.13 kB │ gzip:   0.99 kB
+dist/assets/index-6GBZ9nXN.css                               5.24 kB │ gzip:   1.92 kB
+dist/assets/eula-D4JKo971.css                               26.58 kB │ gzip:   5.08 kB
+dist/assets/FileEditorDialog-Bkorg3V1.css                  102.94 kB │ gzip:  16.00 kB
+dist/assets/index-C9vqFd2k.css                             774.76 kB │ gzip:  96.98 kB
+dist/assets/chunk-internal-D_PaP6uS.js                       0.10 kB │ gzip:   0.12 kB
+dist/assets/chunk-metric-CVOPbj8F.js                         0.22 kB │ gzip:   0.15 kB
+dist/assets/chunk-index-BEji2zUp.js                          0.24 kB │ gzip:   0.18 kB
+dist/assets/chunk-button-M9ERLJX0.js                         0.25 kB │ gzip:   0.21 kB
+dist/assets/chunk-icon-button-NawAyXK8.js                    0.26 kB │ gzip:   0.21 kB
+dist/assets/chunk-check-DkJYr4Bk.js                          0.30 kB │ gzip:   0.25 kB
+dist/assets/chunk-chevron-down-Bz0DQw7n.js                   0.31 kB │ gzip:   0.25 kB
+dist/assets/chunk-chevron-right-CuKRW42r.js                  0.31 kB │ gzip:   0.25 kB
+dist/assets/chunk-play-D-nfRqyP.js                           0.31 kB │ gzip:   0.26 kB
+dist/assets/chunk-_layout-DlrYF8Iv.js                        0.31 kB │ gzip:   0.24 kB
+dist/assets/chunk-loader-circle-CdDWHcaf.js                  0.32 kB │ gzip:   0.26 kB
+dist/assets/chunk-use-mobile-B64e1DFN.js                     0.33 kB │ gzip:   0.25 kB
+dist/assets/chunk-plus-DMprScVe.js                           0.33 kB │ gzip:   0.26 kB
+dist/assets/chunk-x-BLg7O2Ug.js                              0.33 kB │ gzip:   0.26 kB
+dist/assets/chunk-terminal-BC6sNd4t.js                       0.34 kB │ gzip:   0.27 kB
+dist/assets/chunk-arrow-left-9d4HMQMk.js                     0.34 kB │ gzip:   0.27 kB
+dist/assets/chunk-arrow-right-BpVLG0Za.js                    0.34 kB │ gzip:   0.27 kB
+dist/assets/chunk-search-BVCS2_gS.js                         0.35 kB │ gzip:   0.28 kB
+dist/assets/chunk-trending-up-yMmZYBSD.js                    0.35 kB │ gzip:   0.28 kB
+dist/assets/chunk-circle-check-CHC9afoq.js                   0.36 kB │ gzip:   0.28 kB
+dist/assets/chunk-menu-DkmFd3s6.js                           0.37 kB │ gzip:   0.27 kB
+dist/assets/chunk-rotate-ccw-BNznjmrd.js                     0.38 kB │ gzip:   0.29 kB
+dist/assets/chunk-ellipsis-EUmdxZsT.js                       0.41 kB │ gzip:   0.27 kB
+dist/assets/chunk-upload-Dskiw8tj.js                         0.41 kB │ gzip:   0.30 kB
+dist/assets/chunk-log-in-dm8OM3pu.js                         0.41 kB │ gzip:   0.30 kB
+dist/assets/chunk-download-CW-I56H8.js                       0.41 kB │ gzip:   0.30 kB
+dist/assets/chunk-activity-mbptVsVq.js                       0.41 kB │ gzip:   0.31 kB
+dist/assets/chunk-copy-B_sXYYPj.js                           0.42 kB │ gzip:   0.32 kB
+dist/assets/chunk-maximize-2-k7wLwo_j.js                     0.42 kB │ gzip:   0.30 kB
+dist/assets/chunk-globe-DkLhxn0p.js                          0.42 kB │ gzip:   0.30 kB
+dist/assets/chunk-database-CBJQ8fu9.js                       0.42 kB │ gzip:   0.31 kB
+dist/assets/chunk-AdminNavigationContext-D1TnKCfw.js         0.43 kB │ gzip:   0.31 kB
+dist/assets/chunk-settings-2-CNa2WTm4.js                     0.43 kB │ gzip:   0.30 kB
+dist/assets/chunk-eye-BoWWHECW.js                            0.44 kB │ gzip:   0.31 kB
+dist/assets/chunk-square-arrow-out-up-right-BXtm1QyZ.js      0.44 kB │ gzip:   0.32 kB
+dist/assets/chunk-triangle-alert-Cjt2fsLp.js                 0.44 kB │ gzip:   0.32 kB
+dist/assets/chunk-blocks-vycAp_K1.js                         0.45 kB │ gzip:   0.32 kB
+dist/assets/chunk-image-BJebY9uW.js                          0.45 kB │ gzip:   0.33 kB
+dist/assets/chunk-pencil-D4DdjZr1.js                         0.46 kB │ gzip:   0.33 kB
+dist/assets/chunk-loginRedirect-CHE0v6GB.js                  0.47 kB │ gzip:   0.31 kB
+dist/assets/chunk-refresh-cw-DrVR9JAF.js                     0.50 kB │ gzip:   0.33 kB
+dist/assets/chunk-save-CMRkY9XG.js                           0.51 kB │ gzip:   0.33 kB
+dist/assets/chunk-file-text-BN3LpIpl.js                      0.51 kB │ gzip:   0.33 kB
+dist/assets/chunk-box-C-2gnTYx.js                            0.52 kB │ gzip:   0.35 kB
+dist/assets/chunk-server-DFNUS1Nb.js                         0.52 kB │ gzip:   0.32 kB
+dist/assets/chunk-i18nText-BinJewn4.js                       0.53 kB │ gzip:   0.29 kB
+dist/assets/chunk-manage-Dltdwmal.js                         0.53 kB │ gzip:   0.36 kB
+dist/assets/chunk-trash-2-BUB8VfJE.js                        0.54 kB │ gzip:   0.36 kB
+dist/assets/chunk-card-BwpjEqiN.js                           0.55 kB │ gzip:   0.37 kB
+dist/assets/chunk-NodeDetailsContext-CCqvLmrX.js             0.56 kB │ gzip:   0.37 kB
+dist/assets/chunk-hard-drive-ciP83iuM.js                     0.57 kB │ gzip:   0.38 kB
+dist/assets/chunk-AccountContext-3E4E4gPO.js                 0.60 kB │ gzip:   0.39 kB
+dist/assets/chunk-map-prop-values-BbQrxwTw.js                0.67 kB │ gzip:   0.40 kB
+dist/assets/chunk-azcli-Y6nb8tq_.js                          0.71 kB │ gzip:   0.28 kB
+dist/assets/chunk-NodeSelector-DXE1f5EV.js                   0.72 kB │ gzip:   0.46 kB
+dist/assets/chunk-separator-CnbDlBXP.js                      0.72 kB │ gzip:   0.43 kB
+dist/assets/chunk-badge-spKdN54H.js                          0.72 kB │ gzip:   0.45 kB
+dist/assets/chunk-404-C9nR0euo.js                            0.75 kB │ gzip:   0.45 kB
+dist/assets/chunk-heading-DbakNZeV.js                        0.76 kB │ gzip:   0.46 kB
+dist/assets/chunk-plugin_page-CInQzXVf.js                    0.84 kB │ gzip:   0.49 kB
+dist/assets/chunk-plugin_page-2Qg-qePe.js                    0.84 kB │ gzip:   0.50 kB
+dist/assets/chunk-text-area-CuklXlac.js                      0.86 kB │ gzip:   0.48 kB
+dist/assets/chunk-settings-C1gXhmmU.js                       0.90 kB │ gzip:   0.45 kB
+dist/assets/chunk-saveThemeSettings-CqQeZASa.js              0.92 kB │ gzip:   0.52 kB
+dist/assets/chunk-layout-dashboard-CjmHJLeE.js               0.94 kB │ gzip:   0.46 kB
+dist/assets/chunk-ini-Kd9XrMLS.js                            0.96 kB │ gzip:   0.50 kB
+dist/assets/chunk-themeConfiguration-DRlBjOqU.js             0.98 kB │ gzip:   0.52 kB
+dist/assets/chunk-square-terminal-CrBkzTmr.js                1.06 kB │ gzip:   0.49 kB
+dist/assets/chunk-unitHelper-BG3Bamtv.js                     1.06 kB │ gzip:   0.56 kB
+dist/assets/chunk-text-JIbucmot.js                           1.17 kB │ gzip:   0.61 kB
+dist/assets/chunk-callout-BnBvQjIL.js                        1.18 kB │ gzip:   0.60 kB
+dist/assets/chunk-custom-87zn_Eof.js                         1.28 kB │ gzip:   0.63 kB
+dist/assets/chunk-csp-D-4FJmMZ.js                            1.28 kB │ gzip:   0.49 kB
+dist/assets/chunk-gauge-m9Ff65jB.js                          1.30 kB │ gzip:   0.71 kB
+dist/assets/chunk-theme_raw-CKiqYu63.js                      1.31 kB │ gzip:   0.76 kB
+dist/assets/chunk-flex-C9P-_J8H.js                           1.36 kB │ gzip:   0.62 kB
+dist/assets/chunk-grid-B_U5n_aF.js                           1.50 kB │ gzip:   0.69 kB
+dist/assets/chunk-index-rVThV-eo.js                          1.50 kB │ gzip:   0.73 kB
+dist/assets/chunk-table-D1e7Qu9z.js                          1.54 kB │ gzip:   0.56 kB
+dist/assets/chunk-pla-DSh2-awV.js                            1.55 kB │ gzip:   0.61 kB
+dist/assets/chunk-text-field-BicuW96E.js                     1.61 kB │ gzip:   0.80 kB
+dist/assets/chunk-scheme-BPhDTwHR.js                         1.63 kB │ gzip:   0.78 kB
+dist/assets/chunk-GuideHeader-3x8TpH7C.js                    1.64 kB │ gzip:   0.80 kB
+dist/assets/chunk-flow9-BeJ5waoc.js                          1.67 kB │ gzip:   0.81 kB
+dist/assets/chunk-tips-gjIETxdC.js                           1.68 kB │ gzip:   0.81 kB
+dist/assets/chunk-sb-BBc9UKZt.js                             1.69 kB │ gzip:   0.79 kB
+dist/assets/chunk-bat-BwHxbl9M.js                            1.71 kB │ gzip:   0.83 kB
+dist/assets/chunk-dockerfile-BG73LgW2.js                     1.73 kB │ gzip:   0.63 kB
+dist/assets/chunk-pascaligo-DtZ0uQbO.js                      1.86 kB │ gzip:   0.87 kB
+dist/assets/chunk-lua-Cyyb5UIc.js                            1.99 kB │ gzip:   0.89 kB
+dist/assets/chunk-cameligo-Bf6VGUru.js                       2.05 kB │ gzip:   0.92 kB
+dist/assets/chunk-graphql-BxJiqAUM.js                        2.12 kB │ gzip:   0.99 kB
+dist/assets/chunk-Selector-CW1MbwSH.js                       2.19 kB │ gzip:   1.02 kB
+dist/assets/chunk-objective-c-BDtDVThU.js                    2.26 kB │ gzip:   1.02 kB
+dist/assets/chunk-lexon-OrD6JF1K.js                          2.30 kB │ gzip:   0.89 kB
+dist/assets/chunk-general-C5DXrFZJ.js                        2.38 kB │ gzip:   0.93 kB
+dist/assets/chunk-bicep-CFznDFnq.js                          2.40 kB │ gzip:   0.93 kB
+dist/assets/chunk-sparql-CJmd_6j2.js                         2.41 kB │ gzip:   1.12 kB
+dist/assets/chunk-mips-CiqrrVzr.js                           2.44 kB │ gzip:   1.03 kB
+dist/assets/chunk-progress-92xfdSSG.js                       2.45 kB │ gzip:   1.17 kB
+dist/assets/chunk-base-button-BzyF5sHm.js                    2.46 kB │ gzip:   0.87 kB
+dist/assets/chunk-switch-75qyOpnf.js                         2.51 kB │ gzip:   1.28 kB
+dist/assets/chunk-api-BVcoXF6v.js                            2.52 kB │ gzip:   1.16 kB
+dist/assets/chunk-go-acbASCJo.js                             2.52 kB │ gzip:   1.11 kB
+dist/assets/chunk-sophia-CnS9iZB_.js                         2.63 kB │ gzip:   1.17 kB
+dist/assets/chunk-typespec-Btyra-wh.js                       2.66 kB │ gzip:   1.05 kB
+dist/assets/chunk-m3-B8OfTtLu.js                             2.68 kB │ gzip:   1.28 kB
+dist/assets/chunk-RestrictedLoginDialog-Dn6p40QE.js          2.74 kB │ gzip:   1.21 kB
+dist/assets/chunk-javascript-BSL3iiBO.js                     2.75 kB │ gzip:   1.19 kB
+dist/assets/chunk-LiveDataContext-CZQ6APe4.js                2.77 kB │ gzip:   1.35 kB
+dist/assets/chunk-fsharp-PahG7c26.js                         2.85 kB │ gzip:   1.28 kB
+dist/assets/chunk-pascal-vHIfCaH5.js                         2.86 kB │ gzip:   1.36 kB
+dist/assets/chunk-shell-DiJ1NA_G.js                          2.94 kB │ gzip:   1.16 kB
+dist/assets/chunk-r-j7ic8hl3.js                              2.99 kB │ gzip:   1.24 kB
+dist/assets/chunk-qsharp-Bw9ernYp.js                         3.05 kB │ gzip:   1.37 kB
+dist/assets/chunk-java-CXBNlu9o.js                           3.08 kB │ gzip:   1.36 kB
+dist/assets/chunk-powershell-COWaemsV.js                     3.13 kB │ gzip:   1.34 kB
+dist/assets/chunk-index-ByLLPg2u.js                          3.18 kB │ gzip:   1.53 kB
+dist/assets/chunk-osImageHelper-Dv74qTOj.js                  3.19 kB │ gzip:   0.94 kB
+dist/assets/chunk-cypher-cTPe9QuQ.js                         3.25 kB │ gzip:   1.40 kB
+dist/assets/chunk-kotlin-s7OhZKlX.js                         3.26 kB │ gzip:   1.43 kB
+dist/assets/chunk-PriceTags-oBNAfQ6z.js                      3.39 kB │ gzip:   1.51 kB
+dist/assets/chunk-redis-Bu5POkcn.js                          3.42 kB │ gzip:   1.44 kB
+dist/assets/chunk-tcl-Dm6ycUr_.js                            3.43 kB │ gzip:   1.33 kB
+dist/assets/chunk-coffee-Bd8akH9Z.js                         3.45 kB │ gzip:   1.26 kB
+dist/assets/chunk-hcl-DtV1sZF8.js                            3.45 kB │ gzip:   1.45 kB
+dist/assets/chunk-throttle-BaIBTUet.js                       3.54 kB │ gzip:   1.60 kB
+dist/assets/chunk-tabs-Dm53rEgt.js                           3.64 kB │ gzip:   1.47 kB
+dist/assets/chunk-markdown-BFxVWTOG.js                       3.65 kB │ gzip:   1.35 kB
+dist/assets/chunk-restructuredtext-CqXO7rUv.js               3.76 kB │ gzip:   1.33 kB
+dist/assets/chunk-less-9HpZscsL.js                           3.76 kB │ gzip:   1.38 kB
+dist/assets/chunk-DetailsGrid-Di_NP0r3.js                    3.82 kB │ gzip:   1.24 kB
+dist/assets/chunk-apex-DNDY2TF8.js                           3.82 kB │ gzip:   1.73 kB
+dist/assets/chunk-xml-BbXKXYiO.js                            3.86 kB │ gzip:   1.51 kB
+dist/assets/chunk-theme_managed-B4CGwOGn.js                  3.93 kB │ gzip:   1.83 kB
+dist/assets/chunk-segmented-control-LoSr8656.js              3.96 kB │ gzip:   1.49 kB
+dist/assets/chunk-rust-BzKRNQWT.js                           4.02 kB │ gzip:   1.79 kB
+dist/assets/chunk-dart-BOtBlQCF.js                           4.11 kB │ gzip:   1.61 kB
+dist/assets/chunk-checkbox-CP-CSt_I.js                       4.27 kB │ gzip:   1.84 kB
+dist/assets/chunk-login-DWDhFucS.js                          4.28 kB │ gzip:   1.82 kB
+dist/assets/chunk-css-DdJfP1eB.js                            4.37 kB │ gzip:   1.34 kB
+dist/assets/chunk-csharp-Co3qMtFm.js                         4.39 kB │ gzip:   1.69 kB
+dist/assets/chunk-_layout-DBa3Tmi6.js                        4.44 kB │ gzip:   1.96 kB
+dist/assets/chunk-channels-BZBZo3Le.js                       4.59 kB │ gzip:   1.81 kB
+dist/assets/chunk-general-D779ZZSA.js                        4.64 kB │ gzip:   2.04 kB
+dist/assets/chunk-pug-8SOpv6rk.js                            4.69 kB │ gzip:   1.61 kB
+dist/assets/chunk-msdax-DmeGPVcC.js                          4.77 kB │ gzip:   1.91 kB
+dist/assets/chunk-ThemeSwitch-eCfoSnjv.js                    4.94 kB │ gzip:   1.50 kB
+dist/assets/chunk-swift-Bqt4WxQ4.js                          5.03 kB │ gzip:   2.06 kB
+dist/assets/chunk-cpp-BbWJElDN.js                            5.16 kB │ gzip:   2.06 kB
+dist/assets/chunk-ecl-BEgZUVRK.js                            5.20 kB │ gzip:   2.19 kB
+dist/assets/chunk-liquid-CDpQIyeB.js                         5.41 kB │ gzip:   2.21 kB
+dist/assets/chunk-chunkUpload-BNk4ty2R.js                    5.48 kB │ gzip:   2.46 kB
+dist/assets/chunk-yaml-DbWtHv_D.js                           5.48 kB │ gzip:   2.07 kB
+dist/assets/chunk-log-CSrkr9JV.js                            5.55 kB │ gzip:   2.16 kB
+dist/assets/chunk-vb-Db0cS2oM.js                             5.65 kB │ gzip:   2.02 kB
+dist/assets/chunk-python-QbS8Xn51.js                         5.66 kB │ gzip:   2.23 kB
+dist/assets/chunk-twig-Csy3S7wG.js                           5.84 kB │ gzip:   1.49 kB
+dist/assets/chunk-database_recovery-6YeI835l.js              5.96 kB │ gzip:   2.45 kB
+dist/assets/chunk-index--Gpslz0Z.js                          6.00 kB │ gzip:   2.52 kB
+dist/assets/chunk-mdx-CcSFJyou.js                            6.26 kB │ gzip:   2.00 kB
+dist/assets/chunk-scss-CBJaRo0y.js                           6.27 kB │ gzip:   1.71 kB
+dist/assets/chunk-plugin_config-D-jqvYa3.js                  6.32 kB │ gzip:   2.64 kB
+dist/assets/chunk-useGuideState-DYa8Wfx_.js                  6.32 kB │ gzip:   2.78 kB
+dist/assets/chunk-html-BkTmzPrY.js                           6.47 kB │ gzip:   1.95 kB
+dist/assets/chunk-layout.props-itKJfljF.js                   6.70 kB │ gzip:   1.81 kB
+dist/assets/chunk-react-icons.esm-MDwioHeE.js                6.78 kB │ gzip:   2.20 kB
+dist/assets/chunk-typescript-DiUm6jyg.js                     6.84 kB │ gzip:   2.74 kB
+dist/assets/chunk-sign-on-U4JwvJmi.js                        6.94 kB │ gzip:   2.68 kB
+dist/assets/chunk-dialog-BLYKTdCA.js                         6.97 kB │ gzip:   2.56 kB
+dist/assets/chunk-ConfigFormTabs-BGv9Oenn.js                 6.99 kB │ gzip:   2.75 kB
+dist/assets/chunk-julia-cl7-CwDS.js                          7.01 kB │ gzip:   2.62 kB
+dist/assets/chunk-scala-D9hQfWCl.js                          7.18 kB │ gzip:   2.06 kB
+dist/assets/chunk-popover-DFqc6r6j.js                        7.21 kB │ gzip:   2.63 kB
+dist/assets/chunk-wgsl-BTesnYfV.js                           7.21 kB │ gzip:   2.72 kB
+dist/assets/chunk-st-CHwy0fLd.js                             7.26 kB │ gzip:   2.21 kB
+dist/assets/chunk-sessions-CUMWokRC.js                       7.35 kB │ gzip:   2.21 kB
+dist/assets/chunk-systemverilog-Bs9z6M-B.js                  7.47 kB │ gzip:   2.72 kB
+dist/assets/chunk-postiats-CocnycG-.js                       7.72 kB │ gzip:   2.40 kB
+dist/assets/chunk-Index-BgEHTtan.js                          7.72 kB │ gzip:   3.18 kB
+dist/assets/chunk-php-BBUBE1dy.js                            7.89 kB │ gzip:   2.04 kB
+dist/assets/chunk-perl-Ub6l9XKa.js                           8.12 kB │ gzip:   3.10 kB
+dist/assets/chunk-handlebars-CICoY9xb.js                     8.23 kB │ gzip:   2.16 kB
+dist/assets/chunk-ruby-zBfavPgS.js                           8.37 kB │ gzip:   2.54 kB
+dist/assets/chunk-InlineSvgIcon-nzGJIIbB.js                  8.43 kB │ gzip:   3.03 kB
+dist/assets/chunk-SettingCard-BgDf3Cyd.js                    8.51 kB │ gzip:   2.76 kB
+dist/assets/chunk-install-BC9toLoC.js                        8.67 kB │ gzip:   3.14 kB
+dist/assets/chunk-protobuf-Brw8urJB.js                       8.91 kB │ gzip:   2.04 kB
+dist/assets/chunk-NodeTable-B5lK8JvP.js                      9.18 kB │ gzip:   2.88 kB
+dist/assets/chunk-pprof-DxCIbGta.js                          9.45 kB │ gzip:   3.31 kB
+dist/assets/chunk-clojure-Dnu-v4kV.js                        9.51 kB │ gzip:   3.57 kB
+dist/assets/chunk-site-vG4Ihz31.js                           9.73 kB │ gzip:   3.42 kB
+dist/assets/chunk-plugins-Cd8d8OYm.js                       10.01 kB │ gzip:   3.57 kB
+dist/assets/chunk-elixir-BkW5O-1t.js                        10.12 kB │ gzip:   2.50 kB
+dist/assets/chunk-sql-ClhHkBeG.js                           10.16 kB │ gzip:   3.79 kB
+dist/assets/chunk-razor-CAb2RUom.js                         10.23 kB │ gzip:   2.84 kB
+dist/assets/chunk-exec-B9YAFJ3z.js                          11.01 kB │ gzip:   4.29 kB
+dist/assets/chunk-mysql-C_tMU-Nz.js                         11.14 kB │ gzip:   4.01 kB
+dist/assets/chunk-account-CLNYIlYV.js                       11.50 kB │ gzip:   3.73 kB
+dist/assets/chunk-redshift-Bs9aos_-.js                      11.66 kB │ gzip:   4.30 kB
+dist/assets/chunk-offline-DJDNt0Gx.js                       12.37 kB │ gzip:   4.70 kB
+dist/assets/chunk-index-C_1bYhNq.js                         12.66 kB │ gzip:   4.45 kB
+dist/assets/chunk-plugins-DzArAiJZ.js                       12.90 kB │ gzip:   4.47 kB
+dist/assets/chunk-pgsql-BlNEE0v7.js                         13.33 kB │ gzip:   4.46 kB
+dist/assets/chunk-abap-DLDM7-KI.js                          14.03 kB │ gzip:   5.27 kB
+dist/assets/chunk-icons-B4V_O3GQ.js                         14.11 kB │ gzip:   4.67 kB
+dist/assets/chunk-themes-ClcV16HB.js                        14.54 kB │ gzip:   4.37 kB
+dist/assets/chunk-database_migration-Df3O0oC5.js            15.12 kB │ gzip:   4.90 kB
+dist/assets/chunk-themes-Bea6LMQh.js                        15.52 kB │ gzip:   4.87 kB
+dist/assets/chunk-about-BqEp1M31.js                         15.53 kB │ gzip:   5.90 kB
+dist/assets/chunk-Node-ycn6QwbT.js                          15.84 kB │ gzip:   5.77 kB
+dist/assets/chunk-require-react-element-gYn2W0P2.js         16.62 kB │ gzip:   6.29 kB
+dist/assets/chunk-powerquery-tScXyioY.js                    16.80 kB │ gzip:   4.81 kB
+dist/assets/chunk-pingTask-Pf6pcSeA.js                      17.50 kB │ gzip:   5.57 kB
+dist/assets/chunk-freemarker2-DVbxGs1N.js                   17.54 kB │ gzip:   4.72 kB
+dist/assets/chunk-NodeDisplay-Uh1PvhkF.js                   18.10 kB │ gzip:   6.99 kB
+dist/assets/chunk-solidity-Db0IVjzk.js                      18.46 kB │ gzip:   4.41 kB
+dist/assets/chunk-_layout-CpkRfYGB.js                       22.07 kB │ gzip:   7.84 kB
+dist/assets/chunk-encoding-CdcnOaJI.js                      22.60 kB │ gzip:   6.10 kB
+dist/assets/chunk-select-DAw7nMc6.js                        22.75 kB │ gzip:   7.89 kB
+dist/assets/chunk-metrics-CiOmLk9B.js                       24.79 kB │ gzip:   7.17 kB
+dist/assets/chunk-utils-sElhP03s.js                         24.89 kB │ gzip:   7.94 kB
+dist/assets/chunk-dropdown-menu-Q8Q7kLXM.js                 26.17 kB │ gzip:   7.62 kB
+dist/assets/chunk-index-D0oSjKMJ.js                         36.22 kB │ gzip:  12.20 kB
+dist/assets/chunk-sortable.esm-BIV9YL74.js                  50.69 kB │ gzip:  16.76 kB
+dist/assets/chunk-dashboard-CgBrDDz1.js                     57.66 kB │ gzip:  17.31 kB
+dist/assets/chunk-schemas-BAQ2gMm9.js                       69.40 kB │ gzip:  18.60 kB
+dist/assets/chunk-index-Cgq3MpEg.js                         83.31 kB │ gzip:  22.79 kB
+dist/assets/chunk-proxy-isiIBq3X.js                        112.16 kB │ gzip:  37.12 kB
+dist/assets/chunk-eula-C_XIGYgi.js                         200.03 kB │ gzip:  64.84 kB
+dist/assets/chunk-metricSeries-B3FIV8uq.js                 394.81 kB │ gzip: 109.13 kB
+dist/assets/chunk-encoding-indexes-CRc_6kg0.js             530.28 kB │ gzip: 187.42 kB
+dist/assets/chunk-index-DOahVizC.js                        726.49 kB │ gzip: 201.98 kB
+dist/assets/entry-index-BqQHNker.js                        741.65 kB │ gzip: 247.05 kB
+dist/assets/chunk-FileEditorDialog-CJVmWVdY.js           3,091.44 kB │ gzip: 801.56 kB
+
+(!) Some chunks are larger than 800 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 18.64s
+Browserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+PWA v1.0.1
+mode      generateSW
+precache  535 entries (8995.11 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-8359a6b2.js

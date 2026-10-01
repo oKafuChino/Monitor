@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "source-built image serves embedded frontend without a separate Node server",
+    "single image completes installation and authenticates",
+    "single image rejects remote execution and terminal APIs",
+    "retained node listing and UI settings are available",
+    "new installations do not create retired command-task tables"
+  ]
+}

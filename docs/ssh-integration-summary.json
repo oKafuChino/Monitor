@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-01",
+  "scope": "Remove project remote shell and command execution; integrate frontend/backend workflow",
+  "uiTests": 7,
+  "embeddedBundleTests": 2,
+  "goFullSuite": "passed",
+  "lint": {
+    "errors": 0,
+    "warnings": 22
+  },
+  "devChecks": 6,
+  "imageChecks": 5,
+  "frontendBytes": 8682163,
+  "frontendFiles": 517,
+  "linuxBinaryBytes": 31465040,
+  "dockerImage": "monitor:local",
+  "compose": "configuration validated; not deployed",
+  "productionChanged": false
+}

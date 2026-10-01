@@ -1,0 +1,4 @@
+
+> build:server
+> node scripts/project.mjs build-server --docker
+

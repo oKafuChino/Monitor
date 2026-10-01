@@ -11,10 +11,6 @@ on:
         description: Server commit, branch, or tag to build.
         required: true
         type: string
-      frontend_ref:
-        description: komari-web commit, branch, or tag to build.
-        required: true
-        type: string
 
 permissions:
   contents: write
@@ -27,16 +23,24 @@ env:
 jobs:
   build-frontend:
     runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.source.outputs.sha }}
 
     steps:
-      - name: Checkout workflow source
+      - name: Checkout selected source
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.server_ref }}
+
+      - name: Resolve source commit
+        id: source
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Build selected frontend artifact
         uses: ./.github/actions/build-frontend
         with:
           artifact-name: komari-frontend
-          ref: ${{ inputs.frontend_ref }}
 
   build-and-attach-binaries:
     needs: build-frontend
@@ -78,7 +82,7 @@ jobs:
       - name: Checkout server source
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.server_ref }}
+          ref: ${{ needs.build-frontend.outputs.source_sha }}
 
       - name: Restore frontend artifact
         uses: komari-monitor/komari/.github/actions/restore-frontend@main
@@ -86,7 +90,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
+          go-version-file: go.mod
 
       - name: Install Zig cross-compiler toolchain
         uses: komari-monitor/komari/.github/actions/setup-zig@main
@@ -123,14 +127,14 @@ jobs:
           path: komari-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.binary_extension }}
 
   build-and-push-docker:
-    needs: build-and-attach-binaries
+    needs: [build-and-attach-binaries, build-frontend]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout server source
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.server_ref }}
+          ref: ${{ needs.build-frontend.outputs.source_sha }}
 
       - name: Download Docker binaries
         uses: actions/download-artifact@v4
@@ -156,6 +160,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          target: release
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.release_tag }}

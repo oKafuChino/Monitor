@@ -1,0 +1,76 @@
+
+> komari-web@0.0.1 lint
+> eslint .
+
+
+E:\Github\Monitor\komari-web\src\components\Footer.tsx
+  46:6  warning  React Hook useEffect has a missing dependency: 'call'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+E:\Github\Monitor\komari-web\src\components\Login.tsx
+  47:8  warning  React Hook React.useEffect has an unnecessary dependency: 'autoOpen'. Either exclude it or remove the dependency array. Outer scope values like 'autoOpen' aren't valid dependencies because mutating them doesn't re-render the component  react-hooks/exhaustive-deps
+
+E:\Github\Monitor\komari-web\src\components\Node.tsx
+  19:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\components\admin\AdminPanelBar.tsx
+  190:6  warning  React Hook useEffect has missing dependencies: 'currentLanguage' and 't'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  258:6  warning  React Hook useEffect has a missing dependency: 'call'. Either include it or remove the dependency array                       react-hooks/exhaustive-deps
+  322:6  warning  React Hook useEffect has a missing dependency: 'isNewerVersion'. Either include it or remove the dependency array             react-hooks/exhaustive-deps
+
+E:\Github\Monitor\komari-web\src\components\ui\button.tsx
+  59:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\contexts\AccountContext.tsx
+  60:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\contexts\AdminNavigationContext.tsx
+  33:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\contexts\LiveDataContext.tsx
+  225:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\contexts\NodeDetailsContext.tsx
+  67:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\contexts\NodeListContext.tsx
+  189:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\contexts\NotificationContext.tsx
+  56:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\contexts\PingTaskContext.tsx
+  76:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\contexts\PublicInfoContext.tsx
+  110:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\contexts\RPC2Context.tsx
+  114:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  123:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\main.tsx
+  29:7  warning  Fast refresh only works when a file has exports. Move your component(s) to a separate file  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\pages\admin\account.tsx
+  380:6  warning  React Hook React.useEffect has a missing dependency: 't'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+E:\Github\Monitor\komari-web\src\pages\admin\index.tsx
+  114:6  warning  React Hook useEffect has a missing dependency: 'refresh'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+E:\Github\Monitor\komari-web\src\pages\admin\log.tsx
+  54:6  warning  React Hook React.useEffect has a missing dependency: 'limit'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+E:\Github\Monitor\komari-web\src\pages\admin\theme_managed.tsx
+  43:9  warning  The 'themeSettings' logical expression could make the dependencies of useEffect Hook (at line 110) change on every render. Move it inside the useEffect callback. Alternatively, wrap the initialization of 'themeSettings' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+E:\Github\Monitor\komari-web\src\pages\admin\themes.tsx
+  372:6  warning  React Hook useEffect has a missing dependency: 'fetchThemes'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+E:\Github\Monitor\komari-web\src\pages\terminal\FileContextMenu.tsx
+  245:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\Github\Monitor\komari-web\src\pages\terminal\FileEditorDialog.tsx
+  1233:6  warning  React Hook useCallback has unnecessary dependencies: 'activeDocument?.encoding' and 'activeDocument?.language'. Either exclude them or remove the dependency array  react-hooks/exhaustive-deps
+
+✖ 25 problems (0 errors, 25 warnings)
+

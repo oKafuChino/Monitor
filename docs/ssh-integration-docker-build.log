@@ -1,0 +1,507 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.38kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/golang:1.25.0-bookworm
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/debian:bookworm-slim
+#3 DONE 2.1s
+
+#4 [internal] load metadata for docker.io/library/node:24-bookworm-slim
+#4 DONE 2.5s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 216B done
+#5 DONE 0.0s
+
+#6 [runtime 1/4] FROM docker.io/library/debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+#6 resolve docker.io/library/debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251 0.1s done
+#6 DONE 0.1s
+
+#7 [backend 1/7] FROM docker.io/library/golang:1.25.0-bookworm@sha256:81dc45d05a7444ead8c92a389621fafabc8e40f8fd1a19d7e5df14e61e98bc1a
+#7 resolve docker.io/library/golang:1.25.0-bookworm@sha256:81dc45d05a7444ead8c92a389621fafabc8e40f8fd1a19d7e5df14e61e98bc1a 0.1s done
+#7 ...
+
+#8 [frontend 1/7] FROM docker.io/library/node:24-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+#8 resolve docker.io/library/node:24-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 0.1s done
+#8 DONE 0.4s
+
+#7 [backend 1/7] FROM docker.io/library/golang:1.25.0-bookworm@sha256:81dc45d05a7444ead8c92a389621fafabc8e40f8fd1a19d7e5df14e61e98bc1a
+#7 DONE 0.4s
+
+#9 [backend 2/7] WORKDIR /src
+#9 DONE 0.1s
+
+#10 [internal] load build context
+#10 transferring context: 13.53MB 1.4s done
+#10 DONE 1.5s
+
+#8 [frontend 1/7] FROM docker.io/library/node:24-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+#8 sha256:a0498254f698ab1b2c7d0d1ce51ebdea22c1f01e620433118a5c764fab93a3dc 445B / 445B 0.3s done
+#8 sha256:2a11efab31915186066efa212f7ba10e7ff63c5d49d21d07c4a8377a2993e70b 1.71MB / 1.71MB 0.7s done
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 5.24MB / 50.86MB 1.4s
+#8 sha256:eab09f3e3981ba4ceab089988dd081db334f2221594d7873f6b9e123f32d2105 3.31kB / 3.31kB 0.6s done
+#8 ...
+
+#11 [backend 3/7] COPY go.mod go.sum ./
+#11 DONE 0.3s
+
+#8 [frontend 1/7] FROM docker.io/library/node:24-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 8.39MB / 50.86MB 1.7s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 11.53MB / 50.86MB 2.0s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 14.68MB / 50.86MB 2.3s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 17.83MB / 50.86MB 2.6s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 20.97MB / 50.86MB 2.9s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 24.12MB / 50.86MB 3.2s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 28.31MB / 50.86MB 3.5s
+#8 ...
+
+#6 [runtime 1/4] FROM docker.io/library/debian:bookworm-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251
+#6 sha256:774043ccc8ccd0d0833a9ee0792142ab7ad93df971e59dd248fbf82db16d0150 28.24MB / 28.24MB 3.3s done
+#6 extracting sha256:774043ccc8ccd0d0833a9ee0792142ab7ad93df971e59dd248fbf82db16d0150 0.6s done
+#6 DONE 4.0s
+
+#8 [frontend 1/7] FROM docker.io/library/node:24-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 31.46MB / 50.86MB 3.8s
+#8 extracting sha256:eab09f3e3981ba4ceab089988dd081db334f2221594d7873f6b9e123f32d2105 0.0s done
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 35.65MB / 50.86MB 4.1s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 41.94MB / 50.86MB 4.5s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 47.19MB / 50.86MB 5.0s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 50.33MB / 50.86MB 5.1s
+#8 sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 50.86MB / 50.86MB 5.1s done
+#8 extracting sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164
+#8 extracting sha256:1c473ca5523b8180b93f87dd2961339837b4d84db4d4998197a64984462b5164 0.9s done
+#8 extracting sha256:2a11efab31915186066efa212f7ba10e7ff63c5d49d21d07c4a8377a2993e70b
+#8 extracting sha256:2a11efab31915186066efa212f7ba10e7ff63c5d49d21d07c4a8377a2993e70b 0.0s done
+#8 extracting sha256:a0498254f698ab1b2c7d0d1ce51ebdea22c1f01e620433118a5c764fab93a3dc 0.0s done
+#8 DONE 6.5s
+
+#12 [frontend 2/7] WORKDIR /src
+#12 DONE 0.2s
+
+#13 [runtime 2/4] RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata     && rm -rf /var/lib/apt/lists/*
+#13 0.448 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+#13 0.626 Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+#13 0.701 Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [34.8 kB]
+#13 1.181 Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8790 kB]
+#13 2.004 Get:5 http://deb.debian.org/debian bookworm-updates/main amd64 Packages [6924 B]
+#13 2.271 Get:6 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [343 kB]
+#13 2.511 Fetched 9382 kB in 2s (4029 kB/s)
+#13 2.511 Reading package lists...
+#13 ...
+
+#14 [frontend 3/7] COPY komari-web/package.json komari-web/package-lock.json ./komari-web/
+#14 DONE 0.0s
+
+#13 [runtime 2/4] RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata     && rm -rf /var/lib/apt/lists/*
+#13 2.511 Reading package lists...
+#13 2.871 Reading package lists...
+#13 3.244 Building dependency tree...
+#13 3.336 Reading state information...
+#13 3.428 The following additional packages will be installed:
+#13 3.428   libssl3 openssl
+#13 3.442 The following NEW packages will be installed:
+#13 3.443   ca-certificates libssl3 openssl
+#13 3.444 The following packages will be upgraded:
+#13 3.444   tzdata
+#13 3.699 1 upgraded, 3 newly installed, 0 to remove and 0 not upgraded.
+#13 3.699 Need to get 3948 kB of archives.
+#13 3.699 After this operation, 8951 kB of additional disk space will be used.
+#13 3.699 Get:1 http://deb.debian.org/debian-security bookworm-security/main amd64 tzdata all 2026c-0+deb12u1 [304 kB]
+#13 4.082 Get:2 http://deb.debian.org/debian-security bookworm-security/main amd64 libssl3 amd64 3.0.22-1~deb12u1 [2039 kB]
+#13 4.641 Get:3 http://deb.debian.org/debian-security bookworm-security/main amd64 openssl amd64 3.0.22-1~deb12u1 [1442 kB]
+#13 4.823 Get:4 http://deb.debian.org/debian-security bookworm-security/main amd64 ca-certificates all 20250419~deb12u1 [162 kB]
+#13 4.954 debconf: delaying package configuration, since apt-utils is not installed
+#13 4.972 Fetched 3948 kB in 1s (2827 kB/s)
+#13 4.995 (Reading database ... 
+(Reading database ... 5%
+(Reading database ... 10%
+(Reading database ... 15%
+(Reading database ... 20%
+(Reading database ... 25%
+(Reading database ... 30%
+(Reading database ... 35%
+(Reading database ... 40%
+(Reading database ... 45%
+(Reading database ... 50%
+(Reading database ... 55%
+(Reading database ... 60%
+(Reading database ... 65%
+(Reading database ... 70%
+(Reading database ... 75%
+(Reading database ... 80%
+(Reading database ... 85%
+(Reading database ... 90%
+(Reading database ... 95%
+(Reading database ... 100%
+(Reading database ... 6096 files and directories currently installed.)
+#13 4.999 Preparing to unpack .../tzdata_2026c-0+deb12u1_all.deb ...
+#13 5.093 Unpacking tzdata (2026c-0+deb12u1) over (2026b-0+deb12u1) ...
+#13 6.853 Selecting previously unselected package libssl3:amd64.
+#13 6.854 Preparing to unpack .../libssl3_3.0.22-1~deb12u1_amd64.deb ...
+#13 6.859 Unpacking libssl3:amd64 (3.0.22-1~deb12u1) ...
+#13 6.993 Selecting previously unselected package openssl.
+#13 6.994 Preparing to unpack .../openssl_3.0.22-1~deb12u1_amd64.deb ...
+#13 6.997 Unpacking openssl (3.0.22-1~deb12u1) ...
+#13 7.102 Selecting previously unselected package ca-certificates.
+#13 7.103 Preparing to unpack .../ca-certificates_20250419~deb12u1_all.deb ...
+#13 7.106 Unpacking ca-certificates (20250419~deb12u1) ...
+#13 7.147 Setting up libssl3:amd64 (3.0.22-1~deb12u1) ...
+#13 7.156 Setting up tzdata (2026c-0+deb12u1) ...
+#13 7.204 debconf: unable to initialize frontend: Dialog
+#13 7.204 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#13 7.204 debconf: falling back to frontend: Readline
+#13 7.204 debconf: unable to initialize frontend: Readline
+#13 7.204 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/x86_64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+#13 7.204 debconf: falling back to frontend: Teletype
+#13 7.228 
+#13 7.228 Current default time zone: 'Etc/UTC'
+#13 7.229 Local time is now:      Thu Oct  1 07:28:31 UTC 2026.
+#13 7.229 Universal Time is now:  Thu Oct  1 07:28:31 UTC 2026.
+#13 7.229 Run 'dpkg-reconfigure tzdata' if you wish to change it.
+#13 7.229 
+#13 7.278 Setting up openssl (3.0.22-1~deb12u1) ...
+#13 7.290 Setting up ca-certificates (20250419~deb12u1) ...
+#13 7.349 debconf: unable to initialize frontend: Dialog
+#13 7.349 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#13 7.349 debconf: falling back to frontend: Readline
+#13 7.349 debconf: unable to initialize frontend: Readline
+#13 7.349 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.36.0 /usr/local/share/perl/5.36.0 /usr/lib/x86_64-linux-gnu/perl5/5.36 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.36 /usr/share/perl/5.36 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+#13 7.349 debconf: falling back to frontend: Teletype
+#13 7.662 Updating certificates in /etc/ssl/certs...
+#13 ...
+
+#15 [backend 4/7] RUN go mod download
+#15 ...
+
+#16 [frontend 4/7] RUN npm ci --prefix komari-web
+#16 ...
+
+#13 [runtime 2/4] RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata     && rm -rf /var/lib/apt/lists/*
+#13 8.151 150 added, 0 removed; done.
+#13 8.181 Processing triggers for libc-bin (2.36-9+deb12u14) ...
+#13 8.194 Processing triggers for ca-certificates (20250419~deb12u1) ...
+#13 8.200 Updating certificates in /etc/ssl/certs...
+#13 8.588 0 added, 0 removed; done.
+#13 8.588 Running hooks in /etc/ca-certificates/update.d...
+#13 8.588 done.
+#13 DONE 8.8s
+
+#16 [frontend 4/7] RUN npm ci --prefix komari-web
+#16 5.853 npm warn deprecated glob@11.1.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+#16 ...
+
+#17 [runtime 3/4] WORKDIR /app
+#17 DONE 0.0s
+
+#16 [frontend 4/7] RUN npm ci --prefix komari-web
+#16 13.45 
+#16 13.45 added 805 packages, and audited 806 packages in 13s
+#16 13.45 
+#16 13.45 240 packages are looking for funding
+#16 13.45   run `npm fund` for details
+#16 13.47 
+#16 13.47 14 vulnerabilities (2 low, 3 moderate, 9 high)
+#16 13.47 
+#16 13.47 To address issues that do not require attention, run:
+#16 13.47   npm audit fix
+#16 13.47 
+#16 13.47 To address all issues (including breaking changes), run:
+#16 13.47   npm audit fix --force
+#16 13.47 
+#16 13.47 Run `npm audit` for details.
+#16 13.48 npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+#16 13.48 npm warn install-scripts   esbuild@0.25.4 (postinstall: node install.js)
+#16 13.48 npm warn install-scripts
+#16 13.48 npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+#16 13.48 npm notice
+#16 13.48 npm notice New major version of npm available! 11.19.0 -> 12.2.0
+#16 13.48 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+#16 13.48 npm notice To update run: npm install -g npm@12.2.0
+#16 13.48 npm notice
+#16 DONE 13.6s
+
+#15 [backend 4/7] RUN go mod download
+#15 DONE 18.2s
+
+#18 [backend 5/7] COPY . .
+#18 DONE 0.1s
+
+#19 [frontend 5/7] COPY komari-web ./komari-web
+#19 DONE 0.2s
+
+#20 [frontend 6/7] COPY scripts/embed-frontend.mjs ./scripts/embed-frontend.mjs
+#20 DONE 0.0s
+
+#21 [frontend 7/7] RUN npm run build --prefix komari-web && node scripts/embed-frontend.mjs
+#21 0.209 
+#21 0.209 > komari-web@0.0.1 build
+#21 0.209 > tsc -b && vite build
+#21 0.209 
+#21 6.034 vite v6.4.2 building for production...
+#21 6.087 transforming...
+#21 20.31 ✓ 4801 modules transformed.
+#21 20.95 rendering chunks...
+#21 27.35 computing gzip size...
+#21 27.43 dist/registerSW.js                                       0.13 kB
+#21 27.43 dist/manifest.webmanifest                                0.43 kB
+#21 27.43 dist/index.html                                          3.03 kB │ gzip:   1.08 kB
+#21 27.43 dist/assets/codicon-Brq4_Ui5.ttf                       140.96 kB
+#21 27.43 dist/assets/editor.worker-C7zlFRnD.js                  273.52 kB
+#21 27.43 dist/assets/_layout-DFQVd-4I.css                         1.14 kB │ gzip:   0.52 kB
+#21 27.43 dist/assets/NodeDisplay-B499_hnQ.css                     1.83 kB │ gzip:   0.68 kB
+#21 27.43 dist/assets/dashboard-CUJhNng5.css                       3.13 kB │ gzip:   0.99 kB
+#21 27.43 dist/assets/eula-D4JKo971.css                           26.58 kB │ gzip:   5.08 kB
+#21 27.43 dist/assets/FileEditorDialog-Bkorg3V1.css              102.94 kB │ gzip:  16.00 kB
+#21 27.43 dist/assets/index-BbMfEU8U.css                         764.66 kB │ gzip:  95.66 kB
+#21 27.43 dist/assets/chunk-internal-C0fI30tP.js                   0.10 kB │ gzip:   0.12 kB
+#21 27.43 dist/assets/chunk-legacy_terminal-Dw6PcIci.js            0.21 kB │ gzip:   0.20 kB
+#21 27.43 dist/assets/chunk-metric-CVOPbj8F.js                     0.22 kB │ gzip:   0.15 kB
+#21 27.43 dist/assets/chunk-index-BNkvgUnM.js                      0.24 kB │ gzip:   0.18 kB
+#21 27.43 dist/assets/chunk-button-BLDaAIC_.js                     0.25 kB │ gzip:   0.21 kB
+#21 27.43 dist/assets/chunk-icon-button-DBSfFz3g.js                0.26 kB │ gzip:   0.21 kB
+#21 27.43 dist/assets/chunk-_layout-BbsLoAUx.js                    0.27 kB │ gzip:   0.22 kB
+#21 27.43 dist/assets/chunk-check-70iKVzI1.js                      0.30 kB │ gzip:   0.25 kB
+#21 27.43 dist/assets/chunk-chevron-down-Dk6J4veF.js               0.31 kB │ gzip:   0.25 kB
+#21 27.43 dist/assets/chunk-chevron-right-u4Qmc7YQ.js              0.31 kB │ gzip:   0.25 kB
+#21 27.43 dist/assets/chunk-loader-circle-C8t9HNn_.js              0.32 kB │ gzip:   0.26 kB
+#21 27.43 dist/assets/chunk-use-mobile-ChLJLOST.js                 0.33 kB │ gzip:   0.25 kB
+#21 27.43 dist/assets/chunk-plus-BAniKvZu.js                       0.33 kB │ gzip:   0.26 kB
+#21 27.43 dist/assets/chunk-x-BMd4wRdp.js                          0.33 kB │ gzip:   0.26 kB
+#21 27.43 dist/assets/chunk-arrow-left-DFQqSnLe.js                 0.34 kB │ gzip:   0.27 kB
+#21 27.43 dist/assets/chunk-arrow-right-ZtK4fZRb.js                0.34 kB │ gzip:   0.27 kB
+#21 27.43 dist/assets/chunk-trending-up-DHPSAU0E.js                0.35 kB │ gzip:   0.28 kB
+#21 27.43 dist/assets/chunk-search-Blaoe1Vv.js                     0.35 kB │ gzip:   0.28 kB
+#21 27.43 dist/assets/chunk-gauge-B1-iqFSA.js                      0.36 kB │ gzip:   0.28 kB
+#21 27.43 dist/assets/chunk-menu-Zics9d8C.js                       0.37 kB │ gzip:   0.27 kB
+#21 27.43 dist/assets/chunk-rotate-ccw-zamX7jQ4.js                 0.37 kB │ gzip:   0.29 kB
+#21 27.43 dist/assets/chunk-ellipsis-BZPaxTly.js                   0.41 kB │ gzip:   0.27 kB
+#21 27.43 dist/assets/chunk-activity-DEX8toWw.js                   0.41 kB │ gzip:   0.31 kB
+#21 27.43 dist/assets/chunk-upload-juDcx2-y.js                     0.41 kB │ gzip:   0.30 kB
+#21 27.43 dist/assets/chunk-log-in-qClngJRr.js                     0.41 kB │ gzip:   0.30 kB
+#21 27.43 dist/assets/chunk-download-B_1kcdMi.js                   0.41 kB │ gzip:   0.30 kB
+#21 27.43 dist/assets/chunk-maximize-2-BOHS-pJC.js                 0.41 kB │ gzip:   0.30 kB
+#21 27.43 dist/assets/chunk-copy-C9BYeHMJ.js                       0.42 kB │ gzip:   0.32 kB
+#21 27.43 dist/assets/chunk-globe-BoZjNMS7.js                      0.42 kB │ gzip:   0.30 kB
+#21 27.43 dist/assets/chunk-database-DbwDncVi.js                   0.42 kB │ gzip:   0.31 kB
+#21 27.43 dist/assets/chunk-eye-CCUSMvnu.js                        0.44 kB │ gzip:   0.31 kB
+#21 27.43 dist/assets/chunk-triangle-alert-BqnrBBHY.js             0.44 kB │ gzip:   0.32 kB
+#21 27.43 dist/assets/chunk-pencil-CKY2Jw_9.js                     0.46 kB │ gzip:   0.33 kB
+#21 27.43 dist/assets/chunk-folder-open-CtZ1yEsE.js                0.47 kB │ gzip:   0.33 kB
+#21 27.43 dist/assets/chunk-loginRedirect-CHE0v6GB.js              0.47 kB │ gzip:   0.31 kB
+#21 27.43 dist/assets/chunk-refresh-cw-Dvmj9Mue.js                 0.50 kB │ gzip:   0.33 kB
+#21 27.43 dist/assets/chunk-save-NJhz29WH.js                       0.51 kB │ gzip:   0.33 kB
+#21 27.43 dist/assets/chunk-box-C_gh-TOe.js                        0.51 kB │ gzip:   0.35 kB
+#21 27.43 dist/assets/chunk-file-text-DhMN5Z0_.js                  0.51 kB │ gzip:   0.32 kB
+#21 27.43 dist/assets/chunk-server-Bx6kEqYm.js                     0.52 kB │ gzip:   0.32 kB
+#21 27.43 dist/assets/chunk-i18nText-BinJewn4.js                   0.53 kB │ gzip:   0.29 kB
+#21 27.43 dist/assets/chunk-manage-Cqhm-2iK.js                     0.53 kB │ gzip:   0.36 kB
+#21 27.43 dist/assets/chunk-trash-2-BB3R39GS.js                    0.54 kB │ gzip:   0.36 kB
+#21 27.43 dist/assets/chunk-card-SIf9KnDN.js                       0.55 kB │ gzip:   0.36 kB
+#21 27.43 dist/assets/chunk-NodeDetailsContext-CNn24yxd.js         0.56 kB │ gzip:   0.37 kB
+#21 27.43 dist/assets/chunk-hard-drive-COiGxO7o.js                 0.57 kB │ gzip:   0.37 kB
+#21 27.43 dist/assets/chunk-AccountContext-xySfFWJ-.js             0.60 kB │ gzip:   0.39 kB
+#21 27.43 dist/assets/chunk-404-D0UNc6EA.js                        0.66 kB │ gzip:   0.41 kB
+#21 27.43 dist/assets/chunk-badge-DZ7rV-Fx.js                      0.67 kB │ gzip:   0.43 kB
+#21 27.43 dist/assets/chunk-azcli-Y6nb8tq_.js                      0.71 kB │ gzip:   0.28 kB
+#21 27.43 dist/assets/chunk-heading-B6cPJOtU.js                    0.75 kB │ gzip:   0.46 kB
+#21 27.43 dist/assets/chunk-uiSettings-DX3CBKvl.js                 0.75 kB │ gzip:   0.45 kB
+#21 27.43 dist/assets/chunk-text-area-DF7lJXyp.js                  0.80 kB │ gzip:   0.46 kB
+#21 27.43 dist/assets/chunk-settings-CRJn7GDw.js                   0.90 kB │ gzip:   0.45 kB
+#21 27.43 dist/assets/chunk-ini-Kd9XrMLS.js                        0.96 kB │ gzip:   0.50 kB
+#21 27.43 dist/assets/chunk-useGuideState-BwJmKyfM.js              1.02 kB │ gzip:   0.59 kB
+#21 27.43 dist/assets/chunk-unitHelper-BG3Bamtv.js                 1.06 kB │ gzip:   0.56 kB
+#21 27.43 dist/assets/chunk-text-N3VlwAuT.js                       1.15 kB │ gzip:   0.61 kB
+#21 27.43 dist/assets/chunk-custom-65BSMMoc.js                     1.16 kB │ gzip:   0.59 kB
+#21 27.43 dist/assets/chunk-callout-D9fG8YKm.js                    1.17 kB │ gzip:   0.60 kB
+#21 27.43 dist/assets/chunk-csp-D-4FJmMZ.js                        1.28 kB │ gzip:   0.49 kB
+#21 27.43 dist/assets/chunk-settings-2-C3ZnzQbo.js                 1.32 kB │ gzip:   0.54 kB
+#21 27.43 dist/assets/chunk-index-BrNm4ehW.js                      1.50 kB │ gzip:   0.73 kB
+#21 27.43 dist/assets/chunk-text-field-BADhly7i.js                 1.51 kB │ gzip:   0.76 kB
+#21 27.43 dist/assets/chunk-table-C1WS0eLH.js                      1.54 kB │ gzip:   0.56 kB
+#21 27.43 dist/assets/chunk-pla-DSh2-awV.js                        1.55 kB │ gzip:   0.61 kB
+#21 27.43 dist/assets/chunk-GuideHeader-DA_9hrSZ.js                1.60 kB │ gzip:   0.79 kB
+#21 27.43 dist/assets/chunk-scheme-BPhDTwHR.js                     1.63 kB │ gzip:   0.78 kB
+#21 27.43 dist/assets/chunk-flow9-BeJ5waoc.js                      1.67 kB │ gzip:   0.81 kB
+#21 27.43 dist/assets/chunk-tips-CZy4XC47.js                       1.68 kB │ gzip:   0.81 kB
+#21 27.43 dist/assets/chunk-sb-BBc9UKZt.js                         1.69 kB │ gzip:   0.79 kB
+#21 27.43 dist/assets/chunk-bat-BwHxbl9M.js                        1.71 kB │ gzip:   0.83 kB
+#21 27.43 dist/assets/chunk-dockerfile-BG73LgW2.js                 1.73 kB │ gzip:   0.63 kB
+#21 27.43 dist/assets/chunk-pascaligo-DtZ0uQbO.js                  1.86 kB │ gzip:   0.87 kB
+#21 27.43 dist/assets/chunk-lua-Cyyb5UIc.js                        1.99 kB │ gzip:   0.89 kB
+#21 27.43 dist/assets/chunk-cameligo-Bf6VGUru.js                   2.05 kB │ gzip:   0.92 kB
+#21 27.43 dist/assets/chunk-graphql-BxJiqAUM.js                    2.12 kB │ gzip:   0.99 kB
+#21 27.43 dist/assets/chunk-Selector-BmjBYKTk.js                   2.19 kB │ gzip:   1.02 kB
+#21 27.43 dist/assets/chunk-objective-c-BDtDVThU.js                2.26 kB │ gzip:   1.02 kB
+#21 27.43 dist/assets/chunk-general-BNjGwrSG.js                    2.27 kB │ gzip:   0.89 kB
+#21 27.43 dist/assets/chunk-javascript-CU5o-MXQ.js                 2.27 kB │ gzip:   1.03 kB
+#21 27.43 dist/assets/chunk-lexon-OrD6JF1K.js                      2.30 kB │ gzip:   0.89 kB
+#21 27.43 dist/assets/chunk-appearance-kh4wL858.js                 2.37 kB │ gzip:   1.18 kB
+#21 27.43 dist/assets/chunk-progress-BlgQ0vWP.js                   2.40 kB │ gzip:   1.15 kB
+#21 27.43 dist/assets/chunk-bicep-CFznDFnq.js                      2.40 kB │ gzip:   0.93 kB
+#21 27.43 dist/assets/chunk-sparql-CJmd_6j2.js                     2.41 kB │ gzip:   1.12 kB
+#21 27.43 dist/assets/chunk-mips-CiqrrVzr.js                       2.44 kB │ gzip:   1.03 kB
+#21 27.43 dist/assets/chunk-switch-DX_vdM2D.js                     2.45 kB │ gzip:   1.26 kB
+#21 27.43 dist/assets/chunk-api-q3cZHpXQ.js                        2.52 kB │ gzip:   1.16 kB
+#21 27.43 dist/assets/chunk-go-acbASCJo.js                         2.52 kB │ gzip:   1.11 kB
+#21 27.43 dist/assets/chunk-sophia-CnS9iZB_.js                     2.63 kB │ gzip:   1.17 kB
+#21 27.43 dist/assets/chunk-typespec-Btyra-wh.js                   2.66 kB │ gzip:   1.05 kB
+#21 27.43 dist/assets/chunk-m3-B8OfTtLu.js                         2.68 kB │ gzip:   1.28 kB
+#21 27.43 dist/assets/chunk-LiveDataContext-C7qjTEC4.js            2.77 kB │ gzip:   1.35 kB
+#21 27.43 dist/assets/chunk-fsharp-PahG7c26.js                     2.85 kB │ gzip:   1.28 kB
+#21 27.43 dist/assets/chunk-pascal-vHIfCaH5.js                     2.86 kB │ gzip:   1.36 kB
+#21 27.43 dist/assets/chunk-shell-DiJ1NA_G.js                      2.94 kB │ gzip:   1.16 kB
+#21 27.43 dist/assets/chunk-r-j7ic8hl3.js                          2.99 kB │ gzip:   1.24 kB
+#21 27.43 dist/assets/chunk-base-button-CJGIG5dX.js                3.00 kB │ gzip:   1.12 kB
+#21 27.43 dist/assets/chunk-RestrictedLoginDialog-7yG_MrH5.js      3.05 kB │ gzip:   1.40 kB
+#21 27.43 dist/assets/chunk-qsharp-Bw9ernYp.js                     3.05 kB │ gzip:   1.37 kB
+#21 27.43 dist/assets/chunk-java-CXBNlu9o.js                       3.08 kB │ gzip:   1.36 kB
+#21 27.43 dist/assets/chunk-powershell-COWaemsV.js                 3.13 kB │ gzip:   1.34 kB
+#21 27.43 dist/assets/chunk-osImageHelper-Dv74qTOj.js              3.19 kB │ gzip:   0.94 kB
+#21 27.43 dist/assets/chunk-cypher-cTPe9QuQ.js                     3.25 kB │ gzip:   1.40 kB
+#21 27.43 dist/assets/chunk-kotlin-s7OhZKlX.js                     3.26 kB │ gzip:   1.43 kB
+#21 27.43 dist/assets/chunk-PriceTags-DvtOiaGq.js                  3.39 kB │ gzip:   1.51 kB
+#21 27.43 dist/assets/chunk-xml-BjkSSRFW.js                        3.39 kB │ gzip:   1.35 kB
+#21 27.43 dist/assets/chunk-redis-Bu5POkcn.js                      3.42 kB │ gzip:   1.44 kB
+#21 27.43 dist/assets/chunk-tcl-Dm6ycUr_.js                        3.43 kB │ gzip:   1.33 kB
+#21 27.43 dist/assets/chunk-coffee-Bd8akH9Z.js                     3.45 kB │ gzip:   1.26 kB
+#21 27.43 dist/assets/chunk-hcl-DtV1sZF8.js                        3.45 kB │ gzip:   1.45 kB
+#21 27.43 dist/assets/chunk-tabs-CZMlXrao.js                       3.62 kB │ gzip:   1.46 kB
+#21 27.43 dist/assets/chunk-markdown-BFxVWTOG.js                   3.65 kB │ gzip:   1.35 kB
+#21 27.43 dist/assets/chunk-restructuredtext-CqXO7rUv.js           3.76 kB │ gzip:   1.33 kB
+#21 27.43 dist/assets/chunk-less-9HpZscsL.js                       3.76 kB │ gzip:   1.38 kB
+#21 27.43 dist/assets/chunk-DetailsGrid-rePZT81v.js                3.82 kB │ gzip:   1.24 kB
+#21 27.43 dist/assets/chunk-apex-DNDY2TF8.js                       3.82 kB │ gzip:   1.73 kB
+#21 27.43 dist/assets/chunk-segmented-control-XNIr0TyF.js          3.95 kB │ gzip:   1.49 kB
+#21 27.43 dist/assets/chunk-rust-BzKRNQWT.js                       4.02 kB │ gzip:   1.79 kB
+#21 27.43 dist/assets/chunk-dart-BOtBlQCF.js                       4.11 kB │ gzip:   1.61 kB
+#21 27.43 dist/assets/chunk-login-CXjiEkb7.js                      4.15 kB │ gzip:   1.77 kB
+#21 27.43 dist/assets/chunk-checkbox-DFh8V0jW.js                   4.26 kB │ gzip:   1.84 kB
+#21 27.43 dist/assets/chunk-_layout-DRhPLizf.js                    4.31 kB │ gzip:   1.91 kB
+#21 27.43 dist/assets/chunk-css-DdJfP1eB.js                        4.37 kB │ gzip:   1.34 kB
+#21 27.43 dist/assets/chunk-csharp-Co3qMtFm.js                     4.39 kB │ gzip:   1.69 kB
+#21 27.43 dist/assets/chunk-channels-qnyshXZr.js                   4.47 kB │ gzip:   1.77 kB
+#21 27.43 dist/assets/chunk-general-DctxW35H.js                    4.51 kB │ gzip:   1.99 kB
+#21 27.43 dist/assets/chunk-pug-8SOpv6rk.js                        4.69 kB │ gzip:   1.61 kB
+#21 27.43 dist/assets/chunk-msdax-DmeGPVcC.js                      4.77 kB │ gzip:   1.91 kB
+#21 27.43 dist/assets/chunk-liquid-7T2e6tss.js                     4.94 kB │ gzip:   2.05 kB
+#21 27.43 dist/assets/chunk-yaml-CxkQUKIF.js                       5.01 kB │ gzip:   1.91 kB
+#21 27.43 dist/assets/chunk-swift-Bqt4WxQ4.js                      5.03 kB │ gzip:   2.06 kB
+#21 27.43 dist/assets/chunk-cpp-BbWJElDN.js                        5.16 kB │ gzip:   2.06 kB
+#21 27.43 dist/assets/chunk-python-BVlvHMhZ.js                     5.18 kB │ gzip:   2.07 kB
+#21 27.43 dist/assets/chunk-ecl-BEgZUVRK.js                        5.20 kB │ gzip:   2.19 kB
+#21 27.43 dist/assets/chunk-log-DEpdLDwt.js                        5.46 kB │ gzip:   2.12 kB
+#21 27.43 dist/assets/chunk-chunkUpload-BQrMJ7d-.js                5.48 kB │ gzip:   2.46 kB
+#21 27.43 dist/assets/chunk-vb-Db0cS2oM.js                         5.65 kB │ gzip:   2.02 kB
+#21 27.43 dist/assets/chunk-mdx-DpSoD_a2.js                        5.79 kB │ gzip:   1.84 kB
+#21 27.43 dist/assets/chunk-database_recovery-PP_OSST3.js          5.79 kB │ gzip:   2.38 kB
+#21 27.43 dist/assets/chunk-twig-Csy3S7wG.js                       5.84 kB │ gzip:   1.49 kB
+#21 27.43 dist/assets/chunk-index--8zNym2Q.js                      5.99 kB │ gzip:   2.52 kB
+#21 27.43 dist/assets/chunk-html-BdZXMnfA.js                       5.99 kB │ gzip:   1.78 kB
+#21 27.43 dist/assets/chunk-scss-CBJaRo0y.js                       6.27 kB │ gzip:   1.71 kB
+#21 27.43 dist/assets/chunk-typescript-DHupDcH1.js                 6.37 kB │ gzip:   2.58 kB
+#21 27.43 dist/assets/chunk-sign-on-rKNT4oZS.js                    6.82 kB │ gzip:   2.64 kB
+#21 27.43 dist/assets/chunk-dialog-Qe7LMPXz.js                     6.96 kB │ gzip:   2.55 kB
+#21 27.43 dist/assets/chunk-ConfigFormTabs-D5Q1OJfZ.js             6.99 kB │ gzip:   2.75 kB
+#21 27.43 dist/assets/chunk-julia-cl7-CwDS.js                      7.01 kB │ gzip:   2.62 kB
+#21 27.43 dist/assets/chunk-scala-D9hQfWCl.js                      7.18 kB │ gzip:   2.06 kB
+#21 27.43 dist/assets/chunk-popover-Dn3w_zQB.js                    7.20 kB │ gzip:   2.63 kB
+#21 27.43 dist/assets/chunk-wgsl-BTesnYfV.js                       7.21 kB │ gzip:   2.72 kB
+#21 27.43 dist/assets/chunk-st-CHwy0fLd.js                         7.26 kB │ gzip:   2.21 kB
+#21 27.43 dist/assets/chunk-sessions-BvgD4Nu9.js                   7.27 kB │ gzip:   2.17 kB
+#21 27.43 dist/assets/chunk-Index-B1NQxFXu.js                      7.47 kB │ gzip:   3.09 kB
+#21 27.43 dist/assets/chunk-systemverilog-Bs9z6M-B.js              7.47 kB │ gzip:   2.72 kB
+#21 27.43 dist/assets/chunk-postiats-CocnycG-.js                   7.72 kB │ gzip:   2.40 kB
+#21 27.43 dist/assets/chunk-handlebars-CJ5SZKNl.js                 7.75 kB │ gzip:   1.99 kB
+#21 27.43 dist/assets/chunk-php-BBUBE1dy.js                        7.89 kB │ gzip:   2.04 kB
+#21 27.43 dist/assets/chunk-flex-V-uN-Z5Y.js                       7.92 kB │ gzip:   2.19 kB
+#21 27.43 dist/assets/chunk-perl-Ub6l9XKa.js                       8.12 kB │ gzip:   3.10 kB
+#21 27.43 dist/assets/chunk-ruby-zBfavPgS.js                       8.37 kB │ gzip:   2.54 kB
+#21 27.43 dist/assets/chunk-SettingCard-C2U_FBev.js                8.47 kB │ gzip:   2.74 kB
+#21 27.43 dist/assets/chunk-install-B9oTy1s5.js                    8.54 kB │ gzip:   3.07 kB
+#21 27.43 dist/assets/chunk-protobuf-Brw8urJB.js                   8.91 kB │ gzip:   2.04 kB
+#21 27.43 dist/assets/chunk-NodeTable-DKu1BOH9.js                  9.02 kB │ gzip:   2.82 kB
+#21 27.43 dist/assets/chunk-pprof-tZtdZLfO.js                      9.33 kB │ gzip:   3.26 kB
+#21 27.43 dist/assets/chunk-clojure-Dnu-v4kV.js                    9.51 kB │ gzip:   3.57 kB
+#21 27.43 dist/assets/chunk-site-9N6FqDlO.js                       9.61 kB │ gzip:   3.35 kB
+#21 27.43 dist/assets/chunk-razor-CK3Stz0Y.js                      9.76 kB │ gzip:   2.68 kB
+#21 27.43 dist/assets/chunk-elixir-BkW5O-1t.js                    10.12 kB │ gzip:   2.50 kB
+#21 27.43 dist/assets/chunk-sql-ClhHkBeG.js                       10.16 kB │ gzip:   3.79 kB
+#21 27.43 dist/assets/chunk-mysql-C_tMU-Nz.js                     11.14 kB │ gzip:   4.01 kB
+#21 27.43 dist/assets/chunk-account-B578fkNE.js                   11.41 kB │ gzip:   3.69 kB
+#21 27.43 dist/assets/chunk-ThemeSwitch-B12IehMX.js               11.59 kB │ gzip:   3.56 kB
+#21 27.43 dist/assets/chunk-redshift-Bs9aos_-.js                  11.66 kB │ gzip:   4.30 kB
+#21 27.43 dist/assets/chunk-offline-DIGUiITp.js                   12.28 kB │ gzip:   4.66 kB
+#21 27.43 dist/assets/chunk-index-fGLyfp6w.js                     12.66 kB │ gzip:   4.44 kB
+#21 27.43 dist/assets/chunk-pgsql-BlNEE0v7.js                     13.33 kB │ gzip:   4.46 kB
+#21 27.43 dist/assets/chunk-abap-DLDM7-KI.js                      14.03 kB │ gzip:   5.27 kB
+#21 27.43 dist/assets/chunk-icons-hAhCGgIL.js                     14.11 kB │ gzip:   4.66 kB
+#21 27.43 dist/assets/chunk-database_migration-CrMcvmeH.js        15.12 kB │ gzip:   4.97 kB
+#21 27.43 dist/assets/chunk-about-BvUkplDG.js                     15.65 kB │ gzip:   6.00 kB
+#21 27.43 dist/assets/chunk-Node-ClSHXw1r.js                      15.79 kB │ gzip:   5.76 kB
+#21 27.43 dist/assets/chunk-require-react-element-B97aAzPs.js     16.62 kB │ gzip:   6.29 kB
+#21 27.43 dist/assets/chunk-powerquery-tScXyioY.js                16.80 kB │ gzip:   4.81 kB
+#21 27.43 dist/assets/chunk-freemarker2-CxoEBuHB.js               17.07 kB │ gzip:   4.55 kB
+#21 27.43 dist/assets/chunk-NodeDisplay-XDMCiiEo.js               17.77 kB │ gzip:   6.89 kB
+#21 27.43 dist/assets/chunk-pingTask-D-lA2c-V.js                  17.89 kB │ gzip:   5.69 kB
+#21 27.43 dist/assets/chunk-solidity-Db0IVjzk.js                  18.46 kB │ gzip:   4.41 kB
+#21 27.43 dist/assets/chunk-encoding-CdcnOaJI.js                  22.60 kB │ gzip:   6.10 kB
+#21 27.43 dist/assets/chunk-select-DdMk8xed.js                    22.69 kB │ gzip:   7.86 kB
+#21 27.43 dist/assets/chunk-metrics-8Pums0NG.js                   24.67 kB │ gzip:   7.12 kB
+#21 27.43 dist/assets/chunk-utils-sElhP03s.js                     24.89 kB │ gzip:   7.94 kB
+#21 27.43 dist/assets/chunk-dropdown-menu-WgDoPJHv.js             26.11 kB │ gzip:   7.60 kB
+#21 27.43 dist/assets/chunk-_layout-Dtzq6eN_.js                   34.18 kB │ gzip:  11.45 kB
+#21 27.43 dist/assets/chunk-index-AyrGDwTj.js                     35.69 kB │ gzip:  12.00 kB
+#21 27.43 dist/assets/chunk-sortable.esm-D3RBpA2W.js              50.69 kB │ gzip:  16.76 kB
+#21 27.43 dist/assets/chunk-dashboard-DfkRKUn9.js                 58.29 kB │ gzip:  17.56 kB
+#21 27.43 dist/assets/chunk-schemas-BAQ2gMm9.js                   69.40 kB │ gzip:  18.60 kB
+#21 27.43 dist/assets/chunk-index-CCoSaEMy.js                     82.49 kB │ gzip:  22.67 kB
+#21 27.43 dist/assets/chunk-proxy-DtcqtpRR.js                    115.18 kB │ gzip:  38.34 kB
+#21 27.43 dist/assets/chunk-files-B9LS1Lkk.js                    115.77 kB │ gzip:  36.01 kB
+#21 27.43 dist/assets/chunk-eula-Bb3qqGX2.js                     200.03 kB │ gzip:  64.84 kB
+#21 27.43 dist/assets/chunk-metricSeries-C4jJsJUB.js             398.86 kB │ gzip: 110.64 kB
+#21 27.43 dist/assets/chunk-encoding-indexes-CRc_6kg0.js         530.28 kB │ gzip: 187.42 kB
+#21 27.43 dist/assets/entry-index-Bri61Y8O.js                    688.83 kB │ gzip: 231.31 kB
+#21 27.43 dist/assets/chunk-FileEditorDialog-DP97O4O9.js       3,089.13 kB │ gzip: 800.77 kB
+#21 27.43 
+#21 27.43 (!) Some chunks are larger than 800 kB after minification. Consider:
+#21 27.43 - Using dynamic import() to code-split the application
+#21 27.43 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#21 27.43 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#21 27.43 ✓ built in 21.38s
+#21 27.87 Browserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+#21 27.87   npx update-browserslist-db@latest
+#21 27.87   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+#21 28.71 
+#21 28.71 PWA v1.0.1
+#21 28.71 mode      generateSW
+#21 28.71 precache  508 entries (8238.74 KiB)
+#21 28.71 files generated
+#21 28.71   dist/sw.js
+#21 28.71   dist/workbox-8359a6b2.js
+#21 31.00 Embedded workspace dist, including index.html, and built-in settings schema.
+#21 DONE 31.7s
+
+#22 [backend 6/7] COPY --from=frontend /src/web/public/defaultTheme ./web/public/defaultTheme
+#22 DONE 0.1s
+
+#23 [backend 7/7] RUN CGO_ENABLED=1 go build -trimpath -ldflags="-s -w" -o /out/komari .
+#23 DONE 31.9s
+
+#24 [runtime 4/4] COPY --from=backend /out/komari /app/komari
+#24 DONE 0.3s
+
+#25 exporting to image
+#25 exporting layers
+#25 exporting layers 0.8s done
+#25 exporting manifest sha256:9fef3d821f8d6b89e129703841a44cf7b8d93ffd3ead4f789738c9fedab45766 done
+#25 exporting config sha256:321ecef570f59087bf72c5e6b79f663a50bd8cfb0eed2500856a99eff250e6e9 0.0s done
+#25 exporting attestation manifest sha256:4c254f8f891ad65e4e824e924c0964db796ac64769e0778afb3bb6e876a848ff 0.0s done
+#25 exporting manifest list sha256:d174647d6746aeeaa5105b10e4c3a94a7064ea4e3e83cdc455b9dccbd1010921 done
+#25 naming to docker.io/library/monitor:local done
+#25 unpacking to docker.io/library/monitor:local
+#25 unpacking to docker.io/library/monitor:local 0.3s done
+#25 DONE 1.2s

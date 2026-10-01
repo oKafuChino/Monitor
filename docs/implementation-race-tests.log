@@ -1,0 +1,4 @@
+ok  	github.com/komari-monitor/komari/internal/uisettings	1.215s
+ok  	github.com/komari-monitor/komari/web/connection	1.017s
+ok  	github.com/komari-monitor/komari/web/agent	1.011s
+ok  	github.com/komari-monitor/komari/web/filemanager	1.256s

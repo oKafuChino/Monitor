@@ -1,0 +1,61 @@
+
+> test:server
+> node scripts/project.mjs test-server --docker
+
+?   	github.com/komari-monitor/komari	[no test files]
+?   	github.com/komari-monitor/komari/cmd	[no test files]
+ok  	github.com/komari-monitor/komari/cmd/flags	(cached)
+?   	github.com/komari-monitor/komari/database	[no test files]
+?   	github.com/komari-monitor/komari/database/accounts	[no test files]
+?   	github.com/komari-monitor/komari/database/auditlog	[no test files]
+?   	github.com/komari-monitor/komari/database/clients	[no test files]
+ok  	github.com/komari-monitor/komari/database/dbcore	0.209s
+ok  	github.com/komari-monitor/komari/database/models	0.008s
+?   	github.com/komari-monitor/komari/database/models/messageEvent	[no test files]
+?   	github.com/komari-monitor/komari/database/records	[no test files]
+ok  	github.com/komari-monitor/komari/database/tasks	0.015s
+?   	github.com/komari-monitor/komari/internal/config	[no test files]
+?   	github.com/komari-monitor/komari/internal/lifecycle	[no test files]
+?   	github.com/komari-monitor/komari/internal/managedconfig	[no test files]
+ok  	github.com/komari-monitor/komari/internal/metricstore	(cached)
+ok  	github.com/komari-monitor/komari/internal/migrations	(cached)
+?   	github.com/komari-monitor/komari/internal/notifications	[no test files]
+ok  	github.com/komari-monitor/komari/internal/scheduler	(cached)
+ok  	github.com/komari-monitor/komari/internal/server	0.080s
+ok  	github.com/komari-monitor/komari/internal/sqlitetune	(cached)
+ok  	github.com/komari-monitor/komari/internal/uisettings	(cached)
+?   	github.com/komari-monitor/komari/komari-web/node_modules/flatted/golang/pkg/flatted	[no test files]
+ok  	github.com/komari-monitor/komari/pkg/metric	(cached)
+ok  	github.com/komari-monitor/komari/pkg/rpc	(cached)
+ok  	github.com/komari-monitor/komari/pkg/timeutil	(cached)
+ok  	github.com/komari-monitor/komari/protocol/v2	(cached)
+?   	github.com/komari-monitor/komari/utils	[no test files]
+ok  	github.com/komari-monitor/komari/utils/geoip	1.013s
+?   	github.com/komari-monitor/komari/utils/item	[no test files]
+ok  	github.com/komari-monitor/komari/utils/log	(cached)
+ok  	github.com/komari-monitor/komari/utils/messageSender	0.042s
+ok  	github.com/komari-monitor/komari/utils/messageSender/outboundhttp	(cached)
+?   	github.com/komari-monitor/komari/utils/messageSender/webhook	[no test files]
+ok  	github.com/komari-monitor/komari/utils/notifier	0.009s
+?   	github.com/komari-monitor/komari/utils/renewal	[no test files]
+ok  	github.com/komari-monitor/komari/web/agent	0.006s
+?   	github.com/komari-monitor/komari/web/api	[no test files]
+ok  	github.com/komari-monitor/komari/web/api/admin	(cached)
+ok  	github.com/komari-monitor/komari/web/api/client	1.627s
+ok  	github.com/komari-monitor/komari/web/api/public	0.033s
+ok  	github.com/komari-monitor/komari/web/backup	(cached)
+ok  	github.com/komari-monitor/komari/web/connection	(cached)
+ok  	github.com/komari-monitor/komari/web/filemanager	0.213s
+ok  	github.com/komari-monitor/komari/web/install	0.197s
+ok  	github.com/komari-monitor/komari/web/migration	0.125s
+?   	github.com/komari-monitor/komari/web/oauth	[no test files]
+?   	github.com/komari-monitor/komari/web/oauth/factory	[no test files]
+?   	github.com/komari-monitor/komari/web/oauth/generic	[no test files]
+?   	github.com/komari-monitor/komari/web/oauth/github	[no test files]
+?   	github.com/komari-monitor/komari/web/oauth/qq	[no test files]
+ok  	github.com/komari-monitor/komari/web/public	0.211s
+ok  	github.com/komari-monitor/komari/web/recovery	0.028s
+ok  	github.com/komari-monitor/komari/web/router	0.168s
+ok  	github.com/komari-monitor/komari/web/rpc/jsonrpc	0.170s
+ok  	github.com/komari-monitor/komari/web/security	(cached)
+ok  	github.com/komari-monitor/komari/web/upload	(cached)

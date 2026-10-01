@@ -1,0 +1,19 @@
+
+> komari-web@0.0.1 test:ui
+> node --test script/onboarding.test.mjs script/ui-settings.test.mjs
+
+✔ unknown guides are ignored and state is normalized (0.9453ms)
+✔ new installations and existing nodes get appropriate guidance (0.1519ms)
+✔ retired guides cannot block onboarding (0.0947ms)
+✔ object patches send only changed keys and preserve explicit empty values (1.0224ms)
+✔ functional guide update reads current settings but writes only its own key (0.2161ms)
+✔ failed writes report errors without poisoning later saves (0.3859ms)
+✔ malformed settings responses do not become silent empty settings (0.1426ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 86.0717

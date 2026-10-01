@@ -40,7 +40,20 @@ func getV2EventQueueLocked(uuid string) *v2EventQueue {
 	return q
 }
 
+// Only fixed, supported Agent operations may enter the outbound event path.
+func allowedAgentEvent(method string) bool {
+	switch method {
+	case v2.MethodAgentPing, v2.MethodAgentFile, v2.MethodAgentStartupConfig, v2.MethodAgentSwitchVersion:
+		return true
+	default:
+		return false
+	}
+}
+
 func DispatchV2Event(uuid, method string, params any) bool {
+	if !allowedAgentEvent(method) {
+		return false
+	}
 	if conn := GetConnectedClients()[uuid]; conn != nil {
 		payload := v2.Request{JSONRPC: v2.Version, Method: method, Params: params}
 		if conn.WriteJSON(payload) == nil {
@@ -76,6 +89,9 @@ func IsAgentOnline(uuid string) bool {
 }
 
 func EnqueueV2Event(uuid, method string, params any) v2.Event {
+	if !allowedAgentEvent(method) {
+		return v2.Event{}
+	}
 	now := time.Now().UTC()
 	ttl := v2EventTTL
 	if method == v2.MethodAgentPing {
@@ -131,13 +147,6 @@ func coalesceV2EventLocked(q *v2EventQueue, event v2.Event) {
 }
 
 func v2EventCoalesceKey(event v2.Event) string {
-	if event.Method == v2.MethodAgentTerminal {
-		var params v2.TerminalRequestParams
-		if err := bindV2EventParams(event.Params, &params); err == nil && params.RequestID != "" {
-			return event.Method + ":" + params.RequestID
-		}
-		return ""
-	}
 	if event.Method != v2.MethodAgentPing {
 		return ""
 	}

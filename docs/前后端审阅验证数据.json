@@ -1,0 +1,902 @@
+{
+  "date": "2026-10-01",
+  "backendCommit": "e8b6bd0",
+  "scope": "Local frontend snapshot; backend source and prior architecture review. No live backend or Agent validation.",
+  "environment": {
+    "node": "v24.18.0",
+    "install": "npm ci --ignore-scripts --no-audit --no-fund"
+  },
+  "frontend": {
+    "files": 513,
+    "srcFiles": 194,
+    "codeFiles": 187,
+    "codeLinesIncludingCommentsAndBlankLines": 46676,
+    "localeFiles": 5,
+    "localeBytes": 395959,
+    "declaredDependencies": 46,
+    "declaredDevDependencies": 17,
+    "versions": {
+      "react": "19.1.0",
+      "typescript": "5.8.3",
+      "vite": "6.4.2",
+      "react-router-dom": "7.16.0",
+      "@radix-ui/themes": "3.2.1",
+      "tailwindcss": "4.1.5",
+      "recharts": "2.15.3",
+      "monaco-editor": "0.56.0",
+      "@xterm/xterm": "6.0.0"
+    }
+  },
+  "verification": {
+    "build": {
+      "command": "npm run build",
+      "exitCode": 0,
+      "viteBuildSeconds": 34.78
+    },
+    "lint": {
+      "command": "node node_modules/eslint/bin/eslint.js . --format json --output-file node_modules/.cache/review-eslint.json",
+      "files": 186,
+      "errors": 0,
+      "warnings": 25
+    },
+    "onboarding": {
+      "command": "npm run test:onboarding",
+      "exitCode": 1,
+      "error": "Could not find 'script/onboarding.test.mjs'"
+    },
+    "rpc": {
+      "frontendLiteralMethods": 33,
+      "backendStaticBusinessMethods": 84,
+      "missingMethods": []
+    },
+    "sourceFilesChanged": []
+  },
+  "bundle": {
+    "totalFiles": 544,
+    "totalBytes": 9458266,
+    "jsBytes": 7476298,
+    "cssBytes": 915621,
+    "precacheEntries": 535,
+    "precacheKiB": 8995.11,
+    "largest": [
+      {
+        "file": "assets/chunk-FileEditorDialog-DGqKjmPC.js",
+        "bytes": 3091441,
+        "gzip": 801552
+      },
+      {
+        "file": "assets/index-C9vqFd2k.css",
+        "bytes": 774762,
+        "gzip": 96984
+      },
+      {
+        "file": "assets/entry-index-BqR_NVJv.js",
+        "bytes": 741653,
+        "gzip": 247048
+      },
+      {
+        "file": "assets/chunk-index-CEroX5Jn.js",
+        "bytes": 726487,
+        "gzip": 201976
+      },
+      {
+        "file": "assets/chunk-encoding-indexes-CRc_6kg0.js",
+        "bytes": 530279,
+        "gzip": 187419
+      },
+      {
+        "file": "assets/chunk-metricSeries-BOZZiLMS.js",
+        "bytes": 394805,
+        "gzip": 109135
+      },
+      {
+        "file": "assets/editor.worker-C7zlFRnD.js",
+        "bytes": 273516,
+        "gzip": 82779
+      },
+      {
+        "file": "assets/chunk-eula-PiKCol2C.js",
+        "bytes": 200028,
+        "gzip": 64841
+      },
+      {
+        "file": "assets/codicon-Brq4_Ui5.ttf",
+        "bytes": 140956,
+        "gzip": null
+      },
+      {
+        "file": "assets/chunk-proxy-CiqyHJZ1.js",
+        "bytes": 112163,
+        "gzip": 37125
+      },
+      {
+        "file": "assets/FileEditorDialog-Bkorg3V1.css",
+        "bytes": 102937,
+        "gzip": 16002
+      },
+      {
+        "file": "assets/chunk-index-ByyPUUTm.js",
+        "bytes": 83314,
+        "gzip": 22779
+      }
+    ],
+    "note": "All bundle bytes are disk sizes; gzip estimates are local per-file gzip, not observed network transfers or first-screen totals."
+  },
+  "lintWarnings": [
+    {
+      "file": "src/components/Footer.tsx",
+      "line": 46,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'call'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/components/Login.tsx",
+      "line": 47,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook React.useEffect has an unnecessary dependency: 'autoOpen'. Either exclude it or remove the dependency array. Outer scope values like 'autoOpen' aren't valid dependencies because mutating them doesn't re-render the component."
+    },
+    {
+      "file": "src/components/Node.tsx",
+      "line": 19,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/components/admin/AdminPanelBar.tsx",
+      "line": 190,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has missing dependencies: 'currentLanguage' and 't'. Either include them or remove the dependency array."
+    },
+    {
+      "file": "src/components/admin/AdminPanelBar.tsx",
+      "line": 258,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'call'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/components/admin/AdminPanelBar.tsx",
+      "line": 322,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'isNewerVersion'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/components/ui/button.tsx",
+      "line": 59,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/AccountContext.tsx",
+      "line": 60,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/AdminNavigationContext.tsx",
+      "line": 33,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/LiveDataContext.tsx",
+      "line": 225,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/NodeDetailsContext.tsx",
+      "line": 67,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/NodeListContext.tsx",
+      "line": 189,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/NotificationContext.tsx",
+      "line": 56,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/PingTaskContext.tsx",
+      "line": 76,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/PublicInfoContext.tsx",
+      "line": 110,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/RPC2Context.tsx",
+      "line": 114,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/contexts/RPC2Context.tsx",
+      "line": 123,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/main.tsx",
+      "line": 29,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file has exports. Move your component(s) to a separate file."
+    },
+    {
+      "file": "src/pages/admin/account.tsx",
+      "line": 380,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook React.useEffect has a missing dependency: 't'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/pages/admin/index.tsx",
+      "line": 114,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'refresh'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/pages/admin/log.tsx",
+      "line": 54,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook React.useEffect has a missing dependency: 'limit'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/pages/admin/theme_managed.tsx",
+      "line": 43,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "The 'themeSettings' logical expression could make the dependencies of useEffect Hook (at line 110) change on every render. Move it inside the useEffect callback. Alternatively, wrap the initialization of 'themeSettings' in its own useMemo() Hook."
+    },
+    {
+      "file": "src/pages/admin/themes.tsx",
+      "line": 372,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useEffect has a missing dependency: 'fetchThemes'. Either include it or remove the dependency array."
+    },
+    {
+      "file": "src/pages/terminal/FileContextMenu.tsx",
+      "line": 245,
+      "rule": "react-refresh/only-export-components",
+      "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components."
+    },
+    {
+      "file": "src/pages/terminal/FileEditorDialog.tsx",
+      "line": 1233,
+      "rule": "react-hooks/exhaustive-deps",
+      "message": "React Hook useCallback has unnecessary dependencies: 'activeDocument?.encoding' and 'activeDocument?.language'. Either exclude them or remove the dependency array."
+    }
+  ],
+  "rpcCalls": [
+    {
+      "file": "src/components/Footer.tsx",
+      "line": 38,
+      "method": "common:getVersion"
+    },
+    {
+      "file": "src/components/MiniPingChart.tsx",
+      "line": 90,
+      "method": "public:getPublicPingTasks"
+    },
+    {
+      "file": "src/components/MiniPingChart.tsx",
+      "line": 93,
+      "method": "public:queryMetrics"
+    },
+    {
+      "file": "src/components/MiniPingChart.tsx",
+      "line": 105,
+      "method": "public:getPingMetricStats"
+    },
+    {
+      "file": "src/components/admin/AdminPanelBar.tsx",
+      "line": 197,
+      "method": "admin:listPlugins"
+    },
+    {
+      "file": "src/components/admin/AdminPanelBar.tsx",
+      "line": 247,
+      "method": "common:getVersion"
+    },
+    {
+      "file": "src/components/admin/ConfigFormTabs.tsx",
+      "line": 242,
+      "method": "admin:getAllPingTasks"
+    },
+    {
+      "file": "src/contexts/LiveDataContext.tsx",
+      "line": 174,
+      "method": "common:getNodesLatestStatus"
+    },
+    {
+      "file": "src/contexts/NodeListContext.tsx",
+      "line": 104,
+      "method": "common:getNodes"
+    },
+    {
+      "file": "src/pages/admin/market/plugins.tsx",
+      "line": 215,
+      "method": "admin:listPlugins"
+    },
+    {
+      "file": "src/pages/admin/market/plugins.tsx",
+      "line": 216,
+      "method": "common:getVersion"
+    },
+    {
+      "file": "src/pages/admin/market/plugins.tsx",
+      "line": 296,
+      "method": "admin:deletePlugin"
+    },
+    {
+      "file": "src/pages/admin/dashboard.tsx",
+      "line": 483,
+      "method": "common:getNodesLatestStatus"
+    },
+    {
+      "file": "src/pages/admin/dashboard.tsx",
+      "line": 495,
+      "method": "public:queryMetrics"
+    },
+    {
+      "file": "src/pages/admin/dashboard.tsx",
+      "line": 541,
+      "method": "public:getPingMetricStats"
+    },
+    {
+      "file": "src/pages/admin/dashboard.tsx",
+      "line": 544,
+      "method": "public:getPublicPingTasks"
+    },
+    {
+      "file": "src/pages/admin/dashboard.tsx",
+      "line": 1642,
+      "method": "public:queryMetrics"
+    },
+    {
+      "file": "src/pages/admin/notification/channels.tsx",
+      "line": 51,
+      "method": "admin:listNotificationChannels"
+    },
+    {
+      "file": "src/pages/admin/notification/channels.tsx",
+      "line": 77,
+      "method": "admin:getNotificationChannelConfiguration"
+    },
+    {
+      "file": "src/pages/admin/notification/channels.tsx",
+      "line": 133,
+      "method": "admin:setNotificationChannelConfiguration"
+    },
+    {
+      "file": "src/pages/admin/notification/channels.tsx",
+      "line": 236,
+      "method": "admin:testSendMessage"
+    },
+    {
+      "file": "src/pages/admin/index.tsx",
+      "line": 203,
+      "method": "common:getVersion"
+    },
+    {
+      "file": "src/pages/admin/plugin_config.tsx",
+      "line": 88,
+      "method": "admin:listPlugins"
+    },
+    {
+      "file": "src/pages/admin/plugin_config.tsx",
+      "line": 109,
+      "method": "admin:getPluginConfiguration"
+    },
+    {
+      "file": "src/pages/admin/plugin_config.tsx",
+      "line": 156,
+      "method": "admin:setPluginConfiguration"
+    },
+    {
+      "file": "src/pages/admin/plugins.tsx",
+      "line": 96,
+      "method": "admin:listPlugins"
+    },
+    {
+      "file": "src/pages/admin/plugins.tsx",
+      "line": 152,
+      "method": "admin:setPluginEnabled"
+    },
+    {
+      "file": "src/pages/admin/plugins.tsx",
+      "line": 181,
+      "method": "admin:setPluginEnabled"
+    },
+    {
+      "file": "src/pages/admin/plugins.tsx",
+      "line": 202,
+      "method": "admin:getPluginLogs"
+    },
+    {
+      "file": "src/pages/admin/plugins.tsx",
+      "line": 222,
+      "method": "admin:deletePlugin"
+    },
+    {
+      "file": "src/pages/admin/settings/metrics.tsx",
+      "line": 525,
+      "method": "admin:listMetricDefinitions"
+    },
+    {
+      "file": "src/pages/admin/settings/metrics.tsx",
+      "line": 564,
+      "method": "admin:updateMetricDefinition"
+    },
+    {
+      "file": "src/pages/admin/settings/metrics.tsx",
+      "line": 906,
+      "method": "admin:getMetricMigrationStatus"
+    },
+    {
+      "file": "src/pages/admin/settings/metrics.tsx",
+      "line": 959,
+      "method": "admin:startMetricMigration"
+    },
+    {
+      "file": "src/pages/admin/settings/metrics.tsx",
+      "line": 976,
+      "method": "admin:cancelMetricMigration"
+    },
+    {
+      "file": "src/pages/terminal/EditorResourceMonitor.tsx",
+      "line": 99,
+      "method": "common:getNodesLatestStatus"
+    },
+    {
+      "file": "src/pages/instance/LoadChart.tsx",
+      "line": 1036,
+      "method": "public:listMetricDefinitions"
+    },
+    {
+      "file": "src/pages/instance/LoadChart.tsx",
+      "line": 1056,
+      "method": "public:getPublicPingTasks"
+    },
+    {
+      "file": "src/pages/instance/LoadChart.tsx",
+      "line": 1140,
+      "method": "public:queryMetrics"
+    },
+    {
+      "file": "src/pages/instance/LoadChart.tsx",
+      "line": 1181,
+      "method": "public:getPingMetricStats"
+    },
+    {
+      "file": "src/pages/terminal/TerminalResourceMonitor.tsx",
+      "line": 167,
+      "method": "common:getNodesLatestStatus"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 90,
+      "method": "admin:fileList"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 101,
+      "method": "admin:fileListRoots"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 112,
+      "method": "admin:fileStat"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 166,
+      "method": "admin:fileMkdir"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 173,
+      "method": "admin:fileSearch"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 185,
+      "method": "admin:fileDelete"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 192,
+      "method": "admin:fileMove"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 199,
+      "method": "admin:fileCopy"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 206,
+      "method": "admin:fileChmod"
+    },
+    {
+      "file": "src/pages/terminal/useRemoteFileService.ts",
+      "line": 213,
+      "method": "admin:fileChown"
+    }
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/_layout\")))",
+      "layout": true
+    },
+    {
+      "path": "/",
+      "index": true,
+      "element": "React.createElement(Index)",
+      "layout": false
+    },
+    {
+      "path": "/instance/:uuid",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/instance\")))",
+      "layout": false
+    },
+    {
+      "path": "/plugin/:short/*",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/plugin_page\")))",
+      "layout": false
+    },
+    {
+      "path": "/admin/database-migration",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/database_migration\")), )",
+      "layout": false
+    },
+    {
+      "path": "/install",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/install\")))",
+      "layout": false
+    },
+    {
+      "path": "/database-recovery",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/database_recovery\")), )",
+      "layout": false
+    },
+    {
+      "path": "/admin/login",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/admin/login\")))",
+      "layout": false
+    },
+    {
+      "path": "/admin",
+      "index": false,
+      "element": "React.createElement(AdminLayout)",
+      "layout": true
+    },
+    {
+      "path": "/admin",
+      "index": true,
+      "element": "React.createElement(Navigate, { to: \"/admin/dashboard\", replace: true })",
+      "layout": false
+    },
+    {
+      "path": "/admin/dashboard",
+      "index": false,
+      "element": "React.createElement(Dashboard)",
+      "layout": false
+    },
+    {
+      "path": "/admin/servers",
+      "index": false,
+      "element": "React.createElement(Admin)",
+      "layout": false
+    },
+    {
+      "path": "/admin/theme_managed",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/theme_managed.tsx\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/theme_raw",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/theme_raw.tsx\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/themes",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/settings/_layout\")) )",
+      "layout": true
+    },
+    {
+      "path": "/admin/themes",
+      "index": true,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/themes\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/theme",
+      "index": false,
+      "element": "React.createElement(Navigate, { to: \"/admin/themes\", replace: true, })",
+      "layout": false
+    },
+    {
+      "path": "/admin/plugins",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/plugins\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/plugins/config",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/plugin_config\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/plugin-page",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/plugin_page\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/market/themes",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/market/themes\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/market/plugins",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/market/plugins\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/sessions",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/sessions\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/account",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/account\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/settings",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/settings/_layout\")) )",
+      "layout": true
+    },
+    {
+      "path": "/admin/settings",
+      "index": true,
+      "element": "React.createElement(Navigate, { to: \"/admin/settings/site\", replace: true, })",
+      "layout": false
+    },
+    {
+      "path": "/admin/settings/site",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/settings/site\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/settings/theme",
+      "index": false,
+      "element": "React.createElement(Navigate, { to: \"/admin/themes\", replace: true, })",
+      "layout": false
+    },
+    {
+      "path": "/admin/settings/custom",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/settings/custom\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/settings/sign-on",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/settings/sign-on\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/settings/notification",
+      "index": false,
+      "element": "React.createElement(Navigate, { to: \"/admin/notification/channels\", replace: true, })",
+      "layout": false
+    },
+    {
+      "path": "/admin/settings/general",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/settings/general\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/settings/metrics",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/settings/metrics\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/notification",
+      "index": true,
+      "element": "React.createElement(Navigate, { to: \"/admin/notification/channels\", replace: true, })",
+      "layout": false
+    },
+    {
+      "path": "/admin/notification/channels",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/settings/_layout\")) )",
+      "layout": true
+    },
+    {
+      "path": "/admin/notification/channels",
+      "index": true,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/notification/channels\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/notification/offline",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/notification/offline\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/notification/general",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/notification/general\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/ping",
+      "index": false,
+      "element": "React.createElement( lazy(() => import(\"./pages/admin/pingTask\")) )",
+      "layout": false
+    },
+    {
+      "path": "/admin/about",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/admin/about\")))",
+      "layout": false
+    },
+    {
+      "path": "/admin/logs",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/admin/log\")))",
+      "layout": false
+    },
+    {
+      "path": "/admin/pprof",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/admin/pprof\")))",
+      "layout": false
+    },
+    {
+      "path": "/admin/exec",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/admin/exec\")))",
+      "layout": false
+    },
+    {
+      "path": "/terminal",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/terminal\")))",
+      "layout": false
+    },
+    {
+      "path": "/manage/*",
+      "index": false,
+      "element": "React.createElement(lazy(() => import(\"./pages/manage\")))",
+      "layout": false
+    },
+    {
+      "path": "/*",
+      "index": false,
+      "element": "React.createElement(NotFound)",
+      "layout": false
+    }
+  ],
+  "sourceGroups": {
+    "src/components": {
+      "files": 72,
+      "lines": 11427
+    },
+    "src/contexts": {
+      "files": 10,
+      "lines": 1059
+    },
+    "src/global.css": {
+      "files": 1,
+      "lines": 280
+    },
+    "src/hooks": {
+      "files": 4,
+      "lines": 185
+    },
+    "src/i18n": {
+      "files": 1,
+      "lines": 96
+    },
+    "src/lib": {
+      "files": 4,
+      "lines": 1050
+    },
+    "src/main.tsx": {
+      "files": 1,
+      "lines": 123
+    },
+    "src/pages/Index.tsx": {
+      "files": 1,
+      "lines": 351
+    },
+    "src/pages/404.tsx": {
+      "files": 1,
+      "lines": 33
+    },
+    "src/pages/admin": {
+      "files": 32,
+      "lines": 14809
+    },
+    "src/pages/_layout.tsx": {
+      "files": 1,
+      "lines": 55
+    },
+    "src/pages/database_recovery.tsx": {
+      "files": 1,
+      "lines": 334
+    },
+    "src/pages/database_migration.tsx": {
+      "files": 1,
+      "lines": 899
+    },
+    "src/pages/install.tsx": {
+      "files": 1,
+      "lines": 401
+    },
+    "src/pages/instance": {
+      "files": 2,
+      "lines": 2031
+    },
+    "src/pages/manage.tsx": {
+      "files": 1,
+      "lines": 26
+    },
+    "src/pages/terminal": {
+      "files": 26,
+      "lines": 10077
+    },
+    "src/pages/plugin_page.tsx": {
+      "files": 1,
+      "lines": 31
+    },
+    "src/routes.ts": {
+      "files": 1,
+      "lines": 269
+    },
+    "src/types": {
+      "files": 6,
+      "lines": 364
+    },
+    "src/utils": {
+      "files": 18,
+      "lines": 2768
+    },
+    "src/vite-env.d.ts": {
+      "files": 1,
+      "lines": 8
+    }
+  }
+}

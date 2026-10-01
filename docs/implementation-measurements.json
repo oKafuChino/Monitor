@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-01",
+  "baseline": {
+    "bytes": 9458266,
+    "files": 544,
+    "precacheEntries": 535
+  },
+  "final": {
+    "bytes": 8700638,
+    "files": 522,
+    "precacheEntries": 513,
+    "embedBytes": 1973597,
+    "linuxAmd64BinaryBytes": 31530024
+  },
+  "differenceBytes": 757628,
+  "reductionPercent": 8.01,
+  "largest": [
+    {
+      "path": "komari-web/dist/assets/chunk-FileEditorDialog-DSD3-kPc.js",
+      "bytes": 3089127
+    },
+    {
+      "path": "komari-web/dist/assets/index-C3WJFEZo.css",
+      "bytes": 766154
+    },
+    {
+      "path": "komari-web/dist/assets/entry-index-DFhg01v5.js",
+      "bytes": 693066
+    }
+  ],
+  "removedFrontendDependencies": [
+    "@xterm/xterm",
+    "@xterm/addon-fit",
+    "@xterm/addon-search",
+    "@xterm/addon-web-links"
+  ],
+  "pwa": {
+    "skipWaiting": true,
+    "clientsClaim": true,
+    "cleanupOutdatedCaches": true,
+    "retiredChunks": false
+  },
+  "removedGoRequireItems": [
+    "github.com/dop251/goja",
+    "github.com/dop251/goja_nodejs",
+    "github.com/dop251/base64dec",
+    "github.com/dlclark/regexp2",
+    "github.com/go-sourcemap/sourcemap",
+    "github.com/google/pprof"
+  ]
+}

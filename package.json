@@ -1,0 +1,19 @@
+{
+  "name": "komari-monitor",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "setup": "node scripts/project.mjs setup",
+    "dev": "node scripts/project.mjs dev",
+    "build": "node scripts/project.mjs build",
+    "build:web": "node scripts/project.mjs build-web",
+    "build:server": "node scripts/project.mjs build-server",
+    "start": "node scripts/project.mjs start",
+    "test": "node scripts/project.mjs test",
+    "test:web": "node scripts/project.mjs test-web",
+    "test:server": "node scripts/project.mjs test-server",
+    "lint": "node scripts/project.mjs lint",
+    "check": "node scripts/project.mjs check"
+  }
+}

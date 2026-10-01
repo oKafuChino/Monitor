@@ -16,7 +16,8 @@ var backupWhitelist = []string{
 	"font.ttf",
 	"theme/",
 	"plugin/",
-	"plguin-data/",
+	"plguin-data/", // Preserve legacy misspelled directory too.
+	"plugin-data/",
 	"metrics.db",
 }
 
