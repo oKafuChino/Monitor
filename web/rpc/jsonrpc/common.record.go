@@ -594,6 +594,8 @@ type flatRecord struct {
 	Temp           *float32  `json:"temp,omitempty"`
 	Disk           *int64    `json:"disk,omitempty"`
 	DiskTotal      *int64    `json:"disk_total,omitempty"`
+	DiskReadRate   *float64  `json:"disk_read_rate"`
+	DiskWriteRate  *float64  `json:"disk_write_rate"`
 	NetIn          *int64    `json:"net_in,omitempty"`
 	NetOut         *int64    `json:"net_out,omitempty"`
 	NetTotalUp     *int64    `json:"net_total_up,omitempty"`
@@ -636,6 +638,9 @@ func filterRecordsByLoadType(recs []models.Record, loadType string) []flatRecord
 			fr.Disk = &v
 			vt := r.DiskTotal
 			fr.DiskTotal = &vt
+		case "disk_io":
+			fr.DiskReadRate = r.DiskReadRate
+			fr.DiskWriteRate = r.DiskWriteRate
 		case "network":
 			vi := r.NetIn
 			vo := r.NetOut

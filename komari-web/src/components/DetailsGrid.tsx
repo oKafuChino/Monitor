@@ -9,6 +9,7 @@ import { formatUptime } from "./Node";
 import { formatBytes } from "@/utils/unitHelper";
 import { Flex, Text, Card } from "@radix-ui/themes";
 import type { Record as LiveRecord } from "@/types/LiveData";
+import { diskIOStatusKey, formatDiskIORate } from "@/utils/diskIO";
 
 type DetailsGridProps = {
   uuid: string;
@@ -34,6 +35,8 @@ export const DetailsGrid = ({
   const node =
     nodeProp ?? nodeListContext?.nodeList?.find((n) => n.uuid === uuid);
   const currentRecord = liveRecord ?? live_data?.data.data[uuid ?? ""];
+  const io = currentRecord?.disk_io;
+  const ioOnline = live_data?.data.online.includes(uuid) === true;
 
   const Container: any = box ? Card : 'div';
 
@@ -105,7 +108,14 @@ export const DetailsGrid = ({
           up={t("nodeCard.disk")}
           down={formatBytes(node?.disk_total || 0)}
         />
-        <div className="flex-[0_0_calc(50%-0.5rem)]" />
+        <UpDownStack
+          up={t("diskIO.title")}
+          className="km-details-item min-w-0 flex-[0_0_calc(50%-0.5rem)]"
+          align={align === "center" ? "end" : "start"}
+          down={ioOnline && io?.status === "ok"
+            ? `${t("diskIO.read")} ${formatDiskIORate(io.read_bytes_per_sec ?? 0)} · ${t("diskIO.write")} ${formatDiskIORate(io.write_bytes_per_sec ?? 0)}`
+            : t(diskIOStatusKey(io, ioOnline))}
+        />
         <UpDownStack
           up={t("nodeCard.uptime")}
           className="km-details-item flex-[0_0_calc(50%-0.5rem)]"

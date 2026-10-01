@@ -129,7 +129,7 @@ export default function InstancePage() {
     const unsubscribe = onRefresh((resp) => {
       if (!uuid || !chartRealtimeActive) return;
       const data = resp.data.data[uuid];
-      if (!data) return;
+      if (!data || !resp.data.online.includes(uuid)) return;
 
       setRecent((prev) => {
         const newRecord: Record = data;

@@ -68,6 +68,7 @@ type Report struct {
 	Swap        RamReport         `json:"swap"`
 	Load        LoadReport        `json:"load"`
 	Disk        DiskReport        `json:"disk"`
+	DiskIO      *DiskIOReport     `json:"disk_io,omitempty"`
 	Network     NetworkReport     `json:"network"`
 	Connections ConnectionsReport `json:"connections"`
 	GPU         *GPUDetailReport  `json:"gpu,omitempty"`
@@ -113,6 +114,32 @@ type LoadReport struct {
 type DiskReport struct {
 	Total int64 `json:"total"`
 	Used  int64 `json:"used"`
+}
+
+// DiskIOReport describes rates computed by the probe using its monotonic clock.
+// Nil rates mean no sample; a pointer to zero means a valid idle sample.
+type DiskIOReport struct {
+	Status           string   `json:"status"`
+	ReadBytesPerSec   *float64 `json:"read_bytes_per_sec,omitempty"`
+	WriteBytesPerSec  *float64 `json:"write_bytes_per_sec,omitempty"`
+	SampleIntervalMS int64    `json:"sample_interval_ms"`
+}
+
+// Clone keeps cached/queued reports independent of a collector's next sample.
+func (d *DiskIOReport) Clone() *DiskIOReport {
+	if d == nil {
+		return nil
+	}
+	copy := *d
+	if d.ReadBytesPerSec != nil {
+		value := *d.ReadBytesPerSec
+		copy.ReadBytesPerSec = &value
+	}
+	if d.WriteBytesPerSec != nil {
+		value := *d.WriteBytesPerSec
+		copy.WriteBytesPerSec = &value
+	}
+	return &copy
 }
 
 type NetworkReport struct {

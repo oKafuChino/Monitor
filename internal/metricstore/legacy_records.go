@@ -206,6 +206,10 @@ func applyRecordMetricValue(rec *models.Record, metricName string, value float64
 		rec.Load = float32(value)
 	case MetricDisk:
 		rec.Disk = int64(value)
+	case MetricDiskIORead:
+		rec.DiskReadRate = &value
+	case MetricDiskIOWrite:
+		rec.DiskWriteRate = &value
 	case MetricNetIn:
 		rec.NetIn = int64(value)
 	case MetricNetOut:

@@ -1,4 +1,5 @@
 import { quoteShellArg, quoteShellArgs } from "@/utils/shellQuote";
+import { AGENT_INSTALL_SCRIPT, AGENT_CONTAINER_IMAGE } from "@/utils/agentDistribution";
 import React, { useEffect, useState } from "react";
 import {
   NodeDetailsProvider,
@@ -333,8 +334,7 @@ const AutoDiscoverySection = ({
       args.push(rotateVal);
     }
 
-    let scriptUrl =
-      "https://raw.githubusercontent.com/komari-monitor/komari-agent/refs/heads/main/install.sh";
+    let scriptUrl = AGENT_INSTALL_SCRIPT;
     if (enableGhproxy && ghproxy) {
       scriptUrl = scriptUrl.slice(8); // 去掉 https://
       if (ghproxy.endsWith("/")) {
@@ -377,7 +377,7 @@ const AutoDiscoverySection = ({
           `touch .komari-auto-discovery.json && ` +
           `docker run -d --name komari-agent --restart=always ` +
           `-v .komari-auto-discovery.json:/app/auto-discovery.json ` +
-          `ghcr.io/komari-monitor/komari-agent:latest ` +
+          `${AGENT_CONTAINER_IMAGE} ` +
           quoteShellArgs(dockerArgs);
         break;
       }
@@ -1573,8 +1573,7 @@ function GenerateCommandButton({
       args.push(`--month-rotate`);
       args.push(rotateVal);
     }
-    let scriptUrl =
-      "https://raw.githubusercontent.com/komari-monitor/komari-agent/refs/heads/main/install.sh";
+    let scriptUrl = AGENT_INSTALL_SCRIPT;
     if (enableGhproxy) {
       if (enableGhproxy && ghproxy) {
         scriptUrl = scriptUrl.slice(8); // 去掉 https://
@@ -1613,7 +1612,7 @@ function GenerateCommandButton({
         }
         finalCommand =
           `docker run -d --name komari-agent --restart=always ` +
-          `ghcr.io/komari-monitor/komari-agent:latest ` +
+          `${AGENT_CONTAINER_IMAGE} ` +
           quoteShellArgs(dockerArgs);
         break;
       }

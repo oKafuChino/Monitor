@@ -26,6 +26,9 @@ export interface RecordFormat {
   temp: number | null;
   disk: number | null;
   disk_total: number | null;
+  disk_read_rate?: number | null;
+  disk_write_rate?: number | null;
+  disk_sample_interval_ms?: number | null;
   net_in: number | null;
   net_out: number | null;
   net_total_up: number | null;
@@ -80,6 +83,9 @@ export function liveDataToRecords(
     temp: 0,
     disk: data.disk.used ?? 0,
     disk_total: 0,
+    disk_read_rate: data.disk_io?.status === "ok" ? data.disk_io.read_bytes_per_sec ?? null : null,
+    disk_write_rate: data.disk_io?.status === "ok" ? data.disk_io.write_bytes_per_sec ?? null : null,
+    disk_sample_interval_ms: data.disk_io?.status === "ok" ? data.disk_io.sample_interval_ms : null,
     net_in: data.network?.down ?? 0,
     net_out: data.network?.up ?? 0,
     net_total_up: data.network?.totalUp ?? 0,

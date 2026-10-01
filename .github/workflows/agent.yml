@@ -1,0 +1,125 @@
+name: Integrated probe
+
+on:
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: komari-agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: komari-agent/go.sum
+      - run: go test ./...
+      - run: go test -race ./monitoring/... ./server/...
+      - run: bash -n install.sh
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - {goos: linux, goarch: amd64}
+          - {goos: linux, goarch: arm64}
+          - {goos: linux, goarch: '386'}
+          - {goos: linux, goarch: arm}
+          - {goos: linux, goarch: riscv64}
+          - {goos: linux, goarch: loong64}
+          - {goos: windows, goarch: amd64}
+          - {goos: windows, goarch: arm64}
+          - {goos: windows, goarch: '386'}
+          - {goos: darwin, goarch: amd64}
+          - {goos: darwin, goarch: arm64}
+          - {goos: freebsd, goarch: amd64}
+          - {goos: freebsd, goarch: arm64}
+          - {goos: freebsd, goarch: '386'}
+          - {goos: freebsd, goarch: arm}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: komari-agent/go.sum
+      - name: Build probe
+        working-directory: komari-agent
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SOURCE_REPO: ${{ github.repository }}
+        run: |
+          name="komari-agent-${GOOS}-${GOARCH}"
+          if [ "$GOOS" = windows ]; then name="$name.exe"; fi
+          version="${RELEASE_TAG:-dev}"
+          go build -trimpath -ldflags="-s -w -X github.com/komari-monitor/komari-agent/update.CurrentVersion=$version -X github.com/komari-monitor/komari-agent/update.Repo=$SOURCE_REPO" -o "../dist/agent/$name" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: komari-agent-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/agent/*
+      - name: Attach probe to project release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          SOURCE_REPO: ${{ github.repository }}
+        run: gh release upload "$RELEASE_TAG" dist/agent/* --repo "$SOURCE_REPO"
+  container:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: komari-agent-linux-*
+          path: komari-agent
+          merge-multiple: true
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Image tags
+        id: image
+        env:
+          SOURCE_REPO: ${{ github.repository }}
+        run: echo "name=ghcr.io/${SOURCE_REPO,,}-agent" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v5
+        with:
+          context: komari-agent
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.image.outputs.name }}:${{ github.event.release.tag_name }}
+      - name: Promote latest project release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+        run: |
+          is_latest="$(gh api graphql \
+            -f 'query=query($owner: String!, $name: String!, $tag: String!) { repository(owner: $owner, name: $name) { release(tagName: $tag) { isLatest } } }' \
+            -F owner="${{ github.repository_owner }}" \
+            -F name="${{ github.event.repository.name }}" \
+            -F tag="$RELEASE_TAG" --jq '.data.repository.release.isLatest')"
+          if [ "$is_latest" = true ]; then
+            docker buildx imagetools create --tag "$IMAGE_NAME:latest" "$IMAGE_NAME:$RELEASE_TAG"
+          fi

@@ -40,15 +40,26 @@ function completed(child, label) {
 const run = (executable, args, settings) => completed(launch(executable, args, settings), executable);
 const npm = (...args) => run(process.execPath, [npmCLI, ...args], { cwd: frontend });
 
-function go(args) {
-  if (!docker) return run("go", args);
+function go(args, project = ".") {
+  if (!docker) return run("go", args, { cwd: path.join(root, project) });
   return run("docker", [
     "run", "--rm",
     "--mount", `type=bind,source=${root.replace(/[\\/]$/, "")},target=/workspace`,
     "--mount", "type=volume,source=monitor-go-cache,target=/go",
     "--mount", "type=volume,source=monitor-go-build-cache,target=/root/.cache/go-build",
-    "-w", "/workspace", "-e", "CGO_ENABLED=1", goImage, "go", ...args,
+    "-w", project === "." ? "/workspace" : `/workspace/${project}`, "-e", "CGO_ENABLED=1", goImage, "go", ...args,
   ]);
+}
+async function buildAgent() {
+  const goos = process.env.GOOS || (docker ? "linux" : process.platform === "win32" ? "windows" : process.platform);
+  const goarch = process.env.GOARCH || (process.arch === "x64" ? "amd64" : process.arch === "ia32" ? "386" : process.arch);
+  const name = `komari-agent-${goos}-${goarch}${goos === "windows" ? ".exe" : ""}`;
+  fs.mkdirSync(path.join(root, "dist/agent"), { recursive: true });
+  await go(["build", "-trimpath", "-o", `../dist/agent/${name}`, "."], "komari-agent");
+}
+async function testAgent() {
+  await go(["test", "./..."], "komari-agent");
+  await go(["test", "-race", "./monitoring/...", "./server/..."], "komari-agent");
 }
 async function buildWeb() {
   await npm("run", "build");
@@ -158,7 +169,9 @@ try {
     case "setup": await npm("ci", "--no-audit", "--no-fund"); break;
     case "build-web": await buildWeb(); break;
     case "build-server": await buildServer(); break;
-    case "build": await buildWeb(); await buildServer(); break;
+    case "build-agent": await buildAgent(); break;
+    case "test-agent": await testAgent(); break;
+    case "build": await buildWeb(); await buildServer(); await buildAgent(); break;
     case "dev": if (!skipBuild) { await buildWeb(); await buildServer(); } await serve(true); break;
     case "start": await serve(false); break;
     case "test-web": await buildWeb(); await testWeb(); break;
@@ -167,7 +180,7 @@ try {
     case "check":
       await npm("run", "lint");
       // fall through to the full source-to-embedded regression pipeline
-    case "test": await buildWeb(); await testWeb(); await go(["test", "./..."]); break;
+    case "test": await buildWeb(); await testWeb(); await go(["test", "./..."]); await testAgent(); break;
     case "help": console.log("npm run setup | dev | build | start | test | check; append -- --docker to use containerized Go/CGO"); break;
     default: throw new Error(`Unknown command: ${command}`);
   }

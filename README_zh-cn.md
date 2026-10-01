@@ -167,3 +167,7 @@ npm start -- --docker
 产物为包含前端的 Linux 二进制 `dist/komari`。`npm start` 默认监听 `127.0.0.1:25774`，仅供本机访问；对外部署可使用上述 Docker Compose 方式。开发模式使用 `npm run dev -- --docker`。
 
 许可证见 [LICENSE](./LICENSE)。
+
+## 集成探针
+
+探针源码位于 `komari-agent/`，由本项目统一构建和发行。Linux 支持磁盘读取／写入速率，其他探针平台当前上报 I/O 未支持。配置、构建和兼容说明见 [探针集成说明](komari-agent/INTEGRATION.md)。

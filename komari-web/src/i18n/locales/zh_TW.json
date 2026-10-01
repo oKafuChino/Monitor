@@ -1,4 +1,5 @@
 {
+  "diskIO": {"title":"磁碟 I/O","read":"讀取","write":"寫入","warming_up":"取樣中","unsupported":"未支援","unavailable":"暫時無法使用","disabled":"已關閉","offline":"離線"},
   "dashboardLayout": {
     "workspace": "我的儀表板",
     "editing": "編輯佈局",

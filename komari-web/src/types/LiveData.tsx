@@ -1,3 +1,10 @@
+export type DiskIO = {
+  status: "ok" | "warming_up" | "unsupported" | "unavailable" | "disabled";
+  read_bytes_per_sec?: number | null;
+  write_bytes_per_sec?: number | null;
+  sample_interval_ms: number;
+};
+
 export type LiveData = {
     online: string[];
     data: { [key: string]: Record };
@@ -21,6 +28,7 @@ export type Record = {
   disk: {
     used: number;
   };
+  disk_io?: DiskIO;
   network: {
     up: number;
     down: number;

@@ -56,6 +56,7 @@ import PingMetricStatContent from "@/components/PingMetricStatContent";
 import Tips from "@/components/ui/tips";
 import { useAccount } from "@/contexts/AccountContext";
 import { useNodeList } from "@/contexts/NodeListContext";
+import { useLiveData } from "@/contexts/LiveDataContext";
 import { usePublicInfo } from "@/contexts/PublicInfoContext";
 import { useRPC2Call } from "@/contexts/RPC2Context";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -87,6 +88,7 @@ import {
   type MetricChartRow,
 } from "@/utils/metricSeries";
 import { formatBytes } from "@/utils/unitHelper";
+import { breakDiskIOGaps, diskIOStatusKey, formatDiskIORate } from "@/utils/diskIO";
 import type { RecordFormat } from "@/utils/RecordHelper";
 
 type LoadChartProps = {
@@ -239,6 +241,12 @@ const DEFAULT_DASHBOARD: DashboardChart[] = [
     size: "large",
   },
   {
+    id: "disk-io",
+    title: "Disk I/O",
+    metrics: ["disk.io.read.rate", "disk.io.write.rate"],
+    size: "medium",
+  },
+  {
     id: "ping",
     title: "Latency",
     metrics: [PING_LATENCY_METRIC],
@@ -380,6 +388,20 @@ const fallbackCatalog: MetricCatalogItem[] = [
     realtimeValue: (record) => record.net_in,
   },
   {
+    key: "disk.io.read.rate",
+    label: "Disk read",
+    kind: "bytesPerSecond",
+    unit: "bytes/s",
+    realtimeValue: (record) => record.disk_read_rate,
+  },
+  {
+    key: "disk.io.write.rate",
+    label: "Disk write",
+    kind: "bytesPerSecond",
+    unit: "bytes/s",
+    realtimeValue: (record) => record.disk_write_rate,
+  },
+  {
     key: "net.out.rate",
     label: "Upload",
     kind: "bytesPerSecond",
@@ -486,7 +508,9 @@ const formatSeriesLabel = (
   const tagLabel = formatTags(metricKey, tags, pingTaskMap, t);
   if (metricKey === PING_LATENCY_METRIC && tagLabel) return tagLabel;
   const metricLabel = getMetricLabel(metricKey, definitions);
-  return tagLabel ? `${metricLabel} ${tagLabel}` : metricLabel;
+  const label = metricKey === "disk.io.read.rate" ? t("diskIO.read")
+    : metricKey === "disk.io.write.rate" ? t("diskIO.write") : metricLabel;
+  return tagLabel ? `${label} ${tagLabel}` : label;
 };
 
 const asMetricValue = (value: number | null | undefined) => {
@@ -502,7 +526,7 @@ const formatValue = (value: unknown, kind: MetricKind) => {
     case "bytes":
       return formatBytes(value);
     case "bytesPerSecond":
-      return `${formatBytes(value)}/s`;
+      return formatDiskIORate(value);
     case "count":
       return `${Math.round(value)}`;
     case "temperature":
@@ -695,7 +719,8 @@ const buildRowsFromRealtime = (
           dataKey: metricSeriesDataKey(metricKey),
           stableKey,
           metricKey,
-          label: metric.label,
+          label: metricKey === "disk.io.read.rate" ? t("diskIO.read")
+            : metricKey === "disk.io.write.rate" ? t("diskIO.write") : metric.label,
           color: metricSeriesColor(renderSeries.length),
           kind: metric.kind,
           unit: metric.unit,
@@ -709,10 +734,20 @@ const buildRowsFromRealtime = (
     rows.set(time, row);
   }
 
+  const sortedRows = Array.from(rows.values()).sort(
+    (a, b) => new Date(String(a.time)).getTime() - new Date(String(b.time)).getTime(),
+  );
+  // Keep compatibility with the project's ES2022 target (Array.findLast is ES2023).
+  let intervalMs = 3000;
+  for (let index = recent.length - 1; index >= 0; index -= 1) {
+    const candidate = recent[index].disk_sample_interval_ms ?? 0;
+    if (candidate > 0) {
+      intervalMs = candidate;
+      break;
+    }
+  }
   return {
-    rows: Array.from(rows.values()).sort(
-      (a, b) => new Date(String(a.time)).getTime() - new Date(String(b.time)).getTime(),
-    ),
+    rows: breakDiskIOGaps(sortedRows, renderSeries.filter((item) => item.metricKey.startsWith("disk.io.")).map((item) => item.dataKey), intervalMs),
     series: renderSeries,
   };
 };
@@ -838,7 +873,8 @@ const prepareChartData = (
     series.push({
       ...item,
       yAxisId,
-      color: metricSeriesColor(series.length),
+      color: item.metricKey === "disk.io.read.rate" ? "#8B5CF6"
+        : item.metricKey === "disk.io.write.rate" ? "#14B8A6" : metricSeriesColor(series.length),
     });
   }
 
@@ -957,6 +993,7 @@ const LoadChart = ({ data = [], onRealtimeActiveChange }: LoadChartProps) => {
   const { account } = useAccount();
   const { publicInfo, refresh: refreshPublicInfo } = usePublicInfo();
   const { nodeList } = useNodeList();
+  const { live_data } = useLiveData();
   const node = nodeList?.find((item) => item.uuid === uuid);
   const [definitions, setDefinitions] = useState<MetricDefinition[]>([]);
   const [definitionsLoaded, setDefinitionsLoaded] = useState(false);
@@ -1077,7 +1114,11 @@ const LoadChart = ({ data = [], onRealtimeActiveChange }: LoadChartProps) => {
 
   const metricOptions = useMemo(() => {
     const merged = new Map<string, MetricCatalogItem>();
-    for (const item of fallbackCatalog) merged.set(item.key, item);
+    for (const item of fallbackCatalog) merged.set(item.key, {
+      ...item,
+      label: item.key === "disk.io.read.rate" ? t("diskIO.read")
+        : item.key === "disk.io.write.rate" ? t("diskIO.write") : item.label,
+    });
     for (const def of definitions) {
       if (!merged.has(def.name)) {
         merged.set(def.name, {
@@ -1089,7 +1130,7 @@ const LoadChart = ({ data = [], onRealtimeActiveChange }: LoadChartProps) => {
       }
     }
     return Array.from(merged.values()).sort((a, b) => a.label.localeCompare(b.label));
-  }, [definitions]);
+  }, [definitions, t]);
 
   const customQuery = useMemo(
     () => toQueryRange(customQueryRange),
@@ -1244,13 +1285,14 @@ const LoadChart = ({ data = [], onRealtimeActiveChange }: LoadChartProps) => {
     setDashboard((current) => {
       const normalized = normalizeDashboard(current);
       const nextIndex = normalized.length + 1;
-      const title = getMetricLabel(metricKey, definitionMap);
+      const diskIO = metricKey === "disk_io";
+      const title = diskIO ? t("diskIO.title") : getMetricLabel(metricKey, definitionMap);
       return [
         ...normalized,
         {
           id: `custom-${Date.now()}`,
           title: title || `Chart ${nextIndex}`,
-          metrics: [metricKey],
+          metrics: diskIO ? ["disk.io.read.rate", "disk.io.write.rate"] : [metricKey],
           size: "medium",
         },
       ];
@@ -1474,6 +1516,7 @@ const LoadChart = ({ data = [], onRealtimeActiveChange }: LoadChartProps) => {
                 aria-label={t("chart.addChart", "Add chart")}
               />
               <Select.Content>
+                <Select.Item value="disk_io">{t("diskIO.title")}</Select.Item>
                 {metricOptions.map((item) => (
                   <Select.Item key={item.key} value={item.key}>
                     {item.label}
@@ -1524,7 +1567,14 @@ const LoadChart = ({ data = [], onRealtimeActiveChange }: LoadChartProps) => {
           );
           const chartTicks = metricChartBoundaryTicks(chartRows);
           const chartConfig = toChartConfig(built.series);
-          const latestText = getLatestText(chartRows, built.series);
+          const isDiskIOChart = chart.metrics.some((key) => key.startsWith("disk.io."));
+          const io = uuid ? live_data?.data.data[uuid]?.disk_io : undefined;
+          const ioOnline = Boolean(uuid && live_data?.data.online.includes(uuid));
+          const latestText = isRealtime && isDiskIOChart
+            ? ioOnline && io?.status === "ok"
+              ? `${t("diskIO.read")}: ${formatDiskIORate(io.read_bytes_per_sec ?? 0)} · ${t("diskIO.write")}: ${formatDiskIORate(io.write_bytes_per_sec ?? 0)}`
+              : t(diskIOStatusKey(io, ioOnline))
+            : getLatestText(chartRows, built.series);
           const allHidden = built.series.length > 0 && built.series.every((item) => isSeriesHidden(chart.id, item));
 
           return (
@@ -1538,7 +1588,7 @@ const LoadChart = ({ data = [], onRealtimeActiveChange }: LoadChartProps) => {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <ChartLine className="size-4 shrink-0 text-muted-foreground" />
-                    <h2 className="truncate text-lg font-bold">{chart.title}</h2>
+                    <h2 className="truncate text-lg font-bold">{chart.id === "disk-io" ? t("diskIO.title") : chart.title}</h2>
                   </div>
                   <div className="mt-1 truncate text-xs text-muted-foreground">
                     {latestText}

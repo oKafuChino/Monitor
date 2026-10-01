@@ -11,6 +11,8 @@ const (
 	MetricSwap           = "swap.used"
 	MetricLoad           = "load.average"
 	MetricDisk           = "disk.used"
+	MetricDiskIORead     = "disk.io.read.rate"
+	MetricDiskIOWrite    = "disk.io.write.rate"
 	MetricNetIn          = "net.in.rate"
 	MetricNetOut         = "net.out.rate"
 	MetricNetTotalUp     = "net.total.up"
@@ -30,6 +32,7 @@ var loadRecordMetricNames = []string{
 	MetricCPU, MetricGPU, MetricRAM, MetricSwap, MetricLoad, MetricDisk, MetricNetIn, MetricNetOut,
 	MetricNetTotalUp, MetricNetTotalDown, MetricTrafficUp, MetricTrafficDown,
 	MetricProcess, MetricConnections, MetricConnectionsUDP,
+	MetricDiskIORead, MetricDiskIOWrite,
 }
 
 // gpuDeviceRecordMetricNames are stored separately from the entity-level GPU
@@ -59,6 +62,10 @@ func metricNameForRecordField(name string) (string, bool) {
 		return MetricLoad, true
 	case "disk":
 		return MetricDisk, true
+	case "disk_read_rate":
+		return MetricDiskIORead, true
+	case "disk_write_rate":
+		return MetricDiskIOWrite, true
 	case "net_in", "netin":
 		return MetricNetIn, true
 	case "net_out", "netout":

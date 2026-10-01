@@ -1,4 +1,5 @@
 {
+  "diskIO": {"title":"磁盘 I/O","read":"读取","write":"写入","warming_up":"采样中","unsupported":"未支持","unavailable":"暂不可用","disabled":"已关闭","offline":"离线"},
   "about": {
     "ai": "Komari 项目的开发过程得到了人工智能工具的辅助。这些工具被用于执行代码生成、重构和调试等任务，以提高开发效率和代码质量。所有由 AI 生成的代码和建议都经过了人类开发者的审查与验证。",
     "open_source": "Komari 基于 MIT 协议开源，并使用了以下开源软件构建：",

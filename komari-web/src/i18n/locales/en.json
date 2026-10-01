@@ -1,4 +1,5 @@
 {
+  "diskIO": {"title":"Disk I/O","read":"Read","write":"Write","warming_up":"Sampling","unsupported":"Not supported","unavailable":"Unavailable","disabled":"Disabled","offline":"Offline"},
   "dashboardLayout": {
     "workspace": "My dashboard",
     "editing": "Edit layout",

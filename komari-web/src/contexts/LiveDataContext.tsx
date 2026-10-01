@@ -12,6 +12,7 @@ import type {
   Record as LiveRecord,
 } from "../types/LiveData";
 import { useRPC2Call } from "./RPC2Context";
+import { parseDiskIO } from "../utils/diskIO";
 
 const LIVE_DATA_INTERVAL_MS = 2000;
 
@@ -27,6 +28,10 @@ const sameLiveRecord = (left: LiveRecord, right: LiveRecord) =>
   left.load.load5 === right.load.load5 &&
   left.load.load15 === right.load.load15 &&
   left.disk.used === right.disk.used &&
+  left.disk_io?.status === right.disk_io?.status &&
+  left.disk_io?.read_bytes_per_sec === right.disk_io?.read_bytes_per_sec &&
+  left.disk_io?.write_bytes_per_sec === right.disk_io?.write_bytes_per_sec &&
+  left.disk_io?.sample_interval_ms === right.disk_io?.sample_interval_ms &&
   left.network.up === right.network.up &&
   left.network.down === right.network.down &&
   left.network.totalUp === right.network.totalUp &&
@@ -67,6 +72,7 @@ const mergeLiveData = (
         load15: record.load15 ?? 0,
       },
       disk: { used: record.disk ?? 0 },
+      disk_io: parseDiskIO(record.disk_io),
       network: {
         up: record.net_out ?? 0,
         down: record.net_in ?? 0,

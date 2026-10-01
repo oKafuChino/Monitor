@@ -131,6 +131,7 @@ func GetLatestReport() map[string]*v2.Report {
 			continue
 		}
 		item := *v
+		item.DiskIO = item.DiskIO.Clone()
 		reportCopy[k] = &item
 	}
 	return reportCopy
@@ -149,6 +150,7 @@ func RecordReport(report v2.Report) {
 	}
 	mu.Lock()
 	defer mu.Unlock()
+	report.DiskIO = report.DiskIO.Clone()
 	if latest := latestReport[report.UUID]; latest == nil || !report.UpdatedAt.Before(latest.UpdatedAt) {
 		item := report
 		latestReport[report.UUID] = &item
@@ -177,7 +179,11 @@ func GetRecentReports(uuid string) []v2.Report {
 		return []v2.Report{}
 	}
 	recentReports[uuid] = reports
-	return append([]v2.Report(nil), reports...)
+	out := append([]v2.Report(nil), reports...)
+	for i := range out {
+		out[i].DiskIO = out[i].DiskIO.Clone()
+	}
+	return out
 }
 
 func reportsAfter(reports []v2.Report, cutoff time.Time) []v2.Report {

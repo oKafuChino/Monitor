@@ -134,8 +134,56 @@ jobs:
           name: komari-${{ matrix.goos }}-${{ matrix.goarch }}
           path: komari-${{ matrix.goos }}-${{ matrix.goarch }}*
 
+  build-probe:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - {goos: linux, goarch: amd64}
+          - {goos: linux, goarch: arm64}
+          - {goos: linux, goarch: '386'}
+          - {goos: linux, goarch: arm}
+          - {goos: linux, goarch: loong64}
+          - {goos: linux, goarch: riscv64}
+          - {goos: windows, goarch: amd64}
+          - {goos: windows, goarch: arm64}
+          - {goos: windows, goarch: '386'}
+          - {goos: darwin, goarch: amd64}
+          - {goos: darwin, goarch: arm64}
+          - {goos: freebsd, goarch: amd64}
+          - {goos: freebsd, goarch: arm64}
+          - {goos: freebsd, goarch: '386'}
+          - {goos: freebsd, goarch: arm}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: komari-agent/go.sum
+      - name: Test probe before snapshot
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+        working-directory: komari-agent
+        run: go test ./... && go test -race ./monitoring/... ./server/...
+      - name: Build integrated probe
+        working-directory: komari-agent
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: '0'
+          VERSION: ${{ needs.prepare.outputs.version }}
+          SOURCE_REPO: ${{ github.repository }}
+        run: |
+          name="komari-agent-${GOOS}-${GOARCH}"
+          if [ "$GOOS" = windows ]; then name="$name.exe"; fi
+          go build -trimpath -ldflags="-s -w -X github.com/komari-monitor/komari-agent/update.CurrentVersion=$VERSION -X github.com/komari-monitor/komari-agent/update.Repo=$SOURCE_REPO" -o "$name" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: komari-agent-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: komari-agent/komari-agent-${{ matrix.goos }}-${{ matrix.goarch }}*
+
   publish-snapshot-release:
-    needs: [prepare, build-and-attach-binaries]
+    needs: [prepare, build-and-attach-binaries, build-probe]
     runs-on: ubuntu-latest
     permissions:
       actions: write

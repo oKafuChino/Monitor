@@ -51,6 +51,9 @@ func handleV2RPC(uuid string, req v2.Request, allowWait bool) v2.Response {
 		if err := bindV2Params(req.Params, &params); err != nil {
 			return v2.Error(req.ID, -32602, "invalid report params", err.Error())
 		}
+		if err := clients.ReportVerify(params.Report); err != nil {
+			return v2.Error(req.ID, -32602, "invalid report params", err.Error())
+		}
 		if err := ingestReport(uuid, params.Report, true); err != nil {
 			return v2.Error(req.ID, -32000, "failed to save report", err.Error())
 		}

@@ -92,7 +92,7 @@ The selected branch/tag must contain the integrated frontend, Dockerfile and ins
 3. Run the command on the server to be monitored.
 4. Wait for the node to connect and display its metrics.
 
-The Linux restriction applies to this server deployment. Agents are a separate project; node platform availability depends on the Agent itself.
+The probe is integrated in `komari-agent/` and released with this project. Linux probes report block-device read/write rates; other probe platforms report I/O as unsupported. See [probe integration and build instructions](komari-agent/INTEGRATION.md).
 
 ## 5. Updates and service management
 

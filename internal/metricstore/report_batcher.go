@@ -165,6 +165,7 @@ func WriteReport(ctx context.Context, report v2.Report) (v2.Report, error) {
 		return v2.Report{}, fmt.Errorf("report receive time is required")
 	}
 	report.UpdatedAt = report.UpdatedAt.UTC()
+	report.DiskIO = report.DiskIO.Clone()
 	if GetStore() == nil {
 		return v2.Report{}, fmt.Errorf("metric store not enabled")
 	}

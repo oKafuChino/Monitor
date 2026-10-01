@@ -85,6 +85,8 @@ type Record struct {
 	Temp           float32   `json:"temp" gorm:"type:decimal(5,2)"`
 	Disk           int64     `json:"disk" gorm:"type:bigint"`
 	DiskTotal      int64     `json:"disk_total" gorm:"type:bigint"`
+	DiskReadRate   *float64  `json:"disk_read_rate" gorm:"-"`
+	DiskWriteRate  *float64  `json:"disk_write_rate" gorm:"-"`
 	NetIn          int64     `json:"net_in" gorm:"type:bigint"`
 	NetOut         int64     `json:"net_out" gorm:"type:bigint"`
 	NetTotalUp     int64     `json:"net_total_up" gorm:"type:bigint"`

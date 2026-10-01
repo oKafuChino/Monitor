@@ -343,6 +343,7 @@ func getNodesLatestStatus(ctx context.Context, req *rpc.JsonRpcRequest) (any, *r
 		Temp            float32             `json:"temp"`
 		Disk            int64               `json:"disk"`
 		DiskTotal       int64               `json:"disk_total"`
+		DiskIO          *v2.DiskIOReport     `json:"disk_io,omitempty"`
 		NetIn           int64               `json:"net_in"`
 		NetOut          int64               `json:"net_out"`
 		NetTotalUp      int64               `json:"net_total_up"`
@@ -380,6 +381,7 @@ func getNodesLatestStatus(ctx context.Context, req *rpc.JsonRpcRequest) (any, *r
 			Temp:           0,
 			Disk:           rep.Disk.Used,
 			DiskTotal:      rep.Disk.Total,
+			DiskIO:         rep.DiskIO,
 			NetIn:          rep.Network.Down,
 			NetOut:         rep.Network.Up,
 			NetTotalUp:     rep.Network.TotalUp,
@@ -524,6 +526,7 @@ func getNodeRecentStatus(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rp
 		Temp           float32   `json:"temp"`
 		Disk           int64     `json:"disk"`
 		DiskTotal      int64     `json:"disk_total"`
+		DiskIO         *v2.DiskIOReport `json:"disk_io,omitempty"`
 		NetIn          int64     `json:"net_in"`
 		NetOut         int64     `json:"net_out"`
 		NetTotalUp     int64     `json:"net_total_up"`
@@ -560,6 +563,7 @@ func getNodeRecentStatus(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rp
 			Temp:           0,
 			Disk:           r.Disk.Used,
 			DiskTotal:      r.Disk.Total,
+			DiskIO:         r.DiskIO,
 			NetIn:          r.Network.Down,
 			NetOut:         r.Network.Up,
 			NetTotalUp:     r.Network.TotalUp,

@@ -9,10 +9,12 @@
     "build": "node scripts/project.mjs build",
     "build:web": "node scripts/project.mjs build-web",
     "build:server": "node scripts/project.mjs build-server",
+    "build:agent": "node scripts/project.mjs build-agent",
     "start": "node scripts/project.mjs start",
     "test": "node scripts/project.mjs test",
     "test:web": "node scripts/project.mjs test-web",
     "test:server": "node scripts/project.mjs test-server",
+    "test:agent": "node scripts/project.mjs test-agent",
     "lint": "node scripts/project.mjs lint",
     "check": "node scripts/project.mjs check"
   }

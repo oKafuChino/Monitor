@@ -72,6 +72,8 @@ func createMetricDefinitionsWithDefaultRetention(ctx context.Context, s *metric.
 		{Name: MetricSwap, Type: metric.TypeGauge, Unit: "bytes", Description: "Swap used", RetentionDays: defaultRetentionDays},
 		{Name: MetricLoad, Type: metric.TypeGauge, Unit: "", Description: "System load average", RetentionDays: defaultRetentionDays},
 		{Name: MetricDisk, Type: metric.TypeGauge, Unit: "bytes", Description: "Disk used", RetentionDays: defaultRetentionDays},
+		{Name: MetricDiskIORead, Type: metric.TypeGauge, Unit: "bytes/s", Description: "Logical block-device read rate", RetentionDays: defaultRetentionDays},
+		{Name: MetricDiskIOWrite, Type: metric.TypeGauge, Unit: "bytes/s", Description: "Logical block-device write rate", RetentionDays: defaultRetentionDays},
 		{Name: MetricNetIn, Type: metric.TypeGauge, Unit: "bytes/s", Description: "Network in rate", RetentionDays: defaultRetentionDays},
 		{Name: MetricNetOut, Type: metric.TypeGauge, Unit: "bytes/s", Description: "Network out rate", RetentionDays: defaultRetentionDays},
 		{Name: MetricNetTotalUp, Type: metric.TypeCounter, Unit: "bytes", Description: "Network total upload", RetentionDays: defaultRetentionDays},
@@ -85,7 +87,23 @@ func createMetricDefinitionsWithDefaultRetention(ctx context.Context, s *metric.
 		{Name: MetricPingLoss, Type: metric.TypeGauge, Unit: "ratio", Description: "Ping packet loss indicator", RetentionDays: defaultRetentionDays},
 	}
 
+	// A globally disabled installation has all existing definitions at zero.
+	// Newly introduced metrics must inherit that boundary on upgrade.
+	existingDefs, err := s.ListMetrics(ctx)
+	if err != nil {
+		return err
+	}
+	allDisabled := len(existingDefs) > 0
+	for _, def := range existingDefs {
+		if def.RetentionDays > 0 {
+			allDisabled = false
+			break
+		}
+	}
 	for _, def := range definitions {
+		if allDisabled {
+			def.RetentionDays = 0
+		}
 		existing, err := s.GetMetric(ctx, def.Name)
 		if err != nil && !errors.Is(err, metric.ErrNotFound) {
 			return fmt.Errorf("failed to get metric %s: %w", def.Name, err)

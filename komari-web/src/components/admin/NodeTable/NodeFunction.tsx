@@ -7,6 +7,7 @@ import { t } from "i18next";
 import type { Row } from "@tanstack/react-table";
 import { EditDialog } from "./NodeEditDialog";
 import { quoteShellArgs } from "@/utils/shellQuote";
+import { AGENT_INSTALL_SCRIPT } from "@/utils/agentDistribution";
 import {
   Button,
   Checkbox,
@@ -74,7 +75,7 @@ export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
     }
 
     return (
-      `wget -qO- https://raw.githubusercontent.com/komari-monitor/komari-agent/refs/heads/main/install.sh | sudo bash -s -- ` +
+      `wget -qO- ${AGENT_INSTALL_SCRIPT} | sudo bash -s -- ` +
       quoteShellArgs(args)
     );
   };
