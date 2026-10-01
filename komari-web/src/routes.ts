@@ -56,10 +56,6 @@ export const routes: RouteObject[] = [
         path: "servers",
         element: React.createElement(Admin),
       },
-      {
-        path: "files",
-        element: React.createElement(lazy(() => import("./pages/admin/files"))),
-      },
       ...["theme_managed", "theme_raw", "themes", "theme"].map(path => ({
         path, element: React.createElement(Navigate, {to:"/admin/settings/appearance", replace:true}),
       })),
@@ -118,13 +114,6 @@ export const routes: RouteObject[] = [
             ),
           },
           {
-            path: "notification",
-            element: React.createElement(Navigate, {
-              to: "/admin/notification/channels",
-              replace: true,
-            }),
-          },
-          {
             path: "general",
             element: React.createElement(
               lazy(() => import("./pages/admin/settings/general"))
@@ -134,44 +123,6 @@ export const routes: RouteObject[] = [
             path: "metrics",
             element: React.createElement(
               lazy(() => import("./pages/admin/settings/metrics"))
-            ),
-          },
-        ],
-      },
-      {
-        path: "notification",
-        children: [
-          {
-            index: true,
-            element: React.createElement(Navigate, {
-              to: "/admin/notification/channels",
-              replace: true,
-            }),
-          },
-          {
-            path: "channels",
-            element: React.createElement(
-              lazy(() => import("./pages/admin/settings/_layout"))
-            ),
-            children: [
-              {
-                index: true,
-                element: React.createElement(
-                  lazy(() => import("./pages/admin/notification/channels"))
-                ),
-              },
-            ],
-          },
-          {
-            path: "offline",
-            element: React.createElement(
-              lazy(() => import("./pages/admin/notification/offline"))
-            ),
-          },
-          {
-            path: "general",
-            element: React.createElement(
-              lazy(() => import("./pages/admin/notification/general"))
             ),
           },
         ],
@@ -195,10 +146,6 @@ export const routes: RouteObject[] = [
         element: React.createElement(lazy(() => import("./pages/admin/pprof"))),
       },
     ],
-  },
-  {
-    path: "/terminal",
-    element: React.createElement(lazy(() => import("./pages/legacy_terminal"))),
   },
   {
     path: "/manage/*",

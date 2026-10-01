@@ -92,13 +92,6 @@ export default defineConfig(({ mode }) => {
       resolve: {
         alias: [
           { find: "@", replacement: path.resolve(__dirname, "./src") },
-          {
-            find: /^monaco-editor-codicon\.css$/,
-            replacement: path.resolve(
-              __dirname,
-              "node_modules/monaco-editor/esm/vs/base/browser/ui/codicons/codicon/codicon.css",
-            ),
-          },
       ],
     },
     build: {

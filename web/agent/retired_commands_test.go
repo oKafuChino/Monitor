@@ -1,8 +1,9 @@
 package agent
 
 import (
-	v2 "github.com/komari-monitor/komari/protocol/v2"
 	"testing"
+
+	v2 "github.com/komari-monitor/komari/protocol/v2"
 )
 
 func TestOutboundEventsRejectRemoteShell(t *testing.T) {
@@ -19,12 +20,12 @@ func TestOutboundEventsRejectRemoteShell(t *testing.T) {
 	if events := TakeV2Events(uuid, nil, 100); len(events) != 0 {
 		t.Fatalf("unexpected events: %#v", events)
 	}
-	for _, method := range []string{v2.MethodAgentFile, v2.MethodAgentPing, v2.MethodAgentStartupConfig, v2.MethodAgentSwitchVersion} {
+	for _, method := range []string{v2.MethodAgentPing, v2.MethodAgentStartupConfig, v2.MethodAgentSwitchVersion} {
 		if !DispatchV2Event(uuid, method, nil) {
 			t.Fatalf("retained event rejected: %s", method)
 		}
 	}
-	if events := TakeV2Events(uuid, nil, 100); len(events) != 4 {
+	if events := TakeV2Events(uuid, nil, 100); len(events) != 3 {
 		t.Fatalf("retained events lost: %#v", events)
 	}
 }

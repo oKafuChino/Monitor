@@ -1,8 +1,4 @@
-import {
-  quotePowerShellArg,
-  quoteShellArg,
-  quoteShellArgs,
-} from "@/utils/shellQuote";
+import { quoteShellArg, quoteShellArgs } from "@/utils/shellQuote";
 import React, { useEffect, useState } from "react";
 import {
   NodeDetailsProvider,
@@ -24,14 +20,12 @@ import {
 import {
   CircleDollarSign,
   Copy,
-  CornerRightUp,
   Download,
   MenuIcon,
   Pencil,
   Plus,
   Radar,
   Settings,
-  FolderOpen,
   Trash2Icon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -129,7 +123,7 @@ const Layout = () => {
       />
 
       {isEmpty ? (
-        <EmptyNodesGuide />
+        <EmptyNodesState />
       ) : (
         <NodeTable
           nodes={filteredNodes}
@@ -142,35 +136,18 @@ const Layout = () => {
   );
 };
 
-const EmptyNodesGuide = () => {
+const EmptyNodesState = () => {
   const { t } = useTranslation();
   return (
     <Flex
       direction="column"
-      align="end"
-      justify="start"
+      align="center"
+      justify="center"
       style={{ minHeight: "60vh" }}
-      pr="2"
-      pt="1"
     >
-      {/* 回转箭头指向右上角的“添加节点”按钮 */}
-      <CornerRightUp
-        size={72}
-        strokeWidth={1.25}
-        className="text-[var(--accent-9)] animate-bounce"
-        style={{ marginRight: "1.5rem" }}
-      />
-      <Flex direction="column" align="end" gap="1" mt="2" mr="2">
-        <Text size="4" weight="bold">
-          {t("admin.nodeTable.emptyGuide.title", "还没有任何服务器")}
-        </Text>
-        <Text size="2" color="gray" align="right" style={{ maxWidth: "20rem" }}>
-          {t(
-            "admin.nodeTable.emptyGuide.description",
-            "点击右上角的“添加节点”开始，或开启自动发现批量接入服务器。"
-          )}
-        </Text>
-      </Flex>
+      <Text size="3" color="gray">
+        {t("admin.nodeTable.noData")}
+      </Text>
     </Flex>
   );
 };
@@ -356,11 +333,8 @@ const AutoDiscoverySection = ({
       args.push(rotateVal);
     }
 
-    let scriptFile = "install.sh";
-    if (selectedPlatform === "windows") {
-      scriptFile = "install.ps1";
-    }
-    let scriptUrl = `https://raw.githubusercontent.com/komari-monitor/komari-agent/refs/heads/main/${scriptFile}`;
+    let scriptUrl =
+      "https://raw.githubusercontent.com/komari-monitor/komari-agent/refs/heads/main/install.sh";
     if (enableGhproxy && ghproxy) {
       scriptUrl = scriptUrl.slice(8); // 去掉 https://
       if (ghproxy.endsWith("/")) {
@@ -378,22 +352,6 @@ const AutoDiscoverySection = ({
       case "linux":
         finalCommand =
           `wget -qO- ${quoteShellArg(scriptUrl)} | sudo bash -s -- ` +
-          quoteShellArgs(args);
-        break;
-      case "windows":
-        finalCommand =
-          `powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ` +
-          `"iwr ${quotePowerShellArg(scriptUrl)}` +
-          ` -UseBasicParsing -OutFile 'install.ps1'; &` +
-          ` '.\\install.ps1'`;
-        args.forEach((arg) => {
-          finalCommand += ` ${quotePowerShellArg(arg)}`;
-        });
-        finalCommand += `"`;
-        break;
-      case "macos":
-        finalCommand =
-          `zsh <(curl -sL ${quoteShellArg(scriptUrl)}) ` +
           quoteShellArgs(args);
         break;
       case "docker": {
@@ -498,8 +456,6 @@ const AutoDiscoverySection = ({
         onValueChange={(value) => setSelectedPlatform(value as Platform)}
       >
         <SegmentedControl.Item value="linux">Linux</SegmentedControl.Item>
-        <SegmentedControl.Item value="windows">Windows</SegmentedControl.Item>
-        <SegmentedControl.Item value="macos">macOS</SegmentedControl.Item>
         <SegmentedControl.Item value="docker">Docker</SegmentedControl.Item>
       </SegmentedControl.Root>
 
@@ -1081,7 +1037,7 @@ const Header = ({
         />
         <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
           <Dialog.Trigger>
-            <Button data-guide="add-node" onClick={() => setDialogOpen(true)}>
+            <Button onClick={() => setDialogOpen(true)}>
               <Plus size={16} />
               {t("admin.nodeTable.addNode")}
             </Button>
@@ -1400,7 +1356,7 @@ const NodeTable = ({
   );
 };
 
-type Platform = "linux" | "windows" | "macos" | "docker";
+type Platform = "linux" | "docker";
 const ActionButtons = ({
   node,
   settings,
@@ -1410,7 +1366,6 @@ const ActionButtons = ({
   settings: any;
   isSnapshotBackend: boolean;
 }) => {
-  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-4">
       <GenerateCommandButton
@@ -1418,15 +1373,6 @@ const ActionButtons = ({
         settings={settings}
         isSnapshotBackend={isSnapshotBackend}
       />
-      <IconButton
-        title={t("file_manager.title")}
-        variant="ghost"
-        onClick={() => {
-          window.open(`/admin/files?uuid=${node.uuid}`, "_blank");
-        }}
-      >
-        <FolderOpen size="18" />
-      </IconButton>
       <EditButton node={node} />
       <BillingButton node={node} />
       <DeleteButton node={node} />
@@ -1627,12 +1573,8 @@ function GenerateCommandButton({
       args.push(`--month-rotate`);
       args.push(rotateVal);
     }
-    let scriptFile = "install.sh";
-    if (selectedPlatform === "windows") {
-      scriptFile = "install.ps1";
-    }
     let scriptUrl =
-      `https://raw.githubusercontent.com/komari-monitor/komari-agent/refs/heads/main/${scriptFile}`;
+      "https://raw.githubusercontent.com/komari-monitor/komari-agent/refs/heads/main/install.sh";
     if (enableGhproxy) {
       if (enableGhproxy && ghproxy) {
         scriptUrl = scriptUrl.slice(8); // 去掉 https://
@@ -1652,21 +1594,6 @@ function GenerateCommandButton({
         finalCommand =
           `wget -qO- ${quoteShellArg(scriptUrl)} | sudo bash -s -- ` +
           quoteShellArgs(args);
-        break;
-      case "windows":
-        finalCommand =
-          `powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ` +
-          `"iwr ${quotePowerShellArg(scriptUrl)}` +
-          ` -UseBasicParsing -OutFile 'install.ps1'; &` +
-          ` '.\\install.ps1'`;
-        args.forEach((arg) => {
-          finalCommand += ` ${quotePowerShellArg(arg)}`;
-        });
-        finalCommand += `"`;
-        break;
-      case "macos":
-        finalCommand =
-          `zsh <(curl -sL ${quoteShellArg(scriptUrl)}) ` + quoteShellArgs(args);
         break;
       case "docker": {
         // Docker 运行时不支持安装脚本专用参数，剔除它们及其取值
@@ -1720,10 +1647,6 @@ function GenerateCommandButton({
             onValueChange={(value) => setSelectedPlatform(value as Platform)}
           >
             <SegmentedControl.Item value="linux">Linux</SegmentedControl.Item>
-            <SegmentedControl.Item value="windows">
-              Windows
-            </SegmentedControl.Item>
-            <SegmentedControl.Item value="macos">macOS</SegmentedControl.Item>
             <SegmentedControl.Item value="docker">Docker</SegmentedControl.Item>
           </SegmentedControl.Root>
 

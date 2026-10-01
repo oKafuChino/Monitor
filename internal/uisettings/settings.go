@@ -48,7 +48,6 @@ func schema() map[string]field {
 		}
 	}
 	fields["_komari_dashboard_v1"] = field{Key: "_komari_dashboard_v1", Type: "array"}
-	fields["_komari_onboarding_v1"] = field{Key: "_komari_onboarding_v1", Type: "object"}
 	return fields
 }
 
@@ -78,18 +77,6 @@ func sanitize(values map[string]any) map[string]any {
 		if value, ok := values[key]; ok && valid(f, value) {
 			result[key] = value
 		}
-	}
-	if state, ok := result["_komari_onboarding_v1"].(map[string]any); ok {
-		seen := []any{}
-		if old, ok := state["seen"].([]any); ok {
-			for _, id := range old {
-				if id == "install" || id == "workbench" || id == "notifications" {
-					seen = append(seen, id)
-				}
-			}
-		}
-		opened, _ := state["workbenchOpened"].(bool)
-		result["_komari_onboarding_v1"] = map[string]any{"seen": seen, "workbenchOpened": opened}
 	}
 	return result
 }
@@ -133,11 +120,10 @@ func Read(db *gorm.DB) (map[string]any, error) {
 	return result, nil
 }
 
-// Public excludes internal admin layout and onboarding state from the public API.
+// Public excludes the internal admin layout from the public API.
 func Public(db *gorm.DB) (map[string]any, error) {
 	values, err := Read(db)
 	delete(values, "_komari_dashboard_v1")
-	delete(values, "_komari_onboarding_v1")
 	return values, err
 }
 

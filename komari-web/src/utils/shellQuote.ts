@@ -17,7 +17,3 @@ export function quoteShellArg(value: string) {
 export function quoteShellArgs(args: string[]) {
   return args.map(quoteShellArg).join(" ");
 }
-
-export function quotePowerShellArg(value: string) {
-  return `'${value.trim().replace(/'/g, "''")}'`;
-}

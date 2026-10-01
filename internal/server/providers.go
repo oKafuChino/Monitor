@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/komari-monitor/komari/database/auditlog"
-	"github.com/komari-monitor/komari/internal/notifications"
 	"github.com/komari-monitor/komari/utils/geoip"
 	logger "github.com/komari-monitor/komari/utils/log"
 	"github.com/komari-monitor/komari/web/oauth"
@@ -18,12 +17,6 @@ func (a *App) InitProviders() error {
 	go geoip.InitGeoIp()
 	a.addCleanup("geoip", func(context.Context) error { return geoip.Shutdown() })
 
-	if err := notifications.Initialize(); err != nil {
-		return fmt.Errorf("initialize notification channels: %w", err)
-	}
-	a.addCleanup("notification-channels", func(context.Context) error {
-		return notifications.Shutdown()
-	})
 	return nil
 }
 

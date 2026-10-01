@@ -1,5 +1,5 @@
 import { Flex, Text } from "@radix-ui/themes";
-import { ArrowUpRight, Bell, Boxes, Cpu, HardDrive, MemoryStick, Server, FolderOpen } from "lucide-react";
+import { ArrowUpRight, Boxes, Cpu, HardDrive, MemoryStick, Server } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { NodeBasicInfo } from "@/contexts/NodeListContext";
@@ -14,7 +14,7 @@ export function ExtraWidget({ kind, nodes, latest, limit = 5 }: {
   limit?: number;
 }) {
   const { t } = useTranslation();
-  const icons = { resources: Boxes, disk: HardDrive, shortcuts: FolderOpen };
+  const icons = { resources: Boxes, disk: HardDrive, shortcuts: Server };
   const Icon = icons[kind];
   const disks = nodes.flatMap((node) => {
     const status = latest?.[node.uuid];
@@ -50,8 +50,6 @@ export function ExtraWidget({ kind, nodes, latest, limit = 5 }: {
     </Flex> : <Text size="2" color="gray">{t("dashboard.noData", "No data")}</Text>)}
     {kind === "shortcuts" && <div>
       <Link className="km-dashboard-quick-link" to="/admin/servers"><Server size={17} />{t("dashboardLayout.servers")}<ArrowUpRight size={15} /></Link>
-      <a className="km-dashboard-quick-link" href="/admin/files" target="_blank" rel="noreferrer"><FolderOpen size={17} />{t("dashboardLayout.files")}<ArrowUpRight size={15} /></a>
-      <Link className="km-dashboard-quick-link" to="/admin/settings/notification"><Bell size={17} />{t("dashboardLayout.notifications")}<ArrowUpRight size={15} /></Link>
     </div>}
   </Flex>;
 }

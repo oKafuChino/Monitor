@@ -36,7 +36,7 @@ func insertRow(t *testing.T, db *gorm.DB, short, data string) {
 func TestMigrationAndPublicFiltering(t *testing.T) {
 	db := testDB(t)
 	insertRow(t, db, "default", `{"mainContentWidth":0,"showIpTagsInCard":false,"backgroundImageUrlDesktop":"","thirdPartySecret":"hidden"}`)
-	insertRow(t, db, "custom", `{"mainContentWidth":90,"backgroundImageUrlDesktop":"old.jpg","backgroundImageUrlMobile":"mobile.jpg","chartDashboardTemplate":"[]","_komari_dashboard_v1":[],"_komari_onboarding_v1":{"seen":["install","markets","terminal","notifications"],"workbenchOpened":true},"pluginKey":"hidden"}`)
+	insertRow(t, db, "custom", `{"mainContentWidth":90,"backgroundImageUrlDesktop":"old.jpg","backgroundImageUrlMobile":"mobile.jpg","chartDashboardTemplate":"[]","_komari_dashboard_v1":[],"pluginKey":"hidden"}`)
 	if err := db.Create(&config.ConfigItem{Key: config.ThemeKey, Value: `"custom"`}).Error; err != nil {
 		t.Fatal(err)
 	}
@@ -49,10 +49,6 @@ func TestMigrationAndPublicFiltering(t *testing.T) {
 	}
 	if result["mainContentWidth"] != float64(0) || result["showIpTagsInCard"] != false || result["backgroundImageUrlDesktop"] != "" || result["backgroundImageUrlMobile"] != "mobile.jpg" {
 		t.Fatalf("wrong merged settings: %#v", result)
-	}
-	state := result["_komari_onboarding_v1"].(map[string]any)
-	if !reflect.DeepEqual(state["seen"], []any{"install", "notifications"}) {
-		t.Fatalf("stale guide steps: %#v", state)
 	}
 	if _, err := Patch(db, map[string]any{"mainContentWidth": float64(75)}); err != nil {
 		t.Fatal(err)
@@ -70,7 +66,7 @@ func TestMigrationAndPublicFiltering(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, key := range []string{"thirdPartySecret", "pluginKey", "_komari_dashboard_v1", "_komari_onboarding_v1"} {
+	for _, key := range []string{"thirdPartySecret", "pluginKey", "_komari_dashboard_v1"} {
 		if _, ok := exposed[key]; ok {
 			t.Fatalf("public leak: %s", key)
 		}

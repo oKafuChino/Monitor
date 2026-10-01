@@ -27,7 +27,6 @@
     "storage": "總磁碟",
     "capacityCount": "{{count}} 台節點的配置容量",
     "servers": "伺服器管理",
-    "notifications": "通知設定",
     "keyboard": "按空白鍵提起卡片，方向鍵移動，再按空白鍵放下，Escape 取消。",
     "picked": "已提起{{name}}",
     "moved": "{{name}}移至第 {{position}} 位",
@@ -44,38 +43,6 @@
       "resources": "資源容量",
       "disk": "磁碟壓力",
       "shortcuts": "快捷操作"
-    },
-    "files": "檔案管理"
-  },
-  "onboarding": {
-    "progress": "快速指引 · {{current}} / {{total}}",
-    "skip": "跳過指引",
-    "previous": "上一步",
-    "next": "下一步",
-    "finish": "知道了",
-    "save_failed": "指引紀錄儲存失敗，下次進入時可能會再次顯示。",
-    "install": {
-      "title": "接入第一台伺服器",
-      "description": "還沒有伺服器，先從「伺服器」進入節點管理，為你的伺服器新增一個節點。",
-      "add_title": "新增節點，安裝 Agent",
-      "add_description": "點擊這裡建立節點，再透過節點的部署按鈕複製安裝指令。在目標伺服器上執行指令，等待 Agent 回報後，節點就會上線。",
-      "action": "新增節點"
-    },
-    "workbench": {
-      "title": "檔案管理",
-      "description": "瀏覽和編輯遠端檔案，請先選擇節點。",
-      "files_title": "檔案管理",
-      "files_description": "可上傳、下載、搜尋和編輯檔案，無需開啟終端工作階段。",
-      "action": "檔案管理"
-    },
-    "notifications": {
-      "title": "讓伺服器主動通知你",
-      "description": "在這裡新增並測試通知管道，將警報傳送到你常用的訊息服務。",
-      "offline_title": "伺服器離線，即時知曉",
-      "offline_description": "在離線通知中設定警報和延遲時間，減少短暫網路波動帶來的打擾。",
-      "rules_title": "依需求設定通知規則",
-      "rules_description": "一般通知提供其他警報規則的設定入口。先設定好通知管道，再依需求設定規則。",
-      "action": "設定通知"
     }
   },
   "about": {
@@ -189,10 +156,6 @@
       "disableAutoUpdate": "禁用自動更新",
       "dragToReorder": "長按拖拽重新排序",
       "editNodePrice": "編輯帳單",
-      "emptyGuide": {
-        "description": "點選右上角的「新增節點」開始，或開啟自動發現批次接入伺服器。",
-        "title": "還沒有任何伺服器"
-      },
       "enableGpuMonitoring": "啟用詳細 GPU 監控",
       "errorLoadNodeList": "無法載入節點列表",
       "errorRefreshNodeList": "重新整理列表失敗",
@@ -228,17 +191,6 @@
       "setToLongTerm": "設定為長期",
       "submit": "提交",
       "submitting": "等待"
-    },
-    "notification": {
-      "expire_enable": "是否啟用過期提醒",
-      "expire_enable_description": "啟用後，Komari將在到期前傳送提醒通知。",
-      "expire_time": "提前多少天開始提醒",
-      "expire_time_description": "設定在到期前多少天開始傳送提醒通知。",
-      "expire_title": "過期提醒",
-      "login": "登入通知",
-      "login_description": "當有新的會話登入到Komari時，向您傳送通知",
-      "traffic": "流量用量",
-      "traffic_description": "Komari將會在伺服器到達指定的流量使用百分比時傳送通知，並以5%為梯度持續提醒。如果伺服器沒有設定流量閾值，不傳送通知。設定為0停用流量提醒。"
     }
   },
   "chart": {
@@ -519,125 +471,6 @@
     "reject": "不接受",
     "title": "法律聲明與合規指引"
   },
-  "file_manager": {
-    "action_failed": "檔案操作失敗",
-    "action_success": "檔案操作完成",
-    "confirm_delete": "確定刪除 {{name}} 嗎？此操作無法復原。",
-    "confirm_delete_multiple": "確定刪除 {{count}} 個項目？此操作無法復原。",
-    "content": "內容",
-    "copy": "複製",
-    "copy_directory_unsupported": "目前不支援複製資料夾。",
-    "copy_here": "貼上到此處",
-    "copy_path": "複製路徑",
-    "copy_path_failed": "複製路徑失敗",
-    "copy_path_success": "路徑已複製",
-    "copy_paths": "複製路徑",
-    "cut": "剪下",
-    "delete": "刪除",
-    "download": "下載",
-    "drive": "磁碟",
-    "editor": {
-      "binary": "二進位檔案預覽",
-      "close_file": "關閉檔案",
-      "close_left": "關閉左側",
-      "close_others": "關閉其他",
-      "close_right": "關閉右側",
-      "close_tab": "關閉分頁",
-      "column": "欄",
-      "copy": "複製",
-      "cut": "剪下",
-      "dont_save": "不儲存",
-      "empty": "從檔案總管開啟檔案",
-      "encoding_failed": "無法使用此編碼解碼檔案",
-      "encoding_hint": "文字編碼（開啟時自動偵測）",
-      "explorer": "檔案總管",
-      "fullscreen": "切換全螢幕",
-      "go_to": "前往檔案",
-      "go_to_placeholder": "輸入檔案路徑",
-      "go_to_position": "前往行/欄",
-      "line": "行",
-      "loading_agent": "正在從 Agent 取得檔案...",
-      "maximize": "最大化",
-      "menu": {
-        "edit": "編輯",
-        "file": "檔案",
-        "view": "檢視"
-      },
-      "minimap": "縮圖",
-      "no_symbols": "找不到符號",
-      "outline": "大綱",
-      "paste": "貼上",
-      "preview_failed": "無法預覽此檔案",
-      "redo": "重做",
-      "reopen": "重新開啟",
-      "reopen_with_encoding": "以編碼重新開啟",
-      "reopen_with_encoding_description": "要以 {{encoding}} 重新開啟「{{name}}」嗎？未儲存的修改將被捨棄。",
-      "reopen_with_encoding_title": "以編碼重新開啟？",
-      "restore": "還原",
-      "save": "儲存",
-      "save_all": "全部儲存",
-      "save_with_encoding": "以編碼儲存",
-      "saved": "檔案已儲存",
-      "select_all": "全選",
-      "title": "檔案編輯器",
-      "too_large": "大於 {{size}} 的檔案無法在編輯器中開啟。",
-      "too_large_preview": "檔案過大，無法預覽",
-      "undo": "復原",
-      "unsaved_all": "有 {{count}} 個檔案包含未儲存的變更。",
-      "unsaved_file": "是否儲存對 {{name}} 的變更？",
-      "unsaved_title": "儲存變更？",
-      "word_wrap": "自動換行"
-    },
-    "empty": "此目錄為空",
-    "group": "群組",
-    "load_failed": "檔案管理員載入失敗",
-    "loading": "正在載入...",
-    "mode": "權限",
-    "move_here": "移動到此處",
-    "new_file": "新增檔案",
-    "new_folder": "新增資料夾",
-    "no_results": "沒有搜尋結果",
-    "no_server": "請選擇節點以瀏覽檔案",
-    "open": "開啟",
-    "open_in_editor": "在編輯器中開啟",
-    "owner": "擁有者",
-    "parent": "上層目錄",
-    "paste": "貼上",
-    "path": "路徑",
-    "permissions": "權限與擁有者",
-    "rename": "重新命名",
-    "root_unavailable": "無法取得根目錄",
-    "save_failed": "儲存檔案失敗",
-    "search": "搜尋",
-    "search_content": "搜尋檔案內容",
-    "search_failed": "搜尋失敗",
-    "search_placeholder": "搜尋檔案",
-    "search_results": "{{count}} 個結果",
-    "title": "檔案管理",
-    "upload": "上傳",
-    "upload_canceled": "上傳已取消",
-    "upload_chunk": "分片",
-    "upload_chunk_done": "已完成",
-    "upload_chunk_queued": "佇列中",
-    "upload_chunk_retrying": "重試中",
-    "upload_chunk_summary": "僅顯示正在上傳的分片（並行 {{active}} 個，共 {{count}} 個）",
-    "upload_chunk_uploading": "上傳中",
-    "upload_chunks": "分片上傳",
-    "upload_complete": "上傳完成",
-    "upload_destination": "目標",
-    "upload_failed": "上傳失敗",
-    "uploading": "上傳中",
-    "select_node": "選擇節點",
-    "node_unavailable": "此節點無法使用，請選擇其他節點。",
-    "close_before_switch": "切換節點前，請關閉編輯器並完成檔案傳輸。",
-    "resource_monitor": {
-      "close": "隱藏資源小窗",
-      "load_error": "即時資料載入失敗",
-      "open": "顯示資源小窗",
-      "title": "資源小窗",
-      "waiting": "正在等待資料..."
-    }
-  },
   "go_to_home": "回到首頁",
   "install": {
     "admin_title": "建立管理員帳號",
@@ -768,28 +601,8 @@
   "nodes": {
     "empty": "暫無伺服器資料"
   },
-  "notification": {
-    "channels": {
-      "title": "通知頻道"
-    },
-    "general": {
-      "title": "通用事件"
-    },
-    "offline": {
-      "cooldown": "冷靜期",
-      "full_title": "離線通知設定",
-      "grace_period": "寬限期",
-      "grace_period_tip": "低於45秒的寬限期可能會無法及時觸發線上通知",
-      "last_notified": "最後通知",
-      "never_triggered": "從未觸發",
-      "tips": "為了避免頻繁傳送通知，我們設定了寬限期：</br> <b>寬限期</b>：客戶端離線後，如果在這段時間內沒有重新上線，就會傳送離線通知",
-      "title": "離線通知"
-    },
-    "title": "通知"
-  },
   "operations": {
-    "title": "維運",
-    "workbench": "檔案管理"
+    "title": "維運"
   },
   "page_not_found": "真不巧，網頁被小鞠吃掉了。",
   "ping": {
@@ -1215,43 +1028,6 @@
       "title": "資料庫"
     },
     "missing_required_fields": "請填寫必填欄位: {{fieldNames}}",
-    "notification": {
-      "email": {
-        "host": "SMTP 伺服器",
-        "password": "密碼",
-        "port": "埠",
-        "receiver": "收件人郵箱",
-        "sender": "發件人郵箱",
-        "use_ssl": "啟用 SSL",
-        "username": "使用者名稱"
-      },
-      "enable": "開啟通知",
-      "enable_description": "透過首選方式獲取及時通知。",
-      "Javascript": {
-        "script": "JavaScript 程式碼",
-        "script_help": "實現 sendMessage(message, title) 及可選的 sendEvent(event) 函式的 JavaScript 程式碼（部分支援 ES6）。兩者均應返回 Promise 或布林值。可用 API：fetch()、xhr()、console.log()。指南: https://komari-document.pages.dev/faq/notification-template.html"
-      },
-      "method": "通知渠道",
-      "method_description": "選擇您偏好的通知平臺",
-      "moved": "正在尋找過期通知？已經遷移到通知-通用",
-      "provider_fetch_failed": "載入通知渠道資訊失敗",
-      "provider_fields": "傳送設定",
-      "provider_fields_description": "詳細設定您選擇的資訊傳送渠道",
-      "provider_settings_fetch_failed": "載入通知設定失敗",
-      "channel_unavailable": "目前通知渠道未註冊。",
-      "unavailable": "不可用",
-      "telegram": {
-        "bot_token": "Telegram Bot Token",
-        "chat_id": "Chat ID",
-        "endpoint": "請求端點",
-        "endpoint_help": "Telegram Bot API 的請求端點，通常為 `https://api.telegram.org/bot`"
-      },
-      "template": "訊息通知模板",
-      "template_description": "Komari 將按照訊息通知模板傳送通知",
-      "test_description": "傳送測試訊息",
-      "test_title": "傳送測試訊息",
-      "title": "通知"
-    },
     "settings_save_failed": "儲存設定失敗",
     "settings_saved": "設定已儲存",
     "sign_on": {

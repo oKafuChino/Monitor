@@ -27,7 +27,6 @@
     "storage": "Total disk",
     "capacityCount": "Configured capacity across {{count}} nodes",
     "servers": "Manage servers",
-    "notifications": "Notifications",
     "keyboard": "Press Space to pick up a card, arrow keys to move, Space to drop, or Escape to cancel.",
     "picked": "Picked up {{name}}",
     "moved": "{{name}} moved to position {{position}}",
@@ -44,38 +43,6 @@
       "resources": "Resource capacity",
       "disk": "Disk pressure",
       "shortcuts": "Quick actions"
-    },
-    "files": "File management"
-  },
-  "onboarding": {
-    "progress": "Quick tour · {{current}} / {{total}}",
-    "skip": "Skip tour",
-    "previous": "Previous step",
-    "next": "Next",
-    "finish": "Got it",
-    "save_failed": "Could not save tour progress. This tour may appear again next time.",
-    "install": {
-      "title": "Connect your first server",
-      "description": "No servers yet. Open Servers to add a node and connect it to Komari.",
-      "add_title": "Add a node and install the agent",
-      "add_description": "Create a node with this button, then use its deployment button to copy the install command. Run it on your server and wait for the agent to report online.",
-      "action": "Add node"
-    },
-    "workbench": {
-      "title": "File management",
-      "description": "Browse and edit remote files. Select a node to begin.",
-      "files_title": "File management",
-      "files_description": "Upload, download, search and edit files without opening a shell.",
-      "action": "File management"
-    },
-    "notifications": {
-      "title": "Keep up with your servers",
-      "description": "Add and test a notification channel here so Komari can send alerts to your preferred service.",
-      "offline_title": "Know when a server goes offline",
-      "offline_description": "Configure offline alerts and their delay here to avoid noise from brief network interruptions.",
-      "rules_title": "Choose what to be notified about",
-      "rules_description": "General notifications let you configure other alert rules. Start by setting up a notification channel.",
-      "action": "Set up notifications"
     }
   },
   "about": {
@@ -189,10 +156,6 @@
       "disableAutoUpdate": "Disable auto update",
       "dragToReorder": "Long press and drag to reorder",
       "editNodePrice": "Edit Price",
-      "emptyGuide": {
-        "description": "Click \"Add\" in the top right to get started, or enable auto discovery to onboard servers in bulk.",
-        "title": "No servers yet"
-      },
       "enableGpuMonitoring": "Enable detailed GPU monitoring",
       "errorLoadNodeList": "Unable to load the node list",
       "errorRefreshNodeList": "Failed to refresh the list",
@@ -228,17 +191,6 @@
       "setToLongTerm": "Set to Long term",
       "submit": "submit",
       "submitting": "wait"
-    },
-    "notification": {
-      "expire_enable": "Enable Expiration Reminder",
-      "expire_enable_description": "If enabled, the system will send reminder notifications before expiration.",
-      "expire_time": "Days in Advance to Remind",
-      "expire_time_description": "Set how many days in advance to start sending reminder notifications before expiration.",
-      "expire_title": "Expire notification",
-      "login": "Login Notification",
-      "login_description": "Send a notification when a new session logs into Komari.",
-      "traffic": "Traffic Usage",
-      "traffic_description": "Komari will send notifications when the server reaches the specified percentage of traffic usage, with reminders at 5% increments. If no traffic threshold is set, no notifications will be sent. Set to 0 to disable traffic reminders."
     }
   },
   "chart": {
@@ -336,125 +288,6 @@
     "tomato": "Tomato",
     "violet": "Violet",
     "yellow": "Yellow"
-  },
-  "file_manager": {
-    "copy": "Copy",
-    "copy_directory_unsupported": "Directory copy is not supported.",
-    "copy_here": "Paste here",
-    "copy_path": "Copy path",
-    "copy_path_failed": "Could not copy path",
-    "copy_path_success": "Path copied",
-    "copy_paths": "Copy paths",
-    "cut": "Cut",
-    "drive": "Drive",
-    "action_failed": "File operation failed",
-    "action_success": "File operation completed",
-    "confirm_delete": "Delete {{name}}? This action cannot be undone.",
-    "confirm_delete_multiple": "Delete {{count}} items? This action cannot be undone.",
-    "content": "Content",
-    "delete": "Delete",
-    "download": "Download",
-    "editor": {
-      "binary": "Binary file preview",
-      "close_left": "Close Left",
-      "close_others": "Close Others",
-      "close_right": "Close Right",
-      "close_file": "Close File",
-      "close_tab": "Close Tab",
-      "copy": "Copy",
-      "cut": "Cut",
-      "dont_save": "Don't Save",
-      "empty": "Open a file from Explorer",
-      "encoding_failed": "Unable to decode with this encoding",
-      "encoding_hint": "Text encoding (detected on open)",
-      "explorer": "Explorer",
-      "fullscreen": "Toggle Fullscreen",
-      "go_to": "Go to File",
-      "go_to_placeholder": "Enter a file path",
-      "go_to_position": "Go to Line/Column",
-      "line": "Line",
-      "column": "Column",
-      "loading_agent": "Fetching file from agent...",
-      "maximize": "Maximize",
-      "menu": {
-        "edit": "Edit",
-        "file": "File",
-        "view": "View"
-      },
-      "minimap": "Minimap",
-      "no_symbols": "No symbols found",
-      "outline": "Outline",
-      "paste": "Paste",
-      "preview_failed": "Unable to preview this file",
-      "redo": "Redo",
-      "reopen": "Reopen",
-      "reopen_with_encoding": "Reopen with Encoding",
-      "reopen_with_encoding_title": "Reopen with Encoding?",
-      "reopen_with_encoding_description": "Reopen \"{{name}}\" as {{encoding}}? Unsaved changes will be discarded.",
-      "restore": "Restore",
-      "save": "Save",
-      "save_all": "Save All",
-      "save_with_encoding": "Save with Encoding",
-      "saved": "File saved",
-      "select_all": "Select All",
-      "title": "File Editor",
-      "too_large_preview": "File is too large to preview",
-      "too_large": "Files larger than {{size}} cannot be opened in the editor.",
-      "undo": "Undo",
-      "unsaved_all": "{{count}} files have unsaved changes.",
-      "unsaved_file": "Save changes to {{name}}?",
-      "unsaved_title": "Save changes?",
-      "word_wrap": "Word Wrap"
-    },
-    "empty": "This directory is empty",
-    "group": "Group",
-    "load_failed": "Failed to load file manager",
-    "loading": "Loading...",
-    "mode": "Mode",
-    "move_here": "Move here",
-    "open_in_editor": "Open in editor",
-    "paste": "Paste",
-    "root_unavailable": "Filesystem roots unavailable",
-    "new_file": "New File",
-    "new_folder": "New Folder",
-    "no_results": "No results",
-    "no_server": "Select a node to browse its files",
-    "open": "Open",
-    "owner": "Owner",
-    "parent": "Parent directory",
-    "path": "Path",
-    "permissions": "Permissions",
-    "rename": "Rename",
-    "save_failed": "Failed to save file",
-    "search": "Search",
-    "search_content": "Search file contents",
-    "search_failed": "Search failed",
-    "search_placeholder": "Search files",
-    "search_results": "{{count}} results",
-    "title": "File management",
-    "upload": "Upload",
-    "upload_canceled": "Upload canceled",
-    "upload_destination": "to",
-    "upload_complete": "Upload complete",
-    "upload_failed": "Upload failed",
-    "upload_chunk": "Chunk",
-    "upload_chunk_done": "Done",
-    "upload_chunk_queued": "Queued",
-    "upload_chunk_retrying": "Retrying",
-    "upload_chunk_summary": "Showing active chunks only ({{active}} concurrent, {{count}} total)",
-    "upload_chunk_uploading": "Uploading",
-    "upload_chunks": "Chunked upload",
-    "uploading": "Uploading",
-    "select_node": "Select a node",
-    "node_unavailable": "This node is unavailable. Select another node.",
-    "close_before_switch": "Close the editor and finish transfers before switching nodes.",
-    "resource_monitor": {
-      "close": "Hide Resource Monitor",
-      "load_error": "Failed to load live data",
-      "title": "Resource Monitor",
-      "open": "Show Resource Monitor",
-      "waiting": "Waiting for data..."
-    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -768,28 +601,8 @@
   "nodes": {
     "empty": "No server data available"
   },
-  "notification": {
-    "channels": {
-      "title": "Notification Channels"
-    },
-    "general": {
-      "title": "General Events"
-    },
-    "offline": {
-      "cooldown": "Cooldown Period",
-      "full_title": "Offline Alerts Configuration",
-      "grace_period": "Grace Period",
-      "grace_period_tip": "A grace period of less than 45 seconds may not trigger online notifications in time.",
-      "last_notified": "Last notified",
-      "never_triggered": "Never triggered",
-      "tips": "To prevent frequent notifications, we use a grace period:</br> <b>Grace Period</b>: If a client goes offline and doesn't reconnect within this time, an offline notification will be sent.",
-      "title": "Offline"
-    },
-    "title": "Notification"
-  },
   "operations": {
-    "title": "Operations",
-    "workbench": "File management"
+    "title": "Operations"
   },
   "page_not_found": "The server cannot find the specific page you're trying to access.",
   "ping": {
@@ -1215,43 +1028,6 @@
       "title": "Database"
     },
     "missing_required_fields": "Please fill in the required fields: {{fieldNames}}",
-    "notification": {
-      "email": {
-        "host": "SMTP Server",
-        "password": "Password",
-        "port": "Port",
-        "receiver": "Receiver Email",
-        "sender": "Sender Email",
-        "use_ssl": "Enable SSL",
-        "username": "Username"
-      },
-      "enable": "Enable Notifications",
-      "enable_description": "Enable to get updates via your preferred method.",
-      "Javascript": {
-        "script": "JavaScript code",
-        "script_help": "JavaScript code that implements the sendMessage(message, title) and optional sendEvent(event) functions (partially supports ES6). Both should return a Promise or a boolean value. Available APIs: fetch(), xhr(), console.log(). Guide: https://komari-document.pages.dev/faq/notification-template.html"
-      },
-      "method": "Delivery Method",
-      "method_description": "Pick your preferred platform for alerts.",
-      "moved": "Looking for expired notifications? Moved to notification-general",
-      "provider_fetch_failed": "Failed to load notification provider information",
-      "provider_fields": "Send Settings",
-      "provider_fields_description": "Detailed settings for the information sending channel you choose",
-      "provider_settings_fetch_failed": "Failed to load notification settings",
-      "channel_unavailable": "This notification channel is not currently registered.",
-      "unavailable": "Unavailable",
-      "telegram": {
-        "bot_token": "Telegram Bot Token",
-        "chat_id": "Chat ID",
-        "endpoint": "Request Endpoint",
-        "endpoint_help": "Request endpoint for the Telegram Bot API, usually `https://api.telegram.org/bot`"
-      },
-      "template": "Notification template",
-      "template_description": "Komari will send notifications according to the notification template",
-      "test_description": "Send a test message",
-      "test_title": "Send test message",
-      "title": "Notifications"
-    },
     "settings_save_failed": "Failed to Save Settings",
     "settings_saved": "Settings Saved",
     "sign_on": {

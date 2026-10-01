@@ -30,14 +30,6 @@ type Settings struct {
 	CustomHead string `json:"custom_head" default:""`
 	CustomBody string `json:"custom_body" default:""`
 
-	// 通知
-	NotificationEnabled        bool    `json:"notification_enabled" default:"true"` // 通知总开关
-	NotificationMethod         string  `json:"notification_method" default:"none"`
-	NotificationTemplate       string  `json:"notification_template" default:"{{emoji}}{{emoji}}{{emoji}}\nEvent: {{event}}\nClients: {{client}}\nMessage: {{message}}\nTime: {{time}}"`
-	ExpireNotificationEnabled  bool    `json:"expire_notification_enabled" default:"true"` // 是否启用过期通知
-	ExpireNotificationLeadDays int     `json:"expire_notification_lead_days" default:"7"`  // 过期前多少天通知，默认7天
-	LoginNotification          bool    `json:"login_notification" default:"true"`          // 登录通知
-	TrafficLimitPercentage     float64 `json:"traffic_limit_percentage" default:"80.00"`   // 流量限制百分比，默认80.00%
 	UpdatedAt                  time.Time
 }
 
@@ -65,13 +57,6 @@ const (
 	CustomHeadKey             = "custom_head"
 	CustomBodyKey             = "custom_body"
 
-	NotificationEnabledKey        = "notification_enabled"
-	NotificationMethodKey         = "notification_method"
-	NotificationTemplateKey       = "notification_template"
-	ExpireNotificationEnabledKey  = "expire_notification_enabled"
-	ExpireNotificationLeadDaysKey = "expire_notification_lead_days"
-	LoginNotificationKey          = "login_notification"
-	TrafficLimitPercentageKey     = "traffic_limit_percentage"
 	UpdatedAtKey                  = "updated_at"
 	ThemeMarketSourcesKey         = "theme_market_sources"
 	PluginMarketSourcesKey        = "plugin_market_sources"

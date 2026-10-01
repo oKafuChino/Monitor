@@ -21,7 +21,6 @@ import (
 	"github.com/komari-monitor/komari/internal/scheduler"
 	"github.com/komari-monitor/komari/utils/geoip"
 	logger "github.com/komari-monitor/komari/utils/log"
-	"github.com/komari-monitor/komari/utils/notifier"
 	"github.com/komari-monitor/komari/web/api"
 	"github.com/komari-monitor/komari/web/oauth"
 	recoveryweb "github.com/komari-monitor/komari/web/recovery"
@@ -177,12 +176,6 @@ func registerScheduledWork() {
 	}
 	if err := scheduler.AddContextFunc("metrics:retention", "@every 1h", true, cleanupMetricStore); err != nil {
 		logger.ErrorArgs("server", "Failed to add metric retention scheduled task:", err)
-	}
-	if err := scheduler.AddFunc("notifier:traffic", "@every 1m", notifier.CheckTraffic); err != nil {
-		logger.ErrorArgs("server", "Failed to add traffic notification task:", err)
-	}
-	if err := scheduler.AddFunc("notifier:expire", "0 0 9 * * *", notifier.CheckExpireScheduledWork); err != nil {
-		logger.ErrorArgs("server", "Failed to add expire notification task:", err)
 	}
 }
 

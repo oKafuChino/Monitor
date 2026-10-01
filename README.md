@@ -2,9 +2,9 @@
 
 [English](./README.md) | [简体中文](./README_zh-cn.md)
 
-A self-hosted monitoring panel with real-time metrics, history charts, Ping monitoring and notifications. The frontend is embedded in the Go server, so deployment needs only one service.
+A self-hosted monitoring panel with real-time metrics, history charts and Ping monitoring. The frontend is embedded in the Go server, so deployment needs only one service.
 
-**The server supports Linux deployments only.** This version uses a fixed built-in interface and removes third-party themes, plugins, web terminals and remote command execution. Remote file management, including writes, and SQL administration remain available. The operating system's SSH service is unaffected.
+**The server supports Linux deployments only.** This version uses a fixed built-in interface and removes third-party themes, plugins, web terminals, remote command execution, remote file management and notifications. SQL administration remains available.
 
 Repository: [oKafuChino/Monitor](https://github.com/oKafuChino/Monitor). The default installation branch is `main`.
 
@@ -42,7 +42,7 @@ Omit `--install-docker` if Git, Docker and Compose are already available. For a 
 
 The installer checks the environment, downloads source when necessary, builds the integrated image, starts the Compose service, waits for HTTP readiness and then saves the port to `.env`.
 
-Open `http://<server-ip>:25774` and follow the setup wizard to create an administrator account and configure the site. If using a domain or HTTPS reverse proxy, use that address and ensure the proxy supports WebSocket connections.
+Open `http://<server-ip>:25774` to create an administrator account and configure the site. If using a domain or HTTPS reverse proxy, use that address and ensure the proxy supports WebSocket connections.
 
 ## 3. Directory, port and version settings
 

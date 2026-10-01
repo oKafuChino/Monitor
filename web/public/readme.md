@@ -6,7 +6,7 @@ Run from the repository root with Node.js 24+ and Go 1.25+ (CGO enabled):
 
 ```sh
 npm ci --prefix komari-web
-npm run test:onboarding --prefix komari-web
+npm run test:ui --prefix komari-web
 npm run build --prefix komari-web
 node scripts/embed-frontend.mjs
 go build .

@@ -8,7 +8,6 @@ import (
 	"github.com/komari-monitor/komari/web/api/admin"
 	"github.com/komari-monitor/komari/web/api/client"
 	public_api "github.com/komari-monitor/komari/web/api/public"
-	"github.com/komari-monitor/komari/web/filemanager"
 	"github.com/komari-monitor/komari/web/public"
 	jsonRpc "github.com/komari-monitor/komari/web/rpc/jsonrpc"
 )
@@ -43,9 +42,6 @@ func registerPublicRoutes(r *gin.Engine) {
 	r.GET("/api/logout", public_api.Logout)
 	r.GET("/api/oauth", public_api.OAuth)
 	r.GET("/api/oauth_callback", public_api.OAuthCallback)
-	// 短期文件预览令牌公开下载入口，供 Office 在线预览等服务端抓取。
-	r.GET("/api/preview/client/:uuid/file/download", filemanager.PreviewDownload)
-	r.HEAD("/api/preview/client/:uuid/file/download", filemanager.PreviewDownload)
 	// /api/clients 是 WebSocket 端点（客户端发 "get"/"get <uuid>" 拉取在线列表与最新上报），
 	// 非 JSON-RPC，保留为 WS handler。
 	r.GET("/api/clients", api.GetClients)
@@ -75,9 +71,6 @@ func registerAgentRoutes(r *gin.Engine) {
 		// Agent 上报统一使用 v2 JSON-RPC。
 		tokenAuthorized.GET("/v2/rpc", client.WebSocketV2RPC)
 		tokenAuthorized.POST("/v2/rpc", client.UploadV2RPC)
-		// File data uses a short-lived, raw HTTP stream opened by a file RPC.
-		tokenAuthorized.GET("/transfer/:id", filemanager.AgentTransfer)
-		tokenAuthorized.POST("/transfer/:id", filemanager.AgentTransfer)
 	}
 }
 
@@ -99,7 +92,6 @@ func registerAdminRoutes(r *gin.Engine) {
 		uploadGroup.POST("/cancel", uploadHandler.Cancel)
 	}
 	g.GET("/test/geoip", jsonRpc.Bind("admin:testGeoip", jsonRpc.WithQuery("ip")))
-	g.POST("/test/sendMessage", jsonRpc.Bind("admin:testSendMessage"))
 	g.POST("/update/mmdb", admin.UpdateMmdbGeoIP)
 	g.POST("/update/user", admin.UpdateUser)
 	g.PUT("/update/favicon", admin.UploadFavicon)
@@ -148,10 +140,6 @@ func registerAdminRoutes(r *gin.Engine) {
 		clientGroup.POST("/:uuid/remove", jsonRpc.Bind("admin:removeClient", jsonRpc.WithPath("uuid")))
 		clientGroup.GET("/:uuid/token", jsonRpc.Bind("admin:getClientToken", jsonRpc.WithPath("uuid"), jsonRpc.WithFlat()))
 		clientGroup.POST("/order", jsonRpc.Bind("admin:orderClients"))
-		clientGroup.POST("/:uuid/file/upload", filemanager.Upload)
-		clientGroup.GET("/:uuid/file/download", filemanager.Download)
-		clientGroup.HEAD("/:uuid/file/download", filemanager.Download)
-		clientGroup.GET("/:uuid/file/preview-token", filemanager.CreatePreviewToken)
 	}
 
 	// records
@@ -171,17 +159,6 @@ func registerAdminRoutes(r *gin.Engine) {
 
 	g.GET("/logs", jsonRpc.Bind("admin:getLogs", jsonRpc.WithQuery("limit", "page")))
 
-	// notifications
-	notificationGroup := g.Group("/notification")
-	{
-		notificationGroup.GET("/channels", jsonRpc.Bind("admin:listNotificationChannels"))
-		notificationGroup.GET("/channel/configuration", jsonRpc.Bind("admin:getNotificationChannelConfiguration", jsonRpc.WithQuery("id")))
-		notificationGroup.POST("/channel/configuration", jsonRpc.Bind("admin:setNotificationChannelConfiguration"))
-		notificationGroup.GET("/offline", jsonRpc.Bind("admin:listOfflineNotifications"))
-		notificationGroup.POST("/offline/edit", jsonRpc.Bind("admin:editOfflineNotification"))
-		notificationGroup.POST("/offline/enable", jsonRpc.Bind("admin:enableOfflineNotification"))
-		notificationGroup.POST("/offline/disable", jsonRpc.Bind("admin:disableOfflineNotification"))
-	}
 
 	// ping tasks
 	pingTask := g.Group("/ping")

@@ -46,7 +46,7 @@ func TestRetiredRoutesAndUIAuthorization(t *testing.T) {
 	if w := request("GET", "/api/admin/ui/settings", "", "isolated-test-admin-key"); w.Code != 200 {
 		t.Fatalf("admin fixture: %d %s", w.Code, w.Body)
 	}
-	for _, path := range []string{"/api/admin/task/exec", "/api/admin/task/all", "/api/admin/task/test/result", "/api/admin/exec", "/api/admin/theme/list", "/api/admin/theme/settings", "/api/admin/plugin/list", "/api/plugin/old/index.html", "/themes/old/dist/index.html", "/themes/default/komari-theme.json", "/api/admin/client/test-node/terminal"} {
+	for _, path := range []string{"/api/admin/task/exec", "/api/admin/task/all", "/api/admin/task/test/result", "/api/admin/exec", "/api/admin/theme/list", "/api/admin/theme/settings", "/api/admin/plugin/list", "/api/plugin/old/index.html", "/themes/old/dist/index.html", "/themes/default/komari-theme.json", "/api/admin/client/test-node/terminal", "/api/admin/client/test-node/file/upload", "/api/admin/client/test-node/file/download", "/api/admin/notification/channels", "/api/admin/notification/offline", "/api/admin/test/sendMessage"} {
 		for _, method := range []string{"GET", "POST"} {
 			w := request(method, path, "{}", "isolated-test-admin-key")
 			if w.Code != 404 || !strings.Contains(w.Header().Get("Content-Type"), "application/json") {
@@ -68,7 +68,7 @@ func TestRetiredRoutesAndUIAuthorization(t *testing.T) {
 		t.Fatalf("agent terminal endpoint: %d", w.Code)
 	}
 
-	for _, method := range []string{"exec", "getTasks", "getTaskById", "getTasksByClientId", "getSpecificTaskResult", "getTaskResultsByTaskId"} {
+	for _, method := range []string{"exec", "getTasks", "getTaskById", "getTasksByClientId", "getSpecificTaskResult", "getTaskResultsByTaskId", "fileList", "fileListRoots", "fileStat", "fileMkdir", "fileDelete", "fileMove", "fileCopy", "fileChmod", "fileChown", "fileSearch", "listNotificationChannels", "getNotificationChannelConfiguration", "setNotificationChannelConfiguration", "listOfflineNotifications", "editOfflineNotification", "enableOfflineNotification", "disableOfflineNotification", "sendNotification"} {
 		body := `{"jsonrpc":"2.0","id":1,"method":"admin:` + method + `","params":{"command":"echo isolated","clients":["test-node"]}}`
 		result := request("POST", "/api/rpc2", body, "isolated-test-admin-key")
 		var reply struct {

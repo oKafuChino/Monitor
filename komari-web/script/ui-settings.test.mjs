@@ -8,11 +8,6 @@ test('object patches send only changed keys and preserve explicit empty values',
  assert.equal(calls.length,1);assert.equal(calls[0].url,'/api/admin/ui/settings');assert.equal(calls[0].method,'PATCH');
  assert.deepEqual(JSON.parse(calls[0].body),{showIpTagsInCard:false,mainContentWidth:0,backgroundImageUrlDesktop:'',_komari_dashboard_v1:[]});
 });
-test('functional guide update reads current settings but writes only its own key',async()=>{
- const writes=[];globalThis.fetch=async(_url,options)=>options.method==='PATCH'?(writes.push(JSON.parse(options.body)),{ok:true}):{ok:true,json:async()=>({data:{customFooterHtml:'preserve',_komari_onboarding_v1:{seen:['install']}}})};
- await saveUISettings(current=>({_komari_onboarding_v1:{seen:[...current._komari_onboarding_v1.seen,'notifications']}}));
- assert.deepEqual(writes,[{_komari_onboarding_v1:{seen:['install','notifications']}}]);
-});
 test('failed writes report errors without poisoning later saves',async()=>{
  globalThis.fetch=async()=>({ok:false,status:500,json:async()=>({message:'database failure'})});
  await assert.rejects(saveUISettings({mainContentWidth:80}),/database failure/);

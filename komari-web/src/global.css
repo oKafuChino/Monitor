@@ -167,7 +167,7 @@ body, * {
   scrollbar-color: rgba(80,80,80,0.4) transparent;
 }
 
-/* 界面/通知配置页顶部 Tab 栏：覆盖 Radix 默认隐藏滚动条，窄屏时可横向滚动 */
+/* 配置页顶部 Tab 栏：覆盖 Radix 默认隐藏滚动条，窄屏时可横向滚动 */
 .km-config-form-tabs-list {
   scrollbar-width: thin;
   scrollbar-color: var(--gray-a6) transparent;
@@ -192,11 +192,6 @@ body, * {
   z-index: 100000;
 }
 
-.km-file-editor ~ [data-radix-popper-content-wrapper],
-.km-file-editor ~ .rt-DialogOverlay {
-  z-index: 20 !important;
-}
-
 [data-km-toaster-portal] {
   position: fixed !important;
   inset: 0 !important;
@@ -218,22 +213,6 @@ body, * {
   position: fixed !important;
   pointer-events: auto !important;
   z-index: 2147483646 !important;
-}
-
-.km-file-editor,
-.km-file-editor [data-radix-popper-content-wrapper],
-[data-radix-popper-content-wrapper] .rt-PopoverContent,
-[role="menu"] {
-  font-family: var(
-    --km-editor-font-family,
-    "Cascadia Mono",
-    "Noto Sans SC",
-    monospace
-  );
-}
-
-.km-file-editor {
-  z-index: 10;
 }
 
 .km-login-page {

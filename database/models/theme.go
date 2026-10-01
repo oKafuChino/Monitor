@@ -2,7 +2,7 @@ package models
 
 const ThemeConfigurationManaged = "managed"
 
-// Configuration is shared by built-in UI and notification forms.
+// Configuration is shared by the embedded UI and managed settings.
 type Configuration struct {
 	Type string `json:"type"` // built-in managed fields
 	Icon string `json:"icon"` // 图标

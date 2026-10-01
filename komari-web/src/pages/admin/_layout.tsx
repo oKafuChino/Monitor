@@ -73,10 +73,6 @@ const AdminLayout = () => {
       <AdminNavigationProvider>
         <AdminPanelBar
           content={<Outlet />}
-          onboardingReady={
-            !loading && !error && !open &&
-            !(normalizeLanguage(lang).startsWith("zh") && settings?.eula_accepted === false)
-          }
         />
       </AdminNavigationProvider>
     </>

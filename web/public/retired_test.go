@@ -38,7 +38,7 @@ func TestNormalSiteNeverServesLegacyTheme(t *testing.T) {
 	}
 	r := gin.New()
 	Static(r.Group("/"), func(h ...gin.HandlerFunc) { r.NoRoute(h...) })
-	for _, p := range []string{"/", "/admin/files", "/themes/legacy/dist/index.html", "/themes/default/komari-theme.json", "/api/admin/theme/list", "/assets/missing.js"} {
+	for _, p := range []string{"/", "/admin/files", "/admin/files/editor", "/admin/notification", "/admin/notification/channels", "/admin/settings/notification", "/terminal", "/terminal/legacy", "/themes/legacy/dist/index.html", "/themes/default/komari-theme.json", "/api/admin/theme/list", "/assets/missing.js"} {
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, httptest.NewRequest("GET", p, nil))
 		body := w.Body.String()
@@ -48,10 +48,6 @@ func TestNormalSiteNeverServesLegacyTheme(t *testing.T) {
 		if p == "/" {
 			if w.Code != 200 || !strings.Contains(body, "SITE_HEAD") || !strings.Contains(body, "SITE_BODY") {
 				t.Fatal("site customization lost")
-			}
-		} else if p == "/admin/files" {
-			if w.Code != 200 || strings.Contains(body, "SITE_HEAD") {
-				t.Fatal("admin injection isolation lost")
 			}
 		} else if w.Code != 404 {
 			t.Fatalf("removed path fell into SPA: %s %d", p, w.Code)

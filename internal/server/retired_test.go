@@ -3,9 +3,6 @@ package server
 import (
 	"github.com/komari-monitor/komari/cmd/flags"
 	"github.com/komari-monitor/komari/database/dbcore"
-	"github.com/komari-monitor/komari/internal/config"
-	"github.com/komari-monitor/komari/internal/notifications"
-	"github.com/komari-monitor/komari/utils/messageSender"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,19 +36,6 @@ func TestStartupLeavesLegacyExtensionsInert(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer app.Shutdown()
-	if err := config.Set("notification_method", "old-plugin-channel"); err != nil {
-		t.Fatal(err)
-	}
-	if err := notifications.Initialize(); err != nil {
-		t.Fatal(err)
-	}
-	defer notifications.Shutdown()
-	if !messageSender.NotificationChannelRegistered("webhook") {
-		t.Fatal("built-in webhook missing")
-	}
-	if messageSender.NotificationChannelRegistered("old-plugin-channel") {
-		t.Fatal("legacy channel loaded")
-	}
 	if err := app.BuildRouter(); err != nil {
 		t.Fatal(err)
 	}

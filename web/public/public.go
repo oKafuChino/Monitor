@@ -33,6 +33,22 @@ const (
 	IndexFile = "index.html" // 相对于 DistDir
 )
 
+// isRetiredFrontendPath prevents removed feature entry points from being
+// mistaken for valid client-side routes by the SPA fallback.
+func isRetiredFrontendPath(requestPath string) bool {
+	for _, prefix := range []string{
+		"/admin/files",
+		"/admin/notification",
+		"/admin/settings/notification",
+		"/terminal",
+	} {
+		if requestPath == prefix || strings.HasPrefix(requestPath, prefix+"/") {
+			return true
+		}
+	}
+	return false
+}
+
 func normalizeHTMLLanguage(language string) string {
 	language = strings.TrimSpace(strings.ReplaceAll(language, "_", "-"))
 	if len(language) < 2 || len(language) > 32 {
@@ -142,7 +158,7 @@ func static(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFunc), force
 		shouldReplace := true
 
 		// 特殊页面：强制使用 default 主题，且不进行内容替换
-		if forceDefaultTheme || strings.HasPrefix(reqPath, "/admin") || strings.HasPrefix(reqPath, "/terminal") {
+		if forceDefaultTheme || strings.HasPrefix(reqPath, "/admin") {
 			shouldReplace = false
 		}
 
@@ -251,6 +267,10 @@ func static(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFunc), force
 			}
 		}()
 		reqPath := c.Request.URL.Path
+		if isRetiredFrontendPath(reqPath) {
+			c.Status(http.StatusNotFound)
+			return
+		}
 
 		// SPA 静态资源回退
 		distPath := path.Join(DistDir, reqPath)

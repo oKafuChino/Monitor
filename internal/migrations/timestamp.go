@@ -35,7 +35,6 @@ var legacyTimestampColumns = [...]timestampColumn{
 	{table: "sessions", column: "expires"},
 	{table: "sessions", column: "created_at"},
 	{table: "logs", column: "time"},
-	{table: "offline_notifications", column: "last_notified"},
 	{table: "task_results", column: "finished_at"},
 	{table: "task_results", column: "created_at"},
 	{table: "records", column: "time"},

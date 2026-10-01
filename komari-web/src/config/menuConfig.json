@@ -11,11 +11,6 @@
       "icon": "Server"
     },
     {
-      "labelKey": "file_manager.title",
-      "path": "/admin/files",
-      "icon": "FolderOpen"
-    },
-    {
       "labelKey": "operations.title",
       "path": "/admin/ping",
       "icon": "Bolt",
@@ -29,28 +24,6 @@
           "labelKey": "sessions.title",
           "path": "/admin/sessions",
           "icon": "Users"
-        }
-      ]
-    },
-    {
-      "labelKey": "notification.title",
-      "path": "/admin/notification/channels",
-      "icon": "Bell",
-      "children": [
-        {
-          "labelKey": "notification.channels.title",
-          "path": "/admin/notification/channels",
-          "icon": "MessageCircleMore"
-        },
-        {
-          "labelKey": "notification.general.title",
-          "path": "/admin/notification/general",
-          "icon": "Ellipsis"
-        },
-        {
-          "labelKey": "notification.offline.title",
-          "path": "/admin/notification/offline",
-          "icon": "Unplug"
         }
       ]
     },

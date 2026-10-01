@@ -8,6 +8,7 @@ import (
 	"github.com/komari-monitor/komari/database/models"
 	"github.com/komari-monitor/komari/database/tasks"
 	"github.com/komari-monitor/komari/internal/metricstore"
+	"github.com/komari-monitor/komari/utils/renewal"
 	v2 "github.com/komari-monitor/komari/protocol/v2"
 	agent_runtime "github.com/komari-monitor/komari/web/agent"
 )
@@ -32,6 +33,9 @@ func ingestReport(uuid string, report v2.Report, markPresence bool) error {
 	agent_runtime.MarkV2Client(uuid)
 	if markPresence {
 		refreshPostPresence(uuid)
+	}
+	if client, err := clients.GetClientByUUID(uuid); err == nil {
+		renewal.CheckAndAutoRenewal(client)
 	}
 	return nil
 }

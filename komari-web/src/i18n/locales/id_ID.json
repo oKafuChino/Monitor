@@ -110,10 +110,6 @@
       "disableAutoUpdate": "Nonaktifkan Pembaruan Otomatis",
       "dragToReorder": "Tekan lama dan seret untuk mengurutkan ulang",
       "editNodePrice": "Ubah Harga",
-      "emptyGuide": {
-        "description": "Klik \"Tambah Node\" di kanan atas untuk memulai, atau aktifkan penemuan otomatis untuk menambahkan server secara massal.",
-        "title": "Belum ada server"
-      },
       "enableGpuMonitoring": "Aktifkan pemantauan GPU terperinci",
       "errorLoadNodeList": "Gagal memuat daftar node",
       "errorRefreshNodeList": "Gagal memperbarui daftar",
@@ -149,17 +145,6 @@
       "setToLongTerm": "Atur ke Jangka Panjang",
       "submit": "Kirim",
       "submitting": "Menunggu..."
-    },
-    "notification": {
-      "expire_enable": "Aktifkan Pengingat Kedaluwarsa",
-      "expire_enable_description": "Jika diaktifkan, sistem akan mengirimkan notifikasi pengingat sebelum masa kedaluwarsa.",
-      "expire_time": "Hari Sebelum Pengingat",
-      "expire_time_description": "Atur berapa hari sebelumnya notifikasi pengingat akan dikirim sebelum masa kedaluwarsa.",
-      "expire_title": "Notifikasi Kedaluwarsa",
-      "login": "Notifikasi Masuk",
-      "login_description": "Kirim notifikasi saat sesi baru masuk ke Komari.",
-      "traffic": "Penggunaan Trafik",
-      "traffic_description": "Komari akan mengirim notifikasi ketika penggunaan trafik server mencapai persentase tertentu, dengan pengingat setiap kenaikan 5%. Jika tidak ada batas trafik yang ditetapkan, maka tidak ada notifikasi yang dikirim. Atur ke 0 untuk menonaktifkan pengingat trafik."
     }
   },
   "chart": {
@@ -423,7 +408,6 @@
     "move": "Pindahkan {{name}}",
     "moved": "{{name}} dipindahkan ke posisi {{position}}",
     "normal": "Standar",
-    "notifications": "Konfigurasi notifikasi",
     "picked": "{{name}} diangkat",
     "ram": "Total memori",
     "reset": "Kembalikan tata letak default",
@@ -450,8 +434,7 @@
       "traffic": "Lalu lintas 24 jam"
     },
     "width": "Lebar kartu",
-    "workspace": "Dasbor saya",
-    "files": "Manajemen berkas"
+    "workspace": "Dasbor saya"
   },
   "database_migration": {
     "after": "Setelah migrasi",
@@ -487,125 +470,6 @@
     "accept": "Saya telah membaca dan menyetujui",
     "reject": "Saya tidak menerima",
     "title": "Pemberitahuan Hukum dan Panduan Kepatuhan"
-  },
-  "file_manager": {
-    "action_failed": "Operasi file gagal",
-    "action_success": "Operasi file selesai",
-    "confirm_delete": "Hapus {{name}}? Tindakan ini tidak dapat dibatalkan.",
-    "confirm_delete_multiple": "Hapus {{count}} item? Tindakan ini tidak dapat dibatalkan.",
-    "content": "Isi",
-    "copy": "Salin",
-    "copy_directory_unsupported": "Penyalinan direktori tidak didukung.",
-    "copy_here": "Tempel di sini",
-    "copy_path": "Salin jalur",
-    "copy_path_failed": "Tidak dapat menyalin jalur",
-    "copy_path_success": "Jalur disalin",
-    "copy_paths": "Salin jalur",
-    "cut": "Potong",
-    "delete": "Hapus",
-    "download": "Unduh",
-    "drive": "Drive",
-    "editor": {
-      "binary": "Pratinjau file biner",
-      "close_file": "Tutup File",
-      "close_left": "Tutup Kiri",
-      "close_others": "Tutup Lainnya",
-      "close_right": "Tutup Kanan",
-      "close_tab": "Tutup Tab",
-      "column": "Kolom",
-      "copy": "Salin",
-      "cut": "Potong",
-      "dont_save": "Jangan Simpan",
-      "empty": "Buka file dari Explorer",
-      "encoding_failed": "Tidak dapat mendekode file dengan encoding ini",
-      "encoding_hint": "Encoding teks (terdeteksi otomatis saat dibuka)",
-      "explorer": "Explorer",
-      "fullscreen": "Alihkan Layar Penuh",
-      "go_to": "Buka File",
-      "go_to_placeholder": "Masukkan jalur file",
-      "go_to_position": "Lompat ke Baris/Kolom",
-      "line": "Baris",
-      "loading_agent": "Mengambil file dari agent...",
-      "maximize": "Maksimalkan",
-      "menu": {
-        "edit": "Edit",
-        "file": "File",
-        "view": "Lihat"
-      },
-      "minimap": "Minimap",
-      "no_symbols": "Tidak ada simbol ditemukan",
-      "outline": "Garis Besar",
-      "paste": "Tempel",
-      "preview_failed": "Tidak dapat mempratinjau file ini",
-      "redo": "Ulangi",
-      "reopen": "Buka ulang",
-      "reopen_with_encoding": "Buka ulang dengan encoding",
-      "reopen_with_encoding_description": "Buka ulang \"{{name}}\" dengan {{encoding}}? Perubahan yang belum disimpan akan dibuang.",
-      "reopen_with_encoding_title": "Buka ulang dengan encoding?",
-      "restore": "Pulihkan",
-      "save": "Simpan",
-      "save_all": "Simpan Semua",
-      "save_with_encoding": "Simpan dengan encoding",
-      "saved": "File disimpan",
-      "select_all": "Pilih Semua",
-      "title": "Editor File",
-      "too_large": "File yang lebih besar dari {{size}} tidak dapat dibuka di editor.",
-      "too_large_preview": "File terlalu besar untuk dipratinjau",
-      "undo": "Urungkan",
-      "unsaved_all": "{{count}} file memiliki perubahan yang belum disimpan.",
-      "unsaved_file": "Simpan perubahan ke {{name}}?",
-      "unsaved_title": "Simpan perubahan?",
-      "word_wrap": "Bungkus Kata"
-    },
-    "empty": "Direktori ini kosong",
-    "group": "Grup",
-    "load_failed": "Gagal memuat pengelola file",
-    "loading": "Memuat...",
-    "mode": "Mode",
-    "move_here": "Pindah ke sini",
-    "new_file": "File Baru",
-    "new_folder": "Folder Baru",
-    "no_results": "Tidak ada hasil",
-    "no_server": "Pilih node untuk menjelajahi berkas",
-    "open": "Buka",
-    "open_in_editor": "Buka di editor",
-    "owner": "Pemilik",
-    "parent": "Direktori induk",
-    "paste": "Tempel",
-    "path": "Jalur",
-    "permissions": "Izin dan Pemilik",
-    "rename": "Ubah Nama",
-    "root_unavailable": "Akar sistem file tidak tersedia",
-    "save_failed": "Gagal menyimpan file",
-    "search": "Cari",
-    "search_content": "Cari isi file",
-    "search_failed": "Pencarian gagal",
-    "search_placeholder": "Cari file",
-    "search_results": "{{count}} hasil",
-    "title": "Manajemen berkas",
-    "upload": "Unggah",
-    "upload_canceled": "Unggah dibatalkan",
-    "upload_chunk": "Bagian",
-    "upload_chunk_done": "Selesai",
-    "upload_chunk_queued": "Dalam antrean",
-    "upload_chunk_retrying": "Mencoba ulang",
-    "upload_chunk_summary": "Hanya menampilkan bagian yang sedang diunggah ({{active}} bersamaan, total {{count}})",
-    "upload_chunk_uploading": "Mengunggah",
-    "upload_chunks": "Unggah per bagian",
-    "upload_complete": "Unggah selesai",
-    "upload_destination": "ke",
-    "upload_failed": "Unggah gagal",
-    "uploading": "Mengunggah",
-    "select_node": "Pilih node",
-    "node_unavailable": "Node tidak tersedia. Pilih node lain.",
-    "close_before_switch": "Tutup editor dan selesaikan transfer sebelum mengganti node.",
-    "resource_monitor": {
-      "close": "Sembunyikan Monitor Sumber Daya",
-      "load_error": "Gagal memuat data waktu nyata",
-      "open": "Tampilkan Monitor Sumber Daya",
-      "title": "Monitor Sumber Daya",
-      "waiting": "Menunggu data..."
-    }
   },
   "go_to_home": "Kembali ke Beranda",
   "install": {
@@ -737,59 +601,8 @@
   "nodes": {
     "empty": "Tidak ada data server"
   },
-  "notification": {
-    "channels": {
-      "title": "Saluran Notifikasi"
-    },
-    "general": {
-      "title": "Peristiwa Umum"
-    },
-    "offline": {
-      "cooldown": "Masa Tunda",
-      "full_title": "Konfigurasi Peringatan Offline",
-      "grace_period": "Masa Tenggang",
-      "grace_period_tip": "Masa tenggang kurang dari 45 detik dapat menyebabkan notifikasi Hidup terlambat muncul.",
-      "last_notified": "Terakhir Diberitahu",
-      "never_triggered": "Belum Pernah Dipicu",
-      "tips": "Untuk mencegah notifikasi terlalu sering, kami menggunakan masa tenggang:</br> <b>Masa Tenggang</b>: Jika klien offline dan tidak terhubung kembali dalam waktu ini, notifikasi offline akan dikirim.",
-      "title": "Mati"
-    },
-    "title": "Notifikasi"
-  },
-  "onboarding": {
-    "finish": "Mengerti",
-    "install": {
-      "action": "Tambah Node",
-      "add_description": "Klik di sini untuk membuat node, lalu salin perintah instalasi melalui tombol Deploy pada node. Jalankan perintah di server target, tunggu Agent melaporkan, dan node akan online.",
-      "add_title": "Tambah Node, Instal Agent",
-      "description": "Belum ada server? Masuk ke menu 'Server' untuk manajemen node, lalu tambahkan node untuk server Anda.",
-      "title": "Hubungkan Server Pertama"
-    },
-    "next": "Berikutnya",
-    "notifications": {
-      "action": "Konfigurasi Notifikasi",
-      "description": "Tambahkan dan uji kanal notifikasi di sini untuk mengirim peringatan ke layanan pesan yang biasa Anda gunakan.",
-      "offline_description": "Konfigurasikan peringatan dan waktu tunda di notifikasi offline untuk mengurangi gangguan akibat fluktuasi jaringan sesaat.",
-      "offline_title": "Server Offline, Ketahui Segera",
-      "rules_description": "Notifikasi umum menyediakan akses konfigurasi aturan peringatan lainnya. Atur kanal notifikasi terlebih dahulu, lalu konfigurasikan aturan sesuai kebutuhan.",
-      "rules_title": "Konfigurasikan Aturan Notifikasi Sesuai Kebutuhan",
-      "title": "Biarkan Server Memberi Tahu Anda Secara Proaktif"
-    },
-    "previous": "Sebelumnya",
-    "progress": "Panduan Cepat · {{current}} / {{total}}",
-    "save_failed": "Gagal menyimpan catatan panduan, mungkin akan ditampilkan lagi saat masuk berikutnya.",
-    "skip": "Lewati Panduan",
-    "workbench": {
-      "action": "Manajemen berkas",
-      "description": "Pilih node untuk menjelajahi dan mengedit berkas jarak jauh.",
-      "files_description": "Unggah, unduh, cari, dan edit berkas tanpa membuka shell.",
-      "files_title": "Manajemen berkas",
-      "title": "Manajemen berkas"
-    }
-  },
   "operations": {
-    "title": "Operasional",
-    "workbench": "Manajemen berkas"
+    "title": "Operasional"
   },
   "page_not_found": "Server tidak dapat menemukan halaman yang Anda minta.",
   "ping": {
@@ -1215,43 +1028,6 @@
       "title": "Basis Data"
     },
     "missing_required_fields": "Silakan isi kolom yang wajib: {{fieldNames}}",
-    "notification": {
-      "channel_unavailable": "Saluran notifikasi ini saat ini tidak terdaftar.",
-      "email": {
-        "host": "Server SMTP",
-        "password": "Kata Sandi",
-        "port": "Port",
-        "receiver": "Email Penerima",
-        "sender": "Email Pengirim",
-        "use_ssl": "Aktifkan SSL",
-        "username": "Nama Pengguna"
-      },
-      "enable": "Aktifkan Notifikasi",
-      "enable_description": "Aktifkan untuk mendapatkan pembaruan melalui metode pilihan Anda.",
-      "Javascript": {
-        "script": "Kode JavaScript",
-        "script_help": "Kode JavaScript yang mengimplementasikan fungsi sendMessage(message, title) dan sendEvent(event) yang bersifat opsional (dukungan sebagian untuk ES6). Keduanya harus mengembalikan Promise atau nilai boolean. API yang tersedia: fetch(), xhr(), console.log(). Panduan: https://komari-document.pages.dev/faq/notification-template.html"
-      },
-      "method": "Metode Pengiriman",
-      "method_description": "Pilih platform favorit Anda untuk peringatan.",
-      "moved": "Mencari notifikasi kedaluwarsa? Pindah ke notification-general",
-      "provider_fetch_failed": "Gagal memuat informasi penyedia notifikasi",
-      "provider_fields": "Pengaturan Pengiriman",
-      "provider_fields_description": "Pengaturan detail untuk saluran pengiriman informasi yang Anda pilih",
-      "provider_settings_fetch_failed": "Gagal memuat pengaturan notifikasi",
-      "telegram": {
-        "bot_token": "Token Bot Telegram",
-        "chat_id": "ID Chat",
-        "endpoint": "Endpoint Permintaan",
-        "endpoint_help": "Endpoint permintaan untuk API Bot Telegram, biasanya `https://api.telegram.org/bot`"
-      },
-      "template": "Template pemberitahuan pesan",
-      "template_description": "Komari akan mengirim pemberitahuan sesuai dengan template pemberitahuan pesan",
-      "test_description": "Kirim pesan uji coba",
-      "test_title": "Kirim pesan uji coba",
-      "title": "Notifikasi",
-      "unavailable": "Tidak tersedia"
-    },
     "settings_save_failed": "Gagal menyimpan pengaturan",
     "settings_saved": "Pengaturan berhasil disimpan",
     "sign_on": {

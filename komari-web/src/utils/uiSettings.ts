@@ -13,7 +13,7 @@ export async function readUISettings(): Promise<UISettings> {
 }
 
 // Send only changed top-level keys; the server merges them in a transaction.
-// Cross-tab locking also serializes read/modify/write of the same guide-state key.
+// Cross-tab locking also serializes read/modify/write of the same settings.
 export function saveUISettings(
   patch: UISettings | ((current: UISettings) => UISettings),
 ) {

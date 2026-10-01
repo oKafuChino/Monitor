@@ -7,9 +7,7 @@ import (
 	"github.com/komari-monitor/komari/database/auditlog"
 	"github.com/komari-monitor/komari/database/clients"
 	"github.com/komari-monitor/komari/database/models"
-	messageevent "github.com/komari-monitor/komari/database/models/messageEvent"
 	"github.com/komari-monitor/komari/pkg/timeutil"
-	"github.com/komari-monitor/komari/utils/messageSender"
 	agent_runtime "github.com/komari-monitor/komari/web/agent"
 )
 
@@ -25,7 +23,7 @@ func CheckAndAutoRenewal(client models.Client) {
 		return
 	}
 	// 不在线则不续费
-	if _, ok := agent_runtime.GetConnectedClients()[client.UUID]; !ok {
+	if !containsUUID(agent_runtime.GetAllOnlineUUIDs(), client.UUID) {
 		return
 	}
 	if client.ExpiredAt == nil {
@@ -110,28 +108,15 @@ func CheckAndAutoRenewal(client models.Client) {
 			auditlog.EventLog("renewal", fmt.Sprintf("Auto-renewed client: %s until %s",
 				client.Name, timeutil.FormatSystemDate(newExpireTime)))
 
-			_ = messageSender.SendNotification(models.EventMessage{
-				Event:   messageevent.Renew,
-				Clients: []models.Client{client},
-				Time:    time.Now().UTC(),
-				Emoji:   "🔄",
-				Message: fmt.Sprintf("• %s until %s\n", client.Name, timeutil.FormatSystemDate(newExpireTime)),
-			})
 		}
 	}
+}
 
-	// 发送续费通知
-	// if len(renewedClients) > 0 {
-	// 	message := ""
-	// 	for _, clientInfo := range renewedClients {
-	// 		message += fmt.Sprintf("• %s until %s\n", clientInfo.Name, clientInfo.NewExpireTime.Format("2006-01-02"))
-	// 	}
-	// 	messageSender.SendEvent(models.EventMessage{
-	// 		Event:   messageevent.Renew,
-	// 		Clients: []models.Client{client},
-	// 		Time:    time.Now(),
-	// 		Emoji:   "🔄",
-	// 		Message: message,
-	// 	})
-	// }
+func containsUUID(uuids []string, target string) bool {
+	for _, uuid := range uuids {
+		if uuid == target {
+			return true
+		}
+	}
+	return false
 }

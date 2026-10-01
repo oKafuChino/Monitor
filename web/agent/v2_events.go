@@ -15,10 +15,6 @@ const (
 	v2EventQueueLimit = 128
 	v2EventTTL        = 5 * time.Minute
 	v2PingEventTTL    = 3 * time.Second
-	// File operations may include a remote read/search with a 90 second
-	// deadline, so queued file commands need a little headroom while an agent
-	// reconnects.
-	v2FileEventTTL = 2 * time.Minute
 )
 
 type v2EventQueue struct {
@@ -43,7 +39,7 @@ func getV2EventQueueLocked(uuid string) *v2EventQueue {
 // Only fixed, supported Agent operations may enter the outbound event path.
 func allowedAgentEvent(method string) bool {
 	switch method {
-	case v2.MethodAgentPing, v2.MethodAgentFile, v2.MethodAgentStartupConfig, v2.MethodAgentSwitchVersion:
+	case v2.MethodAgentPing, v2.MethodAgentStartupConfig, v2.MethodAgentSwitchVersion:
 		return true
 	default:
 		return false
@@ -96,8 +92,6 @@ func EnqueueV2Event(uuid, method string, params any) v2.Event {
 	ttl := v2EventTTL
 	if method == v2.MethodAgentPing {
 		ttl = v2PingEventTTL
-	} else if method == v2.MethodAgentFile {
-		ttl = v2FileEventTTL
 	} else if method == v2.MethodAgentStartupConfig {
 		ttl = 20 * time.Second
 	}

@@ -110,10 +110,6 @@
       "disableAutoUpdate": "自動更新を無効にする",
       "dragToReorder": "長押ししてドラッグで再配置",
       "editNodePrice": "請求書を編集",
-      "emptyGuide": {
-        "description": "右上の「ノードを追加」をクリックして開始するか、自動検出を有効にしてサーバーを一括登録してください。",
-        "title": "まだサーバーがありません"
-      },
       "enableGpuMonitoring": "詳細な GPU 監視を有効にする",
       "errorLoadNodeList": "ノードリストを読み込めません",
       "errorRefreshNodeList": "リストの更新に失敗しました",
@@ -149,17 +145,6 @@
       "setToLongTerm": "長期に設定",
       "submit": "送信",
       "submitting": "待機中"
-    },
-    "notification": {
-      "expire_enable": "期限切れ通知を有効にしますか",
-      "expire_enable_description": "有効にすると、Komariは期限前に通知を送信します。",
-      "expire_time": "何日前から通知を開始しますか",
-      "expire_time_description": "期限前に何日前から通知を送信するかを設定します。",
-      "expire_title": "期限切れ通知",
-      "login": "ログイン通知",
-      "login_description": "新しいセッションがKomariにログインしたときに通知を送信します。",
-      "traffic": "トラフィック使用量",
-      "traffic_description": "Komariは、サーバーが指定されたトラフィック使用率に達したときに通知を送信し、5%の間隔で継続的にリマインダーを表示します。サーバーにトラフィック閾値が設定されていない場合、通知は送信されません。0に設定するとトラフィックリマインダーが無効になります。"
     }
   },
   "chart": {
@@ -423,7 +408,6 @@
     "move": "{{name}}を移動",
     "moved": "{{name}}を {{position}} 番目に移動しました",
     "normal": "標準",
-    "notifications": "通知設定",
     "picked": "{{name}}を持ち上げました",
     "ram": "メモリ合計",
     "reset": "デフォルトのレイアウトに戻す",
@@ -450,8 +434,7 @@
       "traffic": "24時間トラフィック"
     },
     "width": "カードの幅",
-    "workspace": "マイダッシュボード",
-    "files": "ファイル管理"
+    "workspace": "マイダッシュボード"
   },
   "database_migration": {
     "after": "移行後",
@@ -487,125 +470,6 @@
     "accept": "よく読んで同意します",
     "reject": "同意しません",
     "title": "法的通知とコンプライアンスガイド"
-  },
-  "file_manager": {
-    "action_failed": "ファイル操作に失敗しました",
-    "action_success": "ファイル操作が完了しました",
-    "confirm_delete": "{{name}} を削除しますか？この操作は元に戻せません。",
-    "confirm_delete_multiple": "{{count}} 個の項目を削除しますか？この操作は元に戻せません。",
-    "content": "内容",
-    "copy": "コピー",
-    "copy_directory_unsupported": "フォルダーのコピーには対応していません。",
-    "copy_here": "ここへ貼り付け",
-    "copy_path": "パスをコピー",
-    "copy_path_failed": "パスをコピーできませんでした",
-    "copy_path_success": "パスをコピーしました",
-    "copy_paths": "パスをコピー",
-    "cut": "切り取り",
-    "delete": "削除",
-    "download": "ダウンロード",
-    "drive": "ドライブ",
-    "editor": {
-      "binary": "バイナリファイルのプレビュー",
-      "close_file": "ファイルを閉じる",
-      "close_left": "左側を閉じる",
-      "close_others": "その他を閉じる",
-      "close_right": "右側を閉じる",
-      "close_tab": "タブを閉じる",
-      "column": "列",
-      "copy": "コピー",
-      "cut": "切り取り",
-      "dont_save": "保存しない",
-      "empty": "エクスプローラーからファイルを開いてください",
-      "encoding_failed": "このエンコーディングではファイルをデコードできません",
-      "encoding_hint": "テキストエンコーディング（開くときに自動検出）",
-      "explorer": "エクスプローラー",
-      "fullscreen": "全画面表示を切り替え",
-      "go_to": "ファイルへ移動",
-      "go_to_placeholder": "ファイルパスを入力",
-      "go_to_position": "行/列へ移動",
-      "line": "行",
-      "loading_agent": "エージェントからファイルを取得しています...",
-      "maximize": "最大化",
-      "menu": {
-        "edit": "編集",
-        "file": "ファイル",
-        "view": "表示"
-      },
-      "minimap": "ミニマップ",
-      "no_symbols": "シンボルが見つかりません",
-      "outline": "アウトライン",
-      "paste": "貼り付け",
-      "preview_failed": "このファイルをプレビューできません",
-      "redo": "やり直し",
-      "reopen": "開き直す",
-      "reopen_with_encoding": "エンコーディングを指定して開き直す",
-      "reopen_with_encoding_description": "{{encoding}} で「{{name}}」を開き直しますか？保存されていない変更は破棄されます。",
-      "reopen_with_encoding_title": "エンコーディングを指定して開き直しますか？",
-      "restore": "復元",
-      "save": "保存",
-      "save_all": "すべて保存",
-      "save_with_encoding": "エンコーディングを指定して保存",
-      "saved": "ファイルを保存しました",
-      "select_all": "すべて選択",
-      "title": "ファイルエディター",
-      "too_large": "{{size}} より大きいファイルはエディターで開けません。",
-      "too_large_preview": "ファイルが大きすぎてプレビューできません",
-      "undo": "元に戻す",
-      "unsaved_all": "{{count}} 件のファイルに未保存の変更があります。",
-      "unsaved_file": "{{name}} への変更を保存しますか？",
-      "unsaved_title": "変更を保存しますか？",
-      "word_wrap": "折り返し"
-    },
-    "empty": "このディレクトリは空です",
-    "group": "グループ",
-    "load_failed": "ファイルマネージャーの読み込みに失敗しました",
-    "loading": "読み込み中...",
-    "mode": "権限",
-    "move_here": "ここへ移動",
-    "new_file": "新しいファイル",
-    "new_folder": "新しいフォルダー",
-    "no_results": "検索結果がありません",
-    "no_server": "ノードを選択してファイルを表示",
-    "open": "開く",
-    "open_in_editor": "エディターで開く",
-    "owner": "所有者",
-    "parent": "親ディレクトリ",
-    "paste": "貼り付け",
-    "path": "パス",
-    "permissions": "権限と所有者",
-    "rename": "名前を変更",
-    "root_unavailable": "ファイルシステムのルートを取得できません",
-    "save_failed": "ファイルの保存に失敗しました",
-    "search": "検索",
-    "search_content": "ファイルの内容を検索",
-    "search_failed": "検索に失敗しました",
-    "search_placeholder": "ファイルを検索",
-    "search_results": "{{count}} 件の結果",
-    "title": "ファイル管理",
-    "upload": "アップロード",
-    "upload_canceled": "アップロードをキャンセルしました",
-    "upload_chunk": "チャンク",
-    "upload_chunk_done": "完了",
-    "upload_chunk_queued": "待機中",
-    "upload_chunk_retrying": "再試行中",
-    "upload_chunk_summary": "アップロード中のチャンクのみ表示（同時 {{active}} 件、合計 {{count}} 件）",
-    "upload_chunk_uploading": "アップロード中",
-    "upload_chunks": "チャンクアップロード",
-    "upload_complete": "アップロードが完了しました",
-    "upload_destination": "宛先",
-    "upload_failed": "アップロードに失敗しました",
-    "uploading": "アップロード中",
-    "select_node": "ノードを選択",
-    "node_unavailable": "このノードは利用できません。別のノードを選択してください。",
-    "close_before_switch": "ノードを切り替える前にエディターを閉じ、転送を完了してください。",
-    "resource_monitor": {
-      "close": "リソースモニターを隠す",
-      "load_error": "リアルタイムデータを読み込めませんでした",
-      "open": "リソースモニターを表示",
-      "title": "リソースモニター",
-      "waiting": "データを待っています..."
-    }
   },
   "go_to_home": "ホームに戻る",
   "install": {
@@ -737,59 +601,8 @@
   "nodes": {
     "empty": "サーバーデータはありません"
   },
-  "notification": {
-    "channels": {
-      "title": "通知チャンネル"
-    },
-    "general": {
-      "title": "一般イベント"
-    },
-    "offline": {
-      "cooldown": "クールダウン期間",
-      "full_title": "オフライン通知設定",
-      "grace_period": "猶予期間",
-      "grace_period_tip": "45秒未満の猶予期間では、オンライン通知が適時にトリガーされない可能性があります",
-      "last_notified": "最後の通知",
-      "never_triggered": "一度もトリガーされていません",
-      "tips": "頻繁な通知を避けるために、猶予期間を設定しました：</br> <b>猶予期間</b>：クライアントがオフラインになった後、この期間内に再度オンラインにならなければ、オフライン通知が送信されます。",
-      "title": "オフライン通知"
-    },
-    "title": "通知"
-  },
-  "onboarding": {
-    "finish": "了解しました",
-    "install": {
-      "action": "ノードを追加",
-      "add_description": "ここをクリックしてノードを作成し、ノードのデプロイボタンからインストールコマンドをコピーします。対象サーバーでコマンドを実行し、Agent がレポートを送信すると、ノードがオンラインになります。",
-      "add_title": "ノードを追加して Agent をインストール",
-      "description": "まだサーバーがありません。「サーバー」からノード管理に入り、サーバーにノードを追加してください。",
-      "title": "最初のサーバーを接続"
-    },
-    "next": "次へ",
-    "notifications": {
-      "action": "通知を設定",
-      "description": "ここで通知チャネルを追加してテストし、アラートを普段お使いのメッセージサービスに送信できます。",
-      "offline_description": "オフライン通知でアラートと遅延時間を設定し、一時的なネットワーク変動による通知を減らします。",
-      "offline_title": "サーバーがオフラインになったらすぐ通知",
-      "rules_description": "一般通知には、その他のアラートルールの設定入口があります。まず通知チャネルを設定し、必要に応じてルールを設定してください。",
-      "rules_title": "必要に応じて通知ルールを設定",
-      "title": "サーバーから能動的に通知を受け取る"
-    },
-    "previous": "前へ",
-    "progress": "クイックガイド · {{current}} / {{total}}",
-    "save_failed": "ガイドの記録を保存できませんでした。次回表示される場合があります。",
-    "skip": "ガイドをスキップ",
-    "workbench": {
-      "action": "ファイル管理",
-      "description": "ノードを選択してリモートファイルを参照・編集します。",
-      "files_description": "シェルを開かずにアップロード、ダウンロード、検索、編集ができます。",
-      "files_title": "ファイル管理",
-      "title": "ファイル管理"
-    }
-  },
   "operations": {
-    "title": "運用",
-    "workbench": "ファイル管理"
+    "title": "運用"
   },
   "page_not_found": "残念ながら、ページは小鞠に食べられてしまいました。",
   "ping": {
@@ -1215,43 +1028,6 @@
       "title": "データベース"
     },
     "missing_required_fields": "必須フィールドを入力してください: {{fieldNames}}",
-    "notification": {
-      "channel_unavailable": "この通知チャネルは現在登録されていません。",
-      "email": {
-        "host": "SMTP サーバー",
-        "password": "パスワード",
-        "port": "ポート",
-        "receiver": "受信者メールアドレス",
-        "sender": "送信者メールアドレス",
-        "use_ssl": "SSL を有効にする",
-        "username": "ユーザー名"
-      },
-      "enable": "通知を有効にする",
-      "enable_description": "好みの方法でタイムリーな通知を受け取ります。",
-      "Javascript": {
-        "script": "JavaScript コード",
-        "script_help": "sendMessage(message, title) およびオプションの sendEvent(event) 関数を実装する JavaScript コード（ES6 の一部をサポート）。両方とも Promise またはブール値を返す必要があります。使用可能な API：fetch()、xhr()、console.log()。ガイド: https://komari-document.pages.dev/faq/notification-template.html"
-      },
-      "method": "通知チャネル",
-      "method_description": "通知プラットフォームを選択してください",
-      "moved": "期限切れの通知を探していますか？通知-一般に移行されました",
-      "provider_fetch_failed": "通知プロバイダー情報の読み込みに失敗しました",
-      "provider_fields": "送信設定",
-      "provider_fields_description": "選択した情報送信チャネルの詳細設定",
-      "provider_settings_fetch_failed": "通知設定の読み込みに失敗しました",
-      "telegram": {
-        "bot_token": "Telegramボットトークン",
-        "chat_id": "チャットID",
-        "endpoint": "リクエストエンドポイント",
-        "endpoint_help": "Telegram ボット API のリクエストエンドポイント、通常は `https://api.telegram.org/bot`"
-      },
-      "template": "メッセージ通知テンプレート",
-      "template_description": "Komariはメッセージ通知テンプレートに従って通知を送信します",
-      "test_description": "テストメッセージを送信",
-      "test_title": "テストメッセージを送信",
-      "title": "通知",
-      "unavailable": "利用不可"
-    },
     "settings_save_failed": "設定の保存に失敗しました",
     "settings_saved": "設定が保存されました",
     "sign_on": {
