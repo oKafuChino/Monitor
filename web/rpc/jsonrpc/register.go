@@ -2,6 +2,11 @@ package jsonrpc
 
 import "github.com/komari-monitor/komari/pkg/rpc"
 
+// reg registers an admin method with its metadata.
+func reg(name string, h rpc.Handler, summary string) {
+	RegisterWithGroupAndMeta(name, rpc.RoleAdmin, h, &rpc.MethodMeta{Name: "admin:" + name, Summary: summary})
+}
+
 // Register 以默认分组 "common" 注册方法。
 func Register(name string, cb rpc.Handler) error {
 	return RegisterWithGroupAndMeta(name, "common", cb, &rpc.MethodMeta{
