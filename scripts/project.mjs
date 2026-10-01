@@ -58,6 +58,7 @@ async function buildAgent() {
   await go(["build", "-trimpath", "-o", `../dist/agent/${name}`, "."], "komari-agent");
 }
 async function testAgent() {
+  await run(process.execPath, ["--test", path.join(root, "scripts/agent-installer.test.mjs")]);
   await go(["test", "./..."], "komari-agent");
   await go(["test", "-race", "./monitoring/...", "./server/..."], "komari-agent");
 }

@@ -3,6 +3,11 @@ name: Integrated probe
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing release tag to receive probe assets (blank builds artifacts only; use main as the source ref)'
+        required: false
+        type: string
   release:
     types: [published]
 
@@ -10,7 +15,35 @@ permissions:
   contents: read
 
 jobs:
+  release-target:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.target.outputs.tag }}
+    steps:
+      - name: Validate optional asset backfill target
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_REPO: ${{ github.repository }}
+          REQUESTED_TAG: ${{ inputs.release_tag }}
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          tag="${EVENT_TAG:-$REQUESTED_TAG}"
+          if [ -n "$tag" ]; then
+            if ! printf '%s\n' "$tag" | LC_ALL=C grep -Eq '^[A-Za-z0-9._-]+$'; then
+              echo "Unsupported release tag."
+              exit 1
+            fi
+            # Backfill the integrated source from main, not an old server-only tag.
+            if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [ "$GITHUB_REF" != refs/heads/main ]; then
+              echo "Asset backfills must build from main."
+              exit 1
+            fi
+            gh release view "$tag" --repo "$SOURCE_REPO" --json tagName
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
   test:
+    needs: release-target
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -24,8 +57,13 @@ jobs:
       - run: go test ./...
       - run: go test -race ./monitoring/... ./server/...
       - run: bash -n install.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test scripts/agent-installer.test.mjs
+        working-directory: .
   build:
-    needs: test
+    needs: [test, release-target]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -59,7 +97,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: '0'
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ needs.release-target.outputs.tag }}
           SOURCE_REPO: ${{ github.repository }}
         run: |
           name="komari-agent-${GOOS}-${GOARCH}"
@@ -71,10 +109,10 @@ jobs:
           name: komari-agent-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/agent/*
       - name: Attach probe to project release
-        if: github.event_name == 'release'
+        if: needs.release-target.outputs.tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_TAG: ${{ needs.release-target.outputs.tag }}
           SOURCE_REPO: ${{ github.repository }}
         run: gh release upload "$RELEASE_TAG" dist/agent/* --repo "$SOURCE_REPO"
   container:

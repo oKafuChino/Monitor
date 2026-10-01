@@ -35,8 +35,8 @@ log_config() {
     echo -e "${CYAN}[CONFIG]${NC} $1"
 }
 
-# $EUID 是 bash 专有变量, ash/dash 下未定义, 补 POSIX 回退
-EUID=${EUID:-$(id -u)}
+# EUID is readonly in Bash and absent in some POSIX shells. Never assign it.
+installer_uid=$(id -u)
 
 # Default values
 service_name="komari-agent"
@@ -55,7 +55,7 @@ case $os_type in
         os_name="darwin"
         target_dir="/usr/local/komari"  # Use /usr/local on macOS
         # Check if we can write to /usr/local, fallback to user directory
-        if [ ! -w "/usr/local" ] && [ "$EUID" -ne 0 ]; then
+        if [ ! -w "/usr/local" ] && [ "$installer_uid" -ne 0 ]; then
             target_dir="$HOME/.komari"
             log_info "No write permission to /usr/local, using user directory: $target_dir"
         fi
@@ -80,6 +80,14 @@ esac
 komari_args=""
 # [[ ]] -> [ ] (POSIX)
 while [ $# -gt 0 ]; do
+    case $1 in
+        --install-dir|--install-service-name|--install-ghproxy|--install-version)
+            if [ $# -lt 2 ] || [ -z "$2" ]; then
+                log_error "Missing value for $1"
+                exit 1
+            fi
+            ;;
+    esac
     case $1 in
         --install-dir)
             target_dir="$2"
@@ -118,7 +126,7 @@ done
 komari_args="${komari_args# }"
 
 # A direct, unprivileged installation belongs entirely to the invoking user.
-if [ "$EUID" -ne 0 ] && [ "$install_dir_specified" = false ]; then
+if [ "$installer_uid" -ne 0 ] && [ "$install_dir_specified" = false ]; then
     case "$os_name" in
         linux|freebsd)
             target_dir="${XDG_DATA_HOME:-$HOME/.local/share}/komari"
@@ -129,7 +137,7 @@ fi
 komari_agent_path="${target_dir}/agent"
 
 # User services are the only service type a non-root Linux installation can manage.
-if [ "$EUID" -ne 0 ] && [ "$os_name" = "linux" ]; then
+if [ "$installer_uid" -ne 0 ] && [ "$os_name" = "linux" ]; then
     if command -v systemctl >/dev/null 2>&1 && systemctl --user show-environment >/dev/null 2>&1; then
         user_service=true
     else
@@ -148,7 +156,7 @@ log_config "  Service name: ${GREEN}$service_name${NC}"
 log_config "  Service user: ${GREEN}$service_user${NC}"
 log_config "  Install directory: ${GREEN}$target_dir${NC}"
 log_config "  GitHub proxy: ${GREEN}${github_proxy:-(direct)}${NC}"
-log_config "  Binary arguments: ${GREEN}$komari_args${NC}"
+log_config "  Binary arguments: (values hidden; may contain credentials)"
 if [ -n "$install_version" ]; then
     log_config "  Specified agent version: ${GREEN}$install_version${NC}"
 else
@@ -214,13 +222,12 @@ uninstall_previous() {
     fi
 }
 
-# Uninstall previous installation
-uninstall_previous
+# Keep the existing service/binary until the replacement has been downloaded.
 
 install_dependencies() {
     log_step "Checking and installing dependencies..."
 
-    local deps="curl"
+    local deps="curl jq"
     local missing_deps=""
     for cmd in $deps; do
         if ! command -v $cmd >/dev/null 2>&1; then
@@ -229,7 +236,7 @@ install_dependencies() {
     done
 
     if [ -n "$missing_deps" ]; then
-        if [ "$EUID" -ne 0 ]; then
+        if [ "$installer_uid" -ne 0 ]; then
             log_error "Missing required dependencies:$missing_deps"
             log_info "Install them with your system package manager, then run this script again."
             exit 1
@@ -249,11 +256,14 @@ install_dependencies() {
             log_info "Using opkg to install dependencies (OpenWrt/iStoreOS)..."
             opkg update
             opkg install $missing_deps
+        elif [ "$os_name" = "freebsd" ] && command -v pkg >/dev/null 2>&1; then
+            log_info "Using pkg to install dependencies..."
+            pkg install -y $missing_deps
         elif command -v brew >/dev/null 2>&1; then
             log_info "Using Homebrew to install dependencies..."
             brew install $missing_deps
         else
-            log_error "No supported package manager found (apt/yum/apk/opkg/brew)"
+            log_error "No supported package manager found (apt/yum/apk/opkg/pkg/brew)"
             exit 1
         fi
         
@@ -320,17 +330,25 @@ esac
 log_info "Detected OS: ${GREEN}$os_name${NC}, Architecture: ${GREEN}$arch${NC}"
 
 file_name="komari-agent-${os_name}-${arch}"
+if [ "$os_name" = "windows" ]; then
+    file_name="${file_name}.exe"
+fi
 
-resolve_snapshot_version() {
-    snapshot_api_url="https://api.github.com/repos/oKafuChino/Monitor/releases?per_page=100"
+resolve_agent_release() {
+    # /releases/latest may still refer to a server-only release. Never fall
+    # back to upstream: mirrors cannot supply an asset which was not uploaded.
+    release_api_url="https://api.github.com/repos/oKafuChino/Monitor/releases?per_page=100"
+    if [ "$release_channel" = "tag" ]; then
+        release_api_url="https://api.github.com/repos/oKafuChino/Monitor/releases/tags/${install_version}"
+    fi
     if [ -n "$github_proxy" ]; then
-        snapshot_api_urls="${github_proxy}/${snapshot_api_url} ${snapshot_api_url}"
+        release_api_urls="${github_proxy%/}/${release_api_url} ${release_api_url}"
     else
-        snapshot_api_urls="$snapshot_api_url"
+        release_api_urls="$release_api_url"
     fi
 
-    for api_url in $snapshot_api_urls; do
-        if ! releases_json=$(curl -fsSL --connect-timeout 15 \
+    for api_url in $release_api_urls; do
+        if ! releases_json=$(curl -fsSL --connect-timeout 15 --max-time 60 \
             -H "Accept: application/vnd.github+json" \
             -H "User-Agent: komari-agent-installer" \
             "$api_url"); then
@@ -338,48 +356,63 @@ resolve_snapshot_version() {
         fi
 
         if [ -n "$releases_json" ]; then
-            RESOLVED_SNAPSHOT_VERSION=$(printf '%s\n' "$releases_json" |
-                grep -o '"tag_name":[[:space:]]*"Snapshot-[^"]*"' |
-                sed 's/.*"\(Snapshot-[^"]*\)".*/\1/' |
-                LC_ALL=C sort -r |
-                head -n 1)
-            if [ -n "$RESOLVED_SNAPSHOT_VERSION" ]; then
+            resolved_release=$(printf '%s\n' "$releases_json" | jq -r \
+                --arg asset "$file_name" --arg channel "$release_channel" '
+                (if type == "array" then . else [.] end)
+                | map(select(.draft == false)
+                    | select(any(.assets[]?; .name == $asset and .state == "uploaded"))
+                    | select(if $channel == "snapshot" then
+                        .prerelease == true and (.tag_name | startswith("Snapshot-"))
+                      elif $channel == "stable" then .prerelease == false
+                      elif $channel == "tag" then true
+                      else .prerelease == false or
+                        (.prerelease == true and (.tag_name | startswith("Snapshot-"))) end))
+                | sort_by([if .prerelease then 0 else 1 end, .published_at, .tag_name])
+                | last // empty
+                | [.tag_name, (.prerelease | tostring)] | @tsv' 2>/dev/null) || resolved_release=""
+            if [ -n "$resolved_release" ]; then
+                version_to_install=$(printf '%s\n' "$resolved_release" | cut -f1)
+                resolved_prerelease=$(printf '%s\n' "$resolved_release" | cut -f2)
+                case "$version_to_install" in
+                    ""|*[!A-Za-z0-9._-]*)
+                        log_error "Release tag cannot be used safely in the download URL."
+                        return 1
+                        ;;
+                esac
                 return 0
             fi
         fi
 
-        if [ "$api_url" != "$snapshot_api_url" ]; then
-            log_warning "Failed to resolve snapshot releases through GitHub proxy, retrying directly."
+        if [ "$api_url" != "$release_api_url" ]; then
+            log_warning "No matching release through GitHub proxy, retrying directly."
         fi
     done
 
     return 1
 }
 
-version_to_install="latest"
-if [ -n "$install_version" ]; then
-    if [ "$install_version" = "snapshot" ]; then
-        log_info "Resolving the latest snapshot version..."
-        if ! resolve_snapshot_version; then
-            log_error "Failed to resolve the latest snapshot version."
-            exit 1
-        fi
-        version_to_install="$RESOLVED_SNAPSHOT_VERSION"
-        log_success "Latest snapshot version: ${GREEN}$version_to_install${NC}"
-    else
-        log_info "Attempting to install specified version: ${GREEN}$install_version${NC}"
-        version_to_install="$install_version"
-    fi
-else
-    log_info "No version specified, installing the latest version."
+release_channel="auto"
+case "$install_version" in
+    ""|latest) ;;
+    stable) release_channel="stable" ;;
+    snapshot) release_channel="snapshot" ;;
+    *[!A-Za-z0-9._-]*) log_error "Invalid --install-version tag"; exit 1 ;;
+    *) release_channel="tag" ;;
+esac
+log_info "Resolving a published release containing $file_name ($release_channel)..."
+if ! resolve_agent_release; then
+    log_error "No usable $release_channel release containing $file_name could be resolved."
+    log_error "Check GitHub API access and Actions build results. A mirror cannot fix a missing release asset."
+    log_info "Publish/backfill probe assets first; use --install-version snapshot for a published Snapshot or --install-version <tag> for a specific release."
+    log_info "The existing agent and service have not been removed."
+    exit 1
 fi
-
-# Construct download URL
-if [ "$version_to_install" = "latest" ]; then
-    download_path="latest/download"
-else
-    download_path="download/${version_to_install}"
+if [ "$release_channel" = "auto" ] && [ "$resolved_prerelease" = "true" ]; then
+    log_warning "No stable release ships $file_name; installing the newest available Snapshot: $version_to_install"
+    log_info "Use --install-version stable to require a stable release."
 fi
+log_success "Selected agent version: ${GREEN}$version_to_install${NC}"
+download_path="download/${version_to_install}"
 
 if [ -n "$github_proxy" ]; then
     # Use proxy for GitHub releases
@@ -390,10 +423,10 @@ else
 fi
 
 log_step "Creating installation directory: ${GREEN}$target_dir${NC}"
-mkdir -p "$target_dir"
-if [ "$EUID" -eq 0 ] && [ "$service_user" != "root" ]; then
-    chown "$service_user" "$target_dir"
-fi
+mkdir -p "$target_dir" || exit 1
+download_tmp=$(mktemp "${target_dir}/.komari-agent-download.XXXXXX") || exit 1
+trap 'rm -f "$download_tmp"' EXIT
+trap 'exit 1' HUP INT TERM
 
 # Download with automatic mirror fallback.
 # 直连失败自动依次尝试常见 GitHub 加速镜像, 可用 --install-no-mirror 关闭.
@@ -412,24 +445,30 @@ dl_ok=""
 for u in $download_urls; do
     log_step "Downloading $file_name ..."
     log_info "URL: ${CYAN}$u${NC}"
-    if curl -fL --connect-timeout 15 -o "$komari_agent_path" "$u" && [ -s "$komari_agent_path" ]; then
+    if curl -fL --connect-timeout 15 --max-time 300 -o "$download_tmp" "$u" && [ -s "$download_tmp" ]; then
         dl_ok=1
         break
     fi
-    rm -f "$komari_agent_path"
 done
 
 if [ -z "$dl_ok" ]; then
     log_error "Download failed from all sources (direct + mirrors)"
-    log_error "Retry later, or specify --install-ghproxy <mirror-prefix> manually"
+    log_error "Confirm the selected release asset exists; mirrors only help network failures."
+    log_info "The existing agent and service have not been removed."
     exit 1
 fi
 
 # Set executable permissions
-chmod +x "$komari_agent_path"
-if [ "$EUID" -eq 0 ] && [ "$service_user" != "root" ]; then
-    chown "$service_user" "$komari_agent_path"
+chmod +x "$download_tmp" || exit 1
+if [ "$installer_uid" -eq 0 ] && [ "$service_user" != "root" ]; then
+    # Keep the service's working directory writable for its local state.
+    chown "$service_user" "$target_dir" || exit 1
+    chown "$service_user" "$download_tmp" || exit 1
 fi
+# Only now replace the previous installation; API/download failures leave it intact.
+uninstall_previous
+mv -f "$download_tmp" "$komari_agent_path" || exit 1
+trap - EXIT HUP INT TERM
 log_success "Komari-agent installed to ${GREEN}$komari_agent_path${NC}"
 
 # Detect init system and configure service
@@ -677,7 +716,7 @@ elif [ "$init_system" = "launchd" ]; then
     case "$target_dir" in
         /Users/*) is_user_install=true ;;
     esac
-    [ "$EUID" -ne 0 ] && is_user_install=true
+    [ "$installer_uid" -ne 0 ] && is_user_install=true
     
     if [ "$is_user_install" = true ]; then
         # User-level service (LaunchAgent)
@@ -798,7 +837,7 @@ else
     log_success "Komari-agent installation completed!"
 fi
 log_config "Service: ${GREEN}$service_name${NC}"
-log_config "Arguments: ${GREEN}$komari_args${NC}"
+log_config "Arguments: (values hidden; may contain credentials)"
 echo -e "${WHITE}===========================================${NC}"
 
 

@@ -15,6 +15,7 @@
     "test:web": "node scripts/project.mjs test-web",
     "test:server": "node scripts/project.mjs test-server",
     "test:agent": "node scripts/project.mjs test-agent",
+    "test:installer": "node --test scripts/agent-installer.test.mjs",
     "lint": "node scripts/project.mjs lint",
     "check": "node scripts/project.mjs check"
   }

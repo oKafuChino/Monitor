@@ -44,6 +44,16 @@ HTTP、gzip 与 WebSocket 都沿用 agent.report。服务端指标为 `disk.io.r
 
 工作流只是待运行的发行配置，本次没有上传资产、发布镜像、部署或更新节点。首个包含探针的 release/snapshot 产物发布之前，新的安装来源可能暂无可下载资产。源码构建仍可使用上述本地命令。
 
+### Linux 安装下载排错
+
+`install.sh` 不再给 Bash 只读变量 `EUID` 赋值，使用 `id -u` 获取权限。安装时依赖 `curl` 和 `jq`（root 可由包管理器安装），通过 GitHub Releases API 检查当前平台的 `komari-agent-<os>-<arch>` 资产，而不是假定 `/releases/latest/download/...` 存在。默认优先最新的、含该资产的稳定版；若仅有 Snapshot，显示警告后选用最新可用 Snapshot。`--install-version stable` 严格要求稳定版，`snapshot` 严格要求 Snapshot，也可指定发行 tag。查询最近 100 个发行版；更旧版本可指定 tag。
+
+如果没有任何发行版包含该资产，或 API 不可访问，脚本会退出并说明原因，不会通过镜像或切回上游探针掩盖资产缺失。解析和下载成功之前，已有 Agent 二进制和服务不会被移除；下载使用临时文件，失败会清理临时文件。
+
+已有 release 缺少探针时，维护者可在 Actions → Integrated probe → Run workflow 中选择 `main`，将 `release_tag` 填为已有发行 tag。工作流从当前 main 构建、运行测试，再上传各平台探针资产；它不会覆盖已有同名资产，也不会为手动补传更新容器标签。空 `release_tag` 仅构建 Actions artifacts。必须先推送这些修改，并等待 Snapshot 或补传工作流成功，线上安装才有可下载的产物。
+
+离线安装器回归检查：`npm run test:installer`。测试在隔离目录使用模拟下载/服务，不连接真实节点；有 jq 时同时执行真实 JSON 资产选择过滤器。Linux CI 要求 Bash/jq，不能静默跳过该检查。安装命令包含 Token，分享日志前应隐藏它；已公开的 Token 应在面板重置。
+
 网络事件入口只允许 Ping、启动配置读取和版本切换；旧 exec/terminal/file 分发和能力声明已移除。兼容的 `disable_web_ssh` 运行配置固定为 true，版本切换独立保留。上游的旧辅助实现暂留源码，但没有网络分发入口。
 
 升级顺序为服务端、探针、确认展示。回退探针时服务端兼容省略 IO；回退服务端应停用新版探针 IO 或恢复旧探针，旧版额外字段容忍行为尚未执行实测。管理员已有图表模板不会被改写，通过“添加图表 → 磁盘 I/O”加入双线图。
