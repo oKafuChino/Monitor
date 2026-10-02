@@ -28,6 +28,7 @@ import (
 //  4.（可选）admin:cancelMetricMigration 取消；因写入幂等，取消后可安全重发。
 
 func init() {
+	for _, method := range []string{"admin:startMetricMigration", "admin:cancelMetricMigration"} { rpc.MarkSensitive(method) }
 	reg("listMetricDefinitions", adminListMetricDefinitions, "List metric definitions and retention policies")
 	reg("updateMetricDefinition", adminUpdateMetricDefinition, "Update a metric definition")
 	reg("getMetricMigrationStatus", adminGetMetricMigrationStatus, "Get metrics store migration status (SQLite -> MySQL/PostgreSQL)")

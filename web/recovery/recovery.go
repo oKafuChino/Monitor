@@ -89,7 +89,7 @@ func (c *Controller) Register(r *gin.Engine) {
 	g.GET("/auth", c.authStatus)
 	authorized := g.Group("", api.RequireRole(api.RoleAdmin))
 	authorized.GET("/status", c.getStatus)
-	authorized.POST("", c.updateDSN)
+	authorized.POST("", api.RequireSensitive2FA(), c.updateDSN)
 }
 
 func limitLoginBody(ctx *gin.Context) {

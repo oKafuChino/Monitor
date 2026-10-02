@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/komari-monitor/komari/utils"
 	logger "github.com/komari-monitor/komari/utils/log"
 	"github.com/komari-monitor/komari/web/api"
 	frontendpublic "github.com/komari-monitor/komari/web/public"
@@ -41,10 +42,11 @@ func (a *App) runGuideServer(controller guideController, cfg guideServerConfig) 
 	defer controller.Deactivate()
 
 	r := gin.New()
-	r.Use(logger.GinLogger(), logger.GinRecovery(), noStoreAPIResponses())
+	if err := utils.ConfigureTrustedProxies(r); err != nil { return false, fmt.Errorf("trusted proxies: %w", err) }
+	r.Use(logger.GinLogger(), logger.GinRecovery(), api.RequestLimits(), noStoreAPIResponses())
 	if cfg.requireIdentity {
 		cors := security.NewCorsController(a.settings.CorsOriginCheckEnabled, a.settings.CorsAllowedOrigins)
-		r.Use(cors.Middleware(), api.IdentityMiddleware())
+		r.Use(cors.Middleware(), security.CookieMutationProtection(), api.IdentityMiddleware())
 	}
 	controller.Register(r)
 
@@ -56,7 +58,7 @@ func (a *App) runGuideServer(controller guideController, cfg guideServerConfig) 
 		r.NoRoute(guideNoRoute(cfg.pagePath, cfg.missingAPI, handlers))
 	})
 
-	server := &http.Server{Addr: a.listenAddr, Handler: r}
+	server := &http.Server{Addr: a.listenAddr, Handler: r, ReadHeaderTimeout: 5*time.Second, ReadTimeout: 45*time.Second, IdleTimeout: 60*time.Second}
 	a.engine = r
 	a.server = server
 	serverErr := make(chan error, 1)

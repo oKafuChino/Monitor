@@ -5,6 +5,7 @@ import (
 	"fmt"
 	logger "github.com/komari-monitor/komari/utils/log"
 	"sync"
+	"github.com/gin-gonic/gin"
 
 	"github.com/komari-monitor/komari/database"
 	"github.com/komari-monitor/komari/database/models"
@@ -16,6 +17,7 @@ var (
 	currentProvider factory.IOidcProvider
 	mu              = sync.Mutex{}
 	once            = sync.Once{}
+	providerGeneration uint64
 )
 
 const removedCloudflareAccessProvider = "CloudflareAccess"
@@ -41,24 +43,35 @@ func Shutdown() error {
 func LoadProvider(name string, configJson string) error {
 	mu.Lock()
 	defer mu.Unlock()
+	providerGeneration++
 	if currentProvider != nil {
 		if err := currentProvider.Destroy(); err != nil {
 			logger.Errorf("oauth", "Failed to destroy provider %s: %v", currentProvider.GetName(), err)
 		}
 	}
+	currentProvider = nil
 	constructor, exists := factory.GetConstructor(name)
 	if !exists {
 		return fmt.Errorf("provider %s not found", name)
 	}
 	currentProvider = constructor()
 	if err := json.Unmarshal([]byte(configJson), currentProvider.GetConfiguration()); err != nil {
+		currentProvider = nil
 		return fmt.Errorf("failed to unmarshal config for provider %s: %w", name, err)
 	}
 	err := currentProvider.Init()
 	if err != nil {
+		currentProvider = nil
 		return fmt.Errorf("failed to initialize provider %s: %w", name, err)
 	}
 	return nil
+}
+
+func CompleteFlow(c *gin.Context, flow Flow, state string, query map[string]string, callbackURI string) (factory.OidcCallback, error) {
+ mu.Lock(); defer mu.Unlock()
+ enabled, err := config.GetAs[bool](config.OAuthEnabledKey,false)
+ if err != nil || !enabled || currentProvider == nil || providerGeneration != flow.Generation || currentProvider.GetName()!=flow.Provider { return factory.OidcCallback{},fmt.Errorf("OAuth provider changed; start a new flow") }
+ return currentProvider.OnCallback(c,state,query,callbackURI)
 }
 
 func Initialize() error {

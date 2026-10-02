@@ -24,7 +24,7 @@ const Account = () => {
 
 const InnerLayout = () => {
   const { t } = useTranslation();
-  const { account, loading, error, refresh } = useAccount();
+  const { account, loading, error } = useAccount();
   const [usernameSaving, setUsernameSaving] = React.useState(false);
   const [passwordSaving, setPasswordSaving] = React.useState(false);
   const [passwordTwoFa, setPasswordTwoFa] = React.useState("");
@@ -56,6 +56,7 @@ const InnerLayout = () => {
       })
       .then(() => {
         toast.success(t("common.updated_successfully"));
+        window.location.assign("/login");
       })
       .catch((error) => {
         toast.error(error.message);
@@ -172,7 +173,7 @@ const InnerLayout = () => {
 
         if (response.ok) {
           toast.success(t("account_settings.unbind_sso_success", { provider: getSSODisplayName(ssoInfo.platform) }));
-          refresh(); // 刷新用户信息
+          window.location.assign("/login");
         } else {
           const error = await response.json();
           toast.error(t("account_settings.unbind_sso_failed", { 
@@ -181,7 +182,10 @@ const InnerLayout = () => {
           }));
         }
       } else {
-        window.location.href = "/api/admin/oauth2/bind";
+        const response = await fetch("/api/admin/oauth2/bind", { method: "POST" });
+        const payload = await response.json();
+        if (!response.ok || !payload?.data?.url) throw new Error(payload?.message || "Failed to start OAuth binding");
+        window.location.assign(payload.data.url);
       }
     } catch (error) {
       console.error("处理SSO认证失败:", error);
@@ -353,7 +357,6 @@ const InnerLayout = () => {
 };
 const TwoFactorDisabled = () => {
   const { t } = useTranslation();
-  const { refresh } = useAccount();
   const [saving, setSaving] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -386,8 +389,10 @@ const TwoFactorDisabled = () => {
       return;
     }
     setSaving(true);
-    fetch(`/api/admin/2fa/enable?code=${encodeURIComponent(code)}`, {
+    fetch("/api/admin/2fa/enable", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -401,7 +406,7 @@ const TwoFactorDisabled = () => {
       .then(() => {
         toast.success(t("common.updated_successfully"));
         setIsOpen(false);
-        refresh();
+        window.location.assign("/login");
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setSaving(false));
@@ -452,15 +457,15 @@ const TwoFactorEnabled = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [saving, setSaving] = React.useState(false);
   const [code, setCode] = React.useState("");
-  const { refresh } = useAccount();
   const disable2fa = () => {
     if (!code) {
       toast.error(t("account.otp_empty_error"));
       return;
     }
     setSaving(true);
-    fetch(`/api/admin/2fa/disable?2fa_code=${encodeURIComponent(code)}`, {
+    fetch("/api/admin/2fa/disable", {
       method: "POST",
+      headers: { "X-2FA-Code": code },
     })
       .then(async (response) => {
         if (!response.ok) {
@@ -473,7 +478,7 @@ const TwoFactorEnabled = () => {
         toast.success(t("common.updated_successfully"));
         setIsOpen(false);
         setCode("");
-        refresh();
+        window.location.assign("/login");
       })
       .catch((error) => {
         toast.error(error.message);

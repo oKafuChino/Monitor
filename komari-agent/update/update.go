@@ -3,6 +3,7 @@ package update
 import (
 	"bytes"
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -21,7 +22,6 @@ import (
 
 	"github.com/blang/semver"
 	goupdate "github.com/inconshreveable/go-update"
-	"github.com/komari-monitor/komari-agent/dnsresolver"
 )
 
 var ErrRestartRequired = errors.New("update installed; restart required")
@@ -105,15 +105,19 @@ var (
 	updateCheckMu sync.Mutex
 
 	// updateClient 是升级模块专用的 HTTP 客户端，惰性创建一次。
-	// 依赖启动阶段加载的 flags（如 ignore_unsafe_cert），因此不能在包初始化时构建，
-	// 也不再像旧实现那样反复改写 http.DefaultClient（数据竞争）。
+	// 更新始终使用独立的系统信任链，不继承主站连接的 TLS 配置。
 	updateClient   *http.Client
 	httpClientOnce sync.Once
 )
 
 func getHTTPClient() *http.Client {
 	httpClientOnce.Do(func() {
-		updateClient = dnsresolver.GetHTTPClient(60 * time.Second)
+		transport := &http.Transport{Proxy:http.ProxyFromEnvironment, TLSClientConfig:&tls.Config{MinVersion:tls.VersionTLS12}, TLSHandshakeTimeout:10*time.Second, ResponseHeaderTimeout:15*time.Second, MaxIdleConns:4, IdleConnTimeout:30*time.Second}
+		updateClient = &http.Client{Transport: transport, Timeout: 60*time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 10 || !trustedUpdateURL(req.URL) { return fmt.Errorf("untrusted update redirect") }
+			if len(via) > 0 && req.URL.Host != via[0].URL.Host { req.Header.Del("Authorization") }
+			return nil
+		}}
 	})
 	return updateClient
 }
@@ -369,12 +373,15 @@ func listGitHubReleases(owner, repo string) ([]githubRelease, error) {
 			return nil, fmt.Errorf("GitHub releases API returned status %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
 		}
 
+		metadata, readErr := io.ReadAll(io.LimitReader(resp.Body, (4<<20)+1))
+		_ = resp.Body.Close()
+		if readErr != nil || len(metadata) > 4<<20 {
+			return nil, fmt.Errorf("GitHub releases response exceeds size limit or could not be read")
+		}
 		var pageReleases []githubRelease
-		if err := json.NewDecoder(resp.Body).Decode(&pageReleases); err != nil {
-			_ = resp.Body.Close()
+		if err := json.Unmarshal(metadata, &pageReleases); err != nil {
 			return nil, fmt.Errorf("failed to decode GitHub releases response: %w", err)
 		}
-		_ = resp.Body.Close()
 
 		releases = append(releases, pageReleases...)
 		if len(pageReleases) < 100 {
@@ -420,6 +427,8 @@ func openAssetStream(client *http.Client, owner, repo string, asset githubReleas
 	} else {
 		endpoint = asset.BrowserDownloadURL
 	}
+	parsed, err := url.Parse(endpoint)
+	if err != nil || !trustedUpdateURL(parsed) { return nil, fmt.Errorf("untrusted update URL") }
 
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -443,6 +452,12 @@ func openAssetStream(client *http.Client, owner, repo string, asset githubReleas
 			resp.StatusCode, strings.TrimSpace(string(body)))
 	}
 	return resp.Body, nil
+}
+
+func trustedUpdateURL(u *url.URL) bool {
+	if u == nil || u.Scheme != "https" || u.User != nil || (u.Port() != "" && u.Port() != "443") { return false }
+	host := strings.ToLower(u.Hostname())
+	return host == "api.github.com" || host == "github.com" || host == "objects.githubusercontent.com" || host == "release-assets.githubusercontent.com" || host == "github-releases.githubusercontent.com"
 }
 
 func downloadAsset(client *http.Client, owner, repo string, asset githubReleaseAsset) ([]byte, error) {
@@ -471,8 +486,7 @@ func downloadAsset(client *http.Client, owner, repo string, asset githubReleaseA
 // 老资产可能没有 digest，此时只告警并放行；digest 存在但不匹配则拒绝安装。
 func verifyAssetDigest(asset githubReleaseAsset, data []byte) error {
 	if asset.Digest == "" {
-		log.Printf("WARNING: release asset %s has no digest; skipping integrity check", asset.Name)
-		return nil
+		return fmt.Errorf("release asset %s has no digest", asset.Name)
 	}
 	algorithm, want, found := strings.Cut(asset.Digest, ":")
 	if !found || !strings.EqualFold(algorithm, "sha256") {

@@ -31,6 +31,8 @@ func parseUintKey(s string) (uint, error) {
 }
 
 func init() {
+	for _, method := range []string{"admin:deleteSession", "admin:deleteAllSessions", "admin:getCredentials", "admin:editSettings"} { rpc.MarkSensitive(method) }
+	reg("getCredentials", adminGetCredentials, "Reveal configuration credentials after reauthentication")
 	RegisterWithGroupAndMeta("getSessions", rpc.RoleAdmin, adminGetSessions, &rpc.MethodMeta{
 		Name:    "admin:getSessions",
 		Summary: "List all login sessions",
@@ -75,9 +77,15 @@ func adminGetSessions(ctx context.Context, _ *rpc.JsonRpcRequest) (any, *rpc.Jso
 	}
 	current := ""
 	if meta := rpc.MetaFromContext(ctx); meta != nil {
-		current = meta.SessionToken
+		if meta.SessionToken != "" { current = accounts.SessionDisplayID(meta.SessionToken) }
 	}
-	return map[string]any{"current": current, "data": ss}, nil
+	data := make([]map[string]any, 0, len(ss))
+	for _, session := range ss {
+		masked := ""
+		masked = accounts.SessionDisplayID(session.Session)
+		data = append(data, map[string]any{"uuid": session.UUID, "session": masked, "user_agent": session.UserAgent, "ip": session.Ip, "login_method": session.LoginMethod, "latest_online": session.LatestOnline, "expires": session.Expires, "created_at": session.CreatedAt})
+	}
+	return map[string]any{"current": current, "data": data}, nil
 }
 
 func adminDeleteSession(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc.JsonRpcError) {
@@ -88,7 +96,7 @@ func adminDeleteSession(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc
 	if params.Session == "" {
 		return nil, rpc.MakeError(rpc.InvalidParams, "session is required", nil)
 	}
-	if err := accounts.DeleteSession(params.Session); err != nil {
+	if err := accounts.DeleteSessionMasked(params.Session); err != nil {
 		return nil, rpc.MakeError(rpc.InternalError, "Failed to delete session: "+err.Error(), nil)
 	}
 	actor, ip := auditActor(ctx)
@@ -110,7 +118,21 @@ func adminGetSettings(_ context.Context, _ *rpc.JsonRpcRequest) (any, *rpc.JsonR
 	if err != nil {
 		return nil, rpc.MakeError(rpc.InternalError, "Failed to get settings: "+err.Error(), nil)
 	}
+	for key := range cst { if sensitiveConfigKey(key) { cst[key] = "" } }
 	return cst, nil
+}
+
+func sensitiveConfigKey(key string) bool {
+	key = strings.ToLower(key)
+	return strings.HasSuffix(key, "_key") || strings.Contains(key, "secret") || strings.HasSuffix(key, "_password") || strings.Contains(key, "dsn") || strings.Contains(key, "token")
+}
+
+func adminGetCredentials(_ context.Context, _ *rpc.JsonRpcRequest) (any, *rpc.JsonRpcError) {
+	values, err := config.GetAll()
+	if err != nil { return nil, rpc.MakeError(rpc.InternalError, "Failed to get credentials", nil) }
+	out := map[string]any{}
+	for key, value := range values { if sensitiveConfigKey(key) { out[key] = value } }
+	return out, nil
 }
 
 // metricStoreConfigKeys 是与 metrics 独立数据库及 rollup 策略相关、需要

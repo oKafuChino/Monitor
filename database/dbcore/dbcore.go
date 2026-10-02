@@ -12,6 +12,7 @@ import (
 
 	"github.com/komari-monitor/komari/cmd/flags"
 	"github.com/komari-monitor/komari/database/models"
+	backupweb "github.com/komari-monitor/komari/web/backup"
 	"github.com/komari-monitor/komari/internal/config"
 	"github.com/komari-monitor/komari/internal/migrations"
 	"github.com/komari-monitor/komari/internal/sqlitetune"
@@ -338,55 +339,18 @@ func Close() error {
 	return sqlDB.Close()
 }
 
-func doInitialize() error {
-	var err error
-	restored := false
-
-	// 在数据库初始化前执行：如果存在 ./data/backup.zip，则进行恢复逻辑
-	func() {
-		backupZipPath := filepath.Join(".", "data", "backup.zip")
-		if _, statErr := os.Stat(backupZipPath); statErr == nil {
-			// 4. 将当前数据快照保存到 ./data/backup/，并保留已有归档。
-			backupDir := filepath.Join(".", "data", "backup")
-			if err := os.MkdirAll(backupDir, 0755); err != nil {
-				logger.Errorf("dbcore", "[restore] failed to create backup dir: %v", err)
-			} else {
-				tsName := time.Now().UTC().Format("20060102-150405")
-				bakPath := filepath.Join(backupDir, fmt.Sprintf("pre-restore-%s.zip", tsName))
-				if zipErr := zipDirectoryExcluding("./data", bakPath, map[string]struct{}{backupZipPath: {}, backupDir: {}}); zipErr != nil {
-					logger.Errorf("dbcore", "[restore] failed to zip current data: %v", zipErr)
-				} else {
-					logger.Infof("dbcore", "[restore] current data zipped to %s", bakPath)
-				}
-			}
-
-			// 5. 删除数据文件，但保留归档目录和待恢复的 backup.zip。
-			if delErr := removeAllInDirExcept("./data", map[string]struct{}{backupZipPath: {}, backupDir: {}}); delErr != nil {
-				logger.Errorf("dbcore", "[restore] failed to cleanup data dir: %v", delErr)
-			}
-
-			// 6. 解压 ./data/backup.zip 到 ./data
-			if unzipErr := unzipToDir(backupZipPath, "./data"); unzipErr != nil {
-				logger.Errorf("dbcore", "[restore] failed to unzip backup into data: %v", unzipErr)
-			} else {
-				restored = true
-				logger.Infof("dbcore", "[restore] backup.zip extracted to ./data")
-			}
-
-			// 7. 删除 ./data/backup.zip
-			if rmErr := os.Remove(backupZipPath); rmErr != nil {
-				logger.Errorf("dbcore", "[restore] failed to remove backup.zip: %v", rmErr)
-			} else {
-				logger.Infof("dbcore", "[restore] backup.zip removed")
-			}
-			// 8. 删除标记
-			if rmErr := os.Remove("./data/komari-backup-markup"); rmErr != nil {
-				logger.Errorf("dbcore", "[restore] failed to remove komari-backup-markup: %v", rmErr)
-			} else {
-				logger.Infof("dbcore", "[restore] komari-backup-markup removed")
-			}
-		}
-	}()
+func doInitialize() (err error) {
+    restore, err := backupweb.BeginRestore(resolveDatabaseFile())
+    if err != nil { return fmt.Errorf("restore preflight failed; original data retained: %w", err) }
+    restored := restore != nil
+    defer func() {
+        if restore == nil { return }
+        if err != nil {
+            _ = Close()
+            instance = nil
+            if rollbackErr := restore.Rollback(); rollbackErr != nil { err = fmt.Errorf("%v; restore rollback failed: %w", err, rollbackErr) }
+        } else { err = restore.Commit() }
+    }()
 
 	// 记录“打开数据库之前”komari.db 是否已存在，用于区分全新安装与旧版升级。
 	// 必须在（可能的）恢复逻辑之后、gorm.Open 之前采集：恢复会解压出旧库，
@@ -436,7 +400,7 @@ func doInitialize() error {
 
 	// 配置库就绪后、执行后续 AutoMigrate 之前：
 	// 基于配置中的版本标记检测升级并自动备份 ./data，便于回滚。
-	backupOnVersionUpgrade()
+	if !restored { backupOnVersionUpgrade() }
 
 	// 自动迁移模型
 	//
@@ -465,10 +429,11 @@ func doInitialize() error {
 	if err := instance.AutoMigrate(
 		&models.Session{},
 	); err != nil {
-		logger.Errorf("dbcore", "Failed to create Session table, it may already exist: %v", err)
+		return fmt.Errorf("failed to migrate sessions: %w", err)
 	}
 	// Backup restoration must never resurrect revoked capabilities.
 	if restored {
+		if err := instance.Where("1 = 1").Delete(&models.Session{}).Error; err != nil { return err }
 		if err := instance.Model(&models.ShareLink{}).Where("revoked_at IS NULL").Update("revoked_at", time.Now().UTC()).Error; err != nil { return err }
 		if err := instance.Where("1 = 1").Delete(&models.ShareSession{}).Error; err != nil { return err }
 	}

@@ -79,7 +79,9 @@ func Bind(method string, opts ...BindOption) gin.HandlerFunc {
 func assembleParams(c *gin.Context, cfg *bindConfig) (any, bool) {
 	var bodyVal any
 	if c.Request.Body != nil {
-		if raw, err := io.ReadAll(c.Request.Body); err == nil && len(raw) > 0 {
+		raw, err := io.ReadAll(c.Request.Body)
+		if err != nil { return nil,false }
+		if len(raw) > 0 {
 			if err := json.Unmarshal(raw, &bodyVal); err != nil {
 				return nil, false
 			}

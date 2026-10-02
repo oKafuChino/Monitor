@@ -25,8 +25,8 @@ func RequireSensitive2FA() gin.HandlerFunc {
 
 // VerifySensitive2FACore 传输无关的 2FA 校验核心。
 // 输入原始值:userUUID、2FA code、是否为 API Key。
-// API Key 豁免;未启用 2FA 的用户放行;其余需要有效 code。
-func VerifySensitive2FACore(userUUID, code string, isAPIKey bool) error {
+// API Key 作为显式高权限凭证豁免；未启用 2FA 时验证当前密码，其余需要有效 code。
+func VerifySensitive2FACore(userUUID, code string, isAPIKey bool, passwords ...string) error {
 	if isAPIKey {
 		return nil
 	}
@@ -38,6 +38,8 @@ func VerifySensitive2FACore(userUUID, code string, isAPIKey bool) error {
 		return err
 	}
 	if user.TwoFactor == "" {
+		if len(passwords) == 0 || passwords[0] == "" { return &sensitive2FAError{"Reauthentication password is required"} }
+		if !accounts.VerifyReauthentication(user, passwords[0]) { return &sensitive2FAError{"Invalid reauthentication credentials"} }
 		return nil
 	}
 	if code == "" {
@@ -58,7 +60,7 @@ func VerifySensitive2FA(c *gin.Context) error {
 	_, isAPIKey := c.Get("api_key")
 	uuidRaw, _ := c.Get("uuid")
 	uuid, _ := uuidRaw.(string)
-	return VerifySensitive2FACore(uuid, get2FACode(c), isAPIKey)
+	return VerifySensitive2FACore(uuid, get2FACode(c), isAPIKey, c.GetHeader("X-Reauth-Password"))
 }
 
 func get2FACode(c *gin.Context) string {
@@ -73,15 +75,10 @@ func get2FACode(c *gin.Context) string {
 	if code := c.GetHeader("X-Two-Factor-Code"); code != "" {
 		return code
 	}
-	for _, key := range []string{"2fa_code", "two_factor_code", "otp"} {
-		if code := c.Query(key); code != "" {
-			return code
-		}
-	}
 	if c.Request.Body == nil || c.Request.Method == http.MethodGet {
 		return ""
 	}
-	bodyBytes, err := io.ReadAll(c.Request.Body)
+	bodyBytes, err := ReadBounded(c.Request.Body, JSONBodyLimit)
 	if err != nil {
 		return ""
 	}

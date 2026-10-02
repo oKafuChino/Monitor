@@ -84,7 +84,8 @@ func saveAutoDiscoveryConfig(config *AutoDiscoveryConfig) error {
 	}
 
 	// 写入文件
-	if err := os.WriteFile(configPath, data, 0644); err != nil {
+	if err := os.Chmod(configPath, 0600); err != nil && !os.IsNotExist(err) { return fmt.Errorf("restrict auto-discovery config: %w", err) }
+	if err := os.WriteFile(configPath, data, 0600); err != nil {
 		return fmt.Errorf("failed to write auto-discovery config: %v", err)
 	}
 

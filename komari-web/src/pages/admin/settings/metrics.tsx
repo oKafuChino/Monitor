@@ -174,6 +174,7 @@ export default function MetricsSettings() {
   const { t } = useTranslation();
   const { settings, loading, error, updateMultipleSettings } = useSettings();
   const [saveError, setSaveError] = React.useState<string | null>(null);
+	const [revealedDSN,setRevealedDSN] = React.useState<string | undefined>();
   const saveMetricSettings = React.useCallback(
     async (changes: Partial<SettingsResponse>) => {
       try {
@@ -225,12 +226,14 @@ export default function MetricsSettings() {
         title={t("settings.metrics.dsn_title")}
         description={t("settings.metrics.dsn_description")}
         descriptionPlacement="footer"
-        defaultValue={String(settings.metric_db_dsn || "")}
+        key={revealedDSN === undefined ? "masked-dsn" : "revealed-dsn"}
+        defaultValue={revealedDSN ?? String(settings.metric_db_dsn || "")}
         placeholder={DSN_PLACEHOLDER}
         OnSave={async (value) => {
           await saveMetricSettings({ metric_db_dsn: value.trim() });
         }}
       />
+		<Button variant="soft" onClick={() => { void fetch("/api/admin/settings/credentials").then(async response => { const payload = await response.json(); if (!response.ok || payload.status!=="success") throw new Error(payload.message || "读取凭证失败"); setRevealedDSN(String(payload.data?.metric_db_dsn ?? "")); }).catch(error => toast.error(String(error))); }}>显示现有数据库连接配置</Button>
 
       <SettingCardLabel>
         {t("settings.metrics.advanced_title")}

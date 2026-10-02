@@ -21,6 +21,10 @@ func getClientIPType(ip net.IP) int {
 }
 
 func saveClientBasicInfo(info map[string]interface{}, uuid string, fallbackIP string) error {
+	if err := clients.ValidateAgentInfo(info); err != nil { return err }
+	copyInfo := make(map[string]interface{}, len(info)+3)
+	for key, value := range info { copyInfo[key] = value }
+	info = copyInfo
 	info["uuid"] = uuid
 	applyFallbackClientIP(info, fallbackIP)
 	appendClientRegionFromGeoIP(info)

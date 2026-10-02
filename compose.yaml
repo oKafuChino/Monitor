@@ -4,7 +4,9 @@ services:
       context: .
       target: runtime
     ports:
-      - "${MONITOR_PORT:-25774}:25774"
+      - "${MONITOR_BIND:-127.0.0.1}:${MONITOR_PORT:-25774}:25774"
     volumes:
       - ./data:/app/data
+    environment:
+      KOMARI_TRUSTED_PROXIES: "${KOMARI_TRUSTED_PROXIES:-}"
     restart: unless-stopped

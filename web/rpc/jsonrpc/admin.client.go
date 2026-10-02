@@ -16,6 +16,7 @@ import (
 // 包含审计日志与运行时副作用。传统 REST handler 经 CallFromGin 转调这些方法。
 
 func init() {
+	for _, method := range []string{"admin:addClient", "admin:editClient", "admin:getClientToken"} { rpc.MarkSensitive(method) }
 	RegisterWithGroupAndMeta("addClient", rpc.RoleAdmin, adminAddClient, &rpc.MethodMeta{
 		Name:    "admin:addClient",
 		Summary: "Create a new client",
@@ -150,6 +151,7 @@ func adminGetClient(_ context.Context, req *rpc.JsonRpcRequest) (any, *rpc.JsonR
 	if err != nil {
 		return nil, rpc.MakeError(rpc.InternalError, err.Error(), nil)
 	}
+	result.Token = ""
 	return result, nil
 }
 
@@ -158,6 +160,7 @@ func adminListClients(_ context.Context, _ *rpc.JsonRpcRequest) (any, *rpc.JsonR
 	if err != nil {
 		return nil, rpc.MakeError(rpc.InternalError, err.Error(), nil)
 	}
+	for i := range cls { cls[i].Token = "" }
 	return cls, nil
 }
 

@@ -9,9 +9,16 @@ import (
 )
 
 func init() {
+ RegisterWithGroupAndMeta("resetShareSessions",rpc.RoleAdmin,adminResetShareSessions,&rpc.MethodMeta{Name:"admin:resetShareSessions",Summary:"Reset sessions of a share link"})
  RegisterWithGroupAndMeta("createShareLink",rpc.RoleAdmin,adminCreateShareLink,&rpc.MethodMeta{Name:"admin:createShareLink",Summary:"Share one visible node"})
  RegisterWithGroupAndMeta("listShareLinks",rpc.RoleAdmin,adminListShareLinks,&rpc.MethodMeta{Name:"admin:listShareLinks",Summary:"List masked node shares"})
  RegisterWithGroupAndMeta("revokeShareLink",rpc.RoleAdmin,adminRevokeShareLink,&rpc.MethodMeta{Name:"admin:revokeShareLink",Summary:"Revoke a node share"})
+}
+func adminResetShareSessions(ctx context.Context, req *rpc.JsonRpcRequest) (any,*rpc.JsonRpcError) {
+ var p struct { ID string `json:"id"` }
+ if err:=req.BindParams(&p);err!=nil || p.ID=="" { return nil,rpc.MakeError(rpc.InvalidParams,"Invalid params",nil) }
+ if err:=sharing.New(dbcore.GetDBInstance()).ResetSessions(p.ID);err!=nil { return nil,rpc.MakeError(rpc.InternalError,"Unable to reset share sessions",nil) }
+ actor,ip:=auditActor(ctx);auditlog.Log(ip,actor,"reset share sessions:"+p.ID,"info");return nil,nil
 }
 func adminCreateShareLink(ctx context.Context, req *rpc.JsonRpcRequest) (any,*rpc.JsonRpcError) {
  var p struct { UUID string `json:"uuid"`; Duration string `json:"duration"` }

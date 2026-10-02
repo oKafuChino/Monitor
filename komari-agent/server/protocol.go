@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	v2 "github.com/komari-monitor/komari-agent/protocol/v2"
 )
@@ -18,12 +19,17 @@ func (e *httpStatusError) Error() string {
 		return ""
 	}
 	if e.Body != "" {
-		return fmt.Sprintf("status code: %d,%s", e.StatusCode, e.Body)
+		return fmt.Sprintf("status code: %d,%s", e.StatusCode, redactCredentials(e.Body))
 	}
 	if e.Status != "" {
 		return e.Status
 	}
 	return fmt.Sprintf("status code: %d", e.StatusCode)
+}
+
+func redactCredentials(value string) string {
+ for _, secret := range []string{flags.Token,flags.AutoDiscoveryKey} { if secret!="" { value = strings.ReplaceAll(value,secret,"[redacted]") } }
+ return value
 }
 
 func parseV2Response(body []byte) (*v2.Response, error) {
@@ -35,12 +41,13 @@ func parseV2Response(body []byte) (*v2.Response, error) {
 		return nil, fmt.Errorf("invalid v2 JSON-RPC version %q, body: %s", rpcResp.JSONRPC, bodySnippet(body))
 	}
 	if rpcResp.Error != nil {
-		return &rpcResp, fmt.Errorf("v2 rpc error %d: %s", rpcResp.Error.Code, rpcResp.Error.Message)
+		return &rpcResp, fmt.Errorf("v2 rpc error %d: %s", rpcResp.Error.Code, redactCredentials(rpcResp.Error.Message))
 	}
 	return &rpcResp, nil
 }
 
 func bodySnippet(body []byte) string {
+	body = []byte(redactCredentials(string(body)))
 	const max = 120
 	if len(body) > max {
 		body = body[:max]

@@ -1,7 +1,6 @@
 package generic
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -50,6 +49,7 @@ func (g *Generic) OnCallback(ctx *gin.Context, state string, query map[string]st
 		return factory.OidcCallback{}, fmt.Errorf("invalid state")
 	}
 
+	g.stateCache.Delete(state)
 	// 获取code
 	if code == "" {
 		return factory.OidcCallback{}, fmt.Errorf("no code provided")
@@ -64,39 +64,26 @@ func (g *Generic) OnCallback(ctx *gin.Context, state string, query map[string]st
 		"grant_type":    {"authorization_code"},
 	}
 
-	req, _ := http.NewRequest("POST", g.Addition.TokenURL, strings.NewReader(data.Encode()))
+	req, err := http.NewRequestWithContext(ctx.Request.Context(), "POST", g.Addition.TokenURL, strings.NewReader(data.Encode()))
+	if err != nil { return factory.OidcCallback{}, fmt.Errorf("invalid provider endpoint") }
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to get access token: %s", utils.DataMasking(err.Error(), []string{g.Addition.ClientSecret, g.Addition.ClientId}))
-	}
-	defer resp.Body.Close()
 
 	var tokenResp struct {
 		AccessToken string `json:"access_token"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to parse access token response: %s", utils.DataMasking(err.Error(), []string{g.Addition.ClientSecret, g.Addition.ClientId}))
-	}
+	if err := factory.FetchJSON(req, &tokenResp); err != nil { return factory.OidcCallback{}, err }
+	if tokenResp.AccessToken == "" { return factory.OidcCallback{}, fmt.Errorf("provider returned no access token") }
 
 	// 获取用户信息
-	userReq, _ := http.NewRequest("GET", g.Addition.UserInfoURL, nil)
+	userReq, err := http.NewRequestWithContext(ctx.Request.Context(), "GET", g.Addition.UserInfoURL, nil)
+	if err != nil { return factory.OidcCallback{}, fmt.Errorf("invalid provider user endpoint") }
 	userReq.Header.Set("Authorization", "Bearer "+tokenResp.AccessToken)
 	userReq.Header.Set("Accept", "application/json")
 
-	userResp, err := http.DefaultClient.Do(userReq)
-	if err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to get user info: %v", err)
-	}
-	defer userResp.Body.Close()
-
 	var user map[string]interface{}
-	if err := json.NewDecoder(userResp.Body).Decode(&user); err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to parse user info response: %v", err)
-	}
+	if err := factory.FetchJSON(userReq, &user); err != nil { return factory.OidcCallback{}, err }
 
 	userId, ok := user[g.Addition.UserIDField]
 	if !ok {

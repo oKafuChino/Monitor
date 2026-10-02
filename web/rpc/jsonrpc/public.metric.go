@@ -13,6 +13,7 @@ import (
 	"github.com/komari-monitor/komari/database/models"
 	"github.com/komari-monitor/komari/database/tasks"
 	"github.com/komari-monitor/komari/internal/metricstore"
+	"github.com/komari-monitor/komari/internal/config"
 	"github.com/komari-monitor/komari/pkg/metric"
 	"github.com/komari-monitor/komari/pkg/rpc"
 )
@@ -156,7 +157,7 @@ func publicQueryMetrics(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc
 	}
 
 	metricKeys := normalizeStringList(params.MetricKeys, params.Metrics, []string{params.MetricKey})
-	if len(metricKeys) == 0 {
+	if len(metricKeys) == 0 || len(metricKeys) > 32 {
 		return nil, rpc.MakeError(rpc.InvalidParams, "metric_keys is required", nil)
 	}
 
@@ -167,12 +168,14 @@ func publicQueryMetrics(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc
 	if !end.After(start) {
 		return nil, rpc.MakeError(rpc.InvalidParams, "end must be after start", nil)
 	}
+	if end.After(queryNow.Add(time.Minute)) || !validMetricHours(params.Hours) || len(params.Tags)>32 { return nil,rpc.MakeError(rpc.InvalidParams,"invalid metric time range or tags",nil) }
 
 	requestedEntityIDs := normalizeStringList(params.EntityIDs, []string{params.EntityID})
 	entityIDs, rpcErr := publicMetricEntityIDs(ctx, requestedEntityIDs)
 	if rpcErr != nil {
 		return nil, rpcErr
 	}
+	if len(entityIDs) > 100 || len(entityIDs)*len(metricKeys) > 256 { return nil, rpc.MakeError(rpc.InvalidParams, "query series budget exceeded", nil) }
 
 	store := metricstore.GetStore()
 	if store == nil {
@@ -186,11 +189,17 @@ func publicQueryMetrics(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc
 		interval  time.Duration
 	}
 	loadSpecs := make([]metricLoadSpec, 0, len(metricKeys))
+	windowDefinitions, windowErr := store.GetMetrics(ctx,metricKeys)
+	if windowErr != nil { return nil,rpc.MakeError(rpc.InternalError,"Failed to resolve metric retention",nil) }
+	if !withinMetricRetention(start,end,queryNow,windowDefinitions) { return nil,rpc.MakeError(rpc.InvalidParams,"time range exceeds configured retention",nil) }
+	totalRequestedPoints := 0
 	for _, metricKey := range metricKeys {
 		maxPoints, err := resolveMetricMaxPoints(metricKey, params)
 		if err != nil {
 			return nil, rpc.MakeError(rpc.InvalidParams, err.Error(), nil)
 		}
+		totalRequestedPoints += maxPoints*len(entityIDs)
+		if totalRequestedPoints>100000 { return nil,rpc.MakeError(rpc.InvalidParams,"query total point budget exceeded",nil) }
 		loadSpecs = append(loadSpecs, metricLoadSpec{
 			metricKey: metricKey,
 			algorithm: resolveMetricAggregation(metricKey, params),
@@ -269,6 +278,7 @@ func publicQueryMetrics(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc
 	}
 
 	series := make([]publicMetricSeries, 0, len(metricKeys)*maxInt(1, len(entityIDs)))
+	totalPoints := 0
 	for _, spec := range loadSpecs {
 		def := definitions[spec.metricKey]
 		item := publicMetricSeries{
@@ -329,6 +339,9 @@ func publicQueryMetrics(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc
 				if metricFillEmpty {
 					split = adaptiveFillPublicMetricSeries(split, start, end)
 				}
+				if len(series)>=512 { return nil,rpc.MakeError(rpc.InvalidParams,"query series budget exceeded",nil) }
+				totalPoints += len(split.Points)
+				if totalPoints>100000 { return nil,rpc.MakeError(rpc.InvalidParams,"query total point budget exceeded",nil) }
 				series = append(series, split)
 			}
 		}
@@ -420,6 +433,7 @@ func publicGetPingMetricStats(ctx context.Context, req *rpc.JsonRpcRequest) (any
 	end := metricQueryTimeOrDefault(firstMetricQueryTime(params.End, params.EndTime), time.Now().UTC())
 	startFallback := end.Add(-metricQueryHours(params.Hours))
 	start := metricQueryTimeOrDefault(firstMetricQueryTime(params.Start, params.StartTime), startFallback)
+	if !validMetricHours(params.Hours) || end.After(time.Now().UTC().Add(time.Minute)) { return nil,rpc.MakeError(rpc.InvalidParams,"invalid metric time range",nil) }
 	if !end.After(start) {
 		return nil, rpc.MakeError(rpc.InvalidParams, "end must be after start", nil)
 	}
@@ -429,6 +443,7 @@ func publicGetPingMetricStats(ctx context.Context, req *rpc.JsonRpcRequest) (any
 	if rpcErr != nil {
 		return nil, rpcErr
 	}
+	if len(entityIDs)>100 { return nil,rpc.MakeError(rpc.InvalidParams,"query entity budget exceeded",nil) }
 	if len(entityIDs) == 0 {
 		return publicPingMetricStatsResponse{
 			Start: start.UTC(),
@@ -454,10 +469,14 @@ func publicGetPingMetricStats(ctx context.Context, req *rpc.JsonRpcRequest) (any
 	taskFilter := normalizePingMetricTaskIDs(params.TaskID, params.TaskIDs)
 
 	maxPoints := params.MaxPoints
+	if maxPoints<0 || maxPoints>2000 { return nil,rpc.MakeError(rpc.InvalidParams,"max_points must be between 1 and 2000",nil) }
 	if maxPoints <= 0 {
 		maxPoints = defaultMetricQueryPoints
 	}
 	now := time.Now().UTC()
+	windowDefinitions, windowErr := store.GetMetrics(ctx,[]string{metricstore.MetricPingLatency,metricstore.MetricPingLoss})
+	if windowErr != nil { return nil,rpc.MakeError(rpc.InternalError,"Failed to resolve metric retention",nil) }
+	if !withinMetricRetention(start,end,now,windowDefinitions) { return nil,rpc.MakeError(rpc.InvalidParams,"time range exceeds configured retention",nil) }
 	interval := metricDownsampleInterval(end.Sub(start), maxPoints)
 	interval = store.CompatibleSeriesInterval(start, now, interval)
 
@@ -664,7 +683,7 @@ func publicMetricEntityIDs(ctx context.Context, requested []string) ([]string, *
 		if hidden[entityID] && !isLogin {
 			continue
 		}
-		if visible[entityID] || !hidden[entityID] {
+		if visible[entityID] {
 			out = append(out, entityID)
 		}
 	}
@@ -707,10 +726,36 @@ func metricQueryTimeOrDefault(value *time.Time, fallback time.Time) time.Time {
 }
 
 func metricQueryHours(hours float64) time.Duration {
-	if hours <= 0 {
+	if hours <= 0 || !validMetricHours(hours) {
 		return 4 * time.Hour
 	}
 	return time.Duration(hours * float64(time.Hour))
+}
+
+func validMetricHours(hours float64) bool {
+ return !math.IsNaN(hours) && !math.IsInf(hours,0) && hours>=0 && hours<=float64((time.Duration(1<<63-1)/time.Hour))
+}
+
+func withinMetricRetention(start,end,now time.Time, definitions map[string]metric.Definition) bool {
+ duration:=metricstore.DefaultRollupRawRetention
+ for _, tier := range []struct { key string; fallback int; unit time.Duration }{
+  {metricstore.MetricRollupMinuteRetentionMinutesKey,600,time.Minute},
+  {metricstore.MetricRollupFiveMinuteRetentionMinutesKey,3000,time.Minute},
+  {metricstore.MetricRollupHourRetentionHoursKey,600,time.Hour},
+ } {
+  value,err:=config.GetAs[int](tier.key,tier.fallback)
+  if err!=nil || value<0 || int64(value)>int64((time.Duration(1<<63-1)-time.Hour)/tier.unit) { return false }
+  if value==0 { value=tier.fallback }
+  if window:=time.Duration(value)*tier.unit; window>duration { duration=window }
+ }
+ for _, definition:=range definitions {
+  days:=definition.RetentionDays
+  // The terminal daily tier retains indefinite metrics for 100 years.
+  if days<=0 { days=100*365 }
+  if int64(days)>int64((time.Duration(1<<63-1)-time.Hour)/(24*time.Hour)) { return false }
+  if value:=time.Duration(days)*24*time.Hour; value>duration { duration=value }
+ }
+ return !start.Before(now.Add(-duration-time.Hour)) && end.After(start)
 }
 
 func resolveMetricMaxPoints(metricKey string, params publicMetricQueryParams) (int, error) {
@@ -724,7 +769,7 @@ func resolveMetricMaxPoints(metricKey string, params publicMetricQueryParams) (i
 	if v, ok := params.MaxPointsByMetric[metricKey]; ok {
 		maxPoints = v
 	}
-	if maxPoints <= 0 {
+	if maxPoints <= 0 || maxPoints > 2000 {
 		return 0, fmt.Errorf("max points for %s must be a positive integer", metricKey)
 	}
 	return maxPoints, nil

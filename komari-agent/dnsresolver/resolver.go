@@ -3,18 +3,46 @@ package dnsresolver
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	pkg_flags "github.com/komari-monitor/komari-agent/cmd/flags"
 )
 
 var flags = pkg_flags.GlobalConfig
+var panelRootCAs atomic.Pointer[x509.CertPool]
+
+// ConfigurePanelCA is called before network workers start. The updater has
+// its own transport and deliberately does not use these panel trust roots.
+func ConfigurePanelCA(path string) error {
+	var roots *x509.CertPool
+	if path != "" {
+		pem, err := os.ReadFile(path)
+		if err != nil { return fmt.Errorf("read panel CA: %w", err) }
+		if len(pem)>1<<20 { return fmt.Errorf("panel CA file exceeds size limit") }
+		roots, err = x509.SystemCertPool()
+		if err != nil || roots == nil { roots = x509.NewCertPool() }
+		if !roots.AppendCertsFromPEM(pem) { return fmt.Errorf("panel CA file contains no valid certificates") }
+	}
+	httpClientMu.Lock()
+	defer httpClientMu.Unlock()
+	panelRootCAs.Store(roots)
+	for _, client := range httpClients { client.CloseIdleConnections() }
+	httpClients = make(map[httpClientKey]*http.Client)
+	return nil
+}
+
+func PanelTLSConfig() *tls.Config {
+	return &tls.Config{MinVersion:tls.VersionTLS12, RootCAs:panelRootCAs.Load(), InsecureSkipVerify:flags.IgnoreUnsafeCert}
+}
 var (
 	DNSServers = []string{
 		"[2606:4700:4700::1111]:53", // Cloudflare IPv6
@@ -205,10 +233,13 @@ func getHTTPClient(timeout time.Duration, preferIPVersion string, forceHTTP2 boo
 		return client
 	}
 	client := &http.Client{
-		Transport: buildTransportWithPreferenceAndHTTP2(timeout, &tls.Config{
-			InsecureSkipVerify: flags.IgnoreUnsafeCert,
-		}, preferIPVersion, forceHTTP2),
+		Transport: buildTransportWithPreferenceAndHTTP2(timeout, PanelTLSConfig(), preferIPVersion, forceHTTP2),
 		Timeout: timeout,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via)>=10 { return fmt.Errorf("too many redirects") }
+			if len(via)>0 && (req.URL.Scheme!=via[0].URL.Scheme || req.URL.Host!=via[0].URL.Host) { return fmt.Errorf("cross-origin redirect refused") }
+			return nil
+		},
 	}
 	httpClients[key] = client
 	return client

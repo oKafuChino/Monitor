@@ -15,6 +15,8 @@ import (
 
 type WebSocketUpgradeOption func(*websocket.Upgrader)
 
+var webSocketSlots = make(chan struct{},128)
+
 func IsWebSocketUpgrade(c *gin.Context) bool {
 	return websocket.IsWebSocketUpgrade(c.Request)
 }
@@ -38,11 +40,15 @@ func UpgradeWebSocket(c *gin.Context, options ...WebSocketUpgradeOption) (*webso
 
 // UpgradeSafeConn preserves the authenticated upgrade and origin checks.
 func UpgradeSafeConn(c *gin.Context, options ...WebSocketUpgradeOption) (*connection.SafeConn, error) {
+	select { case webSocketSlots <- struct{}{}: default: return nil,fmt.Errorf("websocket connection budget exhausted") }
 	unsafeConn, err := UpgradeWebSocket(c, options...)
 	if err != nil {
+		<-webSocketSlots
 		return nil, err
 	}
-	return connection.NewSafeConn(unsafeConn), nil
+	conn:=connection.NewSafeConn(unsafeConn)
+	conn.ReleaseOnClose(func(){ <-webSocketSlots })
+	return conn, nil
 }
 
 func CheckWebSocketOrigin(r *http.Request) bool {
@@ -56,6 +62,7 @@ func CheckWebSocketOrigin(r *http.Request) bool {
 	if origin == "" && r.URL.Query().Get("token") != "" {
 		return true
 	}
+	if origin == "" && (r.URL.Path == "/api/rpc2" || strings.HasPrefix(r.URL.Path, "/api/clients/")) && (r.Header.Get("X-Agent-Token") != "" || strings.HasPrefix(r.Header.Get("Authorization"), "Bearer ")) { return true }
 	enabled, _ := config.GetAs[bool](config.WsOriginCheckEnabledKey, true)
 	if !enabled {
 		return true
@@ -63,7 +70,7 @@ func CheckWebSocketOrigin(r *http.Request) bool {
 	if origin == "" {
 		return false
 	}
-	if security.OriginMatchesHost(origin, r.Host) {
+	if security.OriginMatchesRequest(origin, r) {
 		return true
 	}
 	allowlist, _ := config.GetAs[string](config.WsAllowedOriginsKey, "")

@@ -123,9 +123,9 @@ func (c *Controller) Register(r *gin.Engine) {
 	g.GET("/auth", c.authStatus)
 	authorized := g.Group("", api.RequireRole(api.RoleAdmin))
 	authorized.GET("/status", c.getStatus)
-	authorized.POST("/start", c.start)
+	authorized.POST("/start", api.RequireSensitive2FA(), c.start)
 	if c.mode == ModeMetricStructure {
-		authorized.POST("/discard", c.discard)
+		authorized.POST("/discard", api.RequireSensitive2FA(), c.discard)
 	}
 }
 

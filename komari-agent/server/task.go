@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -329,7 +330,7 @@ func postV2RPC(payload interface{}) error {
 	if err != nil {
 		return err
 	}
-	endpoint := strings.TrimSuffix(flags.Endpoint, "/") + "/api/clients/v2/rpc?token=" + flags.Token
+	endpoint := strings.TrimSuffix(flags.Endpoint, "/") + "/api/clients/v2/rpc"
 	compressed := false
 	if !flags.DisableCompression {
 		if gz, err := gzipBytes(body); err == nil {
@@ -342,6 +343,7 @@ func postV2RPC(payload interface{}) error {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+flags.Token)
 	if compressed {
 		req.Header.Set("Content-Encoding", "gzip")
 	}
@@ -351,7 +353,8 @@ func postV2RPC(payload interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
-	respBody, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(io.LimitReader(resp.Body, (1<<20)+1))
+	if len(respBody)>1<<20 { return fmt.Errorf("response exceeds size limit") }
 	if err != nil {
 		return err
 	}

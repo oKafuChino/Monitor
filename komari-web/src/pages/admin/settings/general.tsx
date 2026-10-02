@@ -136,7 +136,7 @@ const ApiCard = ({ settings }: { settings: SettingsResponse }) => {
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
     for (let i = 0; i < 24; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+      result += chars.charAt(crypto.getRandomValues(new Uint32Array(1))[0] % chars.length);
     }
     return result;
   };
@@ -173,6 +173,7 @@ const ApiCard = ({ settings }: { settings: SettingsResponse }) => {
       }}
     >
       <div className="flex flex-row gap-2 justify-start items-center">
+        <Button variant="soft" onClick={() => { void fetch("/api/admin/settings/credentials").then(async response => { const payload = await response.json(); if (!response.ok || payload.status !== "success") throw new Error(payload.message || "读取凭证失败"); setApiValues(payload.data?.auto_discovery_key ?? ""); }).catch(error => toast.error(String(error))); }}>显示现有凭证</Button>
         <Button variant="soft" color="green" onClick={handleGenerateApiKey}>
           {t("common.generate")}
         </Button>

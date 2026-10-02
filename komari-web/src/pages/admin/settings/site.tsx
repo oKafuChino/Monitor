@@ -325,8 +325,12 @@ export default function SiteSettings() {
       <SettingCardIconButton
         title={t("settings.site.backup_download")}
         description={t("settings.site.backup_download_description")}
-        onClick={() => {
-          window.open("/api/admin/download/backup", "_blank");
+        onClick={async () => {
+          const response = await fetch("/api/admin/download/backup");
+          if (!response.ok) { toast.error("Backup authorization failed"); return; }
+          const url = URL.createObjectURL(await response.blob());
+          const link = document.createElement("a"); link.href = url; link.download = "komari-backup.zip";
+          link.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
         }}
         className="km-setting-card"
       >

@@ -325,6 +325,7 @@ func (s *Store) queryRawPointsBatch(ctx context.Context, query BatchQuery) (map[
 			continue
 		}
 		labels := make(map[uint32]map[string]string)
+		if err := consumeReadBudget(ctx, 0, 1); err != nil { return nil, err }
 		directStart := sort.Search(len(series.samples), func(i int) bool { return series.samples[i].timestamp >= start })
 		directEnd := sort.Search(len(series.samples), func(i int) bool { return series.samples[i].timestamp > end })
 		additional := directEnd - directStart
@@ -332,6 +333,7 @@ func (s *Store) queryRawPointsBatch(ctx context.Context, query BatchQuery) (map[
 			additional += series.compressed.count
 		}
 		metricPoints := matched[key.metricName]
+		if err := checkReadAllocation(ctx, additional); err != nil { return nil, err }
 		metricPoints.grow(additional)
 		if series.compressed.count > 0 && start <= series.compressed.lastStamp && end >= series.compressed.firstStamp() {
 			decoder := newRawSampleDecoder(series.compressed)
@@ -346,6 +348,7 @@ func (s *Store) queryRawPointsBatch(ctx context.Context, query BatchQuery) (map[
 				if err != nil {
 					return nil, err
 				}
+				if err := consumeReadBudget(ctx, 1, 0); err != nil { return nil, err }
 				appendRawQueryPoint(metricPoints, key, tags, labelMap, sample)
 			}
 		}
@@ -354,6 +357,7 @@ func (s *Store) queryRawPointsBatch(ctx context.Context, query BatchQuery) (map[
 			if err != nil {
 				return nil, err
 			}
+			if err := consumeReadBudget(ctx, 1, 0); err != nil { return nil, err }
 			appendRawQueryPoint(metricPoints, key, tags, labelMap, sample)
 		}
 	}

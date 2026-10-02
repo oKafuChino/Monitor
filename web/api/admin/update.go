@@ -41,7 +41,7 @@ func UpdateUser(c *gin.Context) {
 		api.RespondError(c, 400, "Password must be at least 6 characters long")
 		return
 	}
-	if req.Password != nil {
+	if req.Password != nil && !c.GetBool("sensitive_2fa_verified") {
 		c.Set("2fa_code", req.TwoFa)
 		if err := api.VerifySensitive2FA(c); err != nil {
 			api.RespondError(c, 401, err.Error())

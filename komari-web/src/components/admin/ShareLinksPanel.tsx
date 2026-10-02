@@ -46,6 +46,11 @@ export default function ShareLinksPanel() {
     try { await client.call("admin:revokeShareLink", { id }); setUrl(""); setLinks(await client.call<object, Link[]>("admin:listShareLinks", {})); toast.success(t("share.revoked")); }
     catch { setError(t("share.action_error")); } finally { setBusy(false); }
   };
+	const resetSessions = async (id: string) => {
+		setBusy(true);
+		try { await client.call("admin:resetShareSessions", { id }); toast.success("访问会话已重置，访客可重新打开分享链接"); }
+		catch { setError(t("share.action_error")); } finally { setBusy(false); }
+	};
   return <div className="flex flex-col gap-4 w-full">
     <p className="text-sm text-muted-foreground">{t("share.setup")}</p>
     <label htmlFor="share-public-base" className="text-sm font-medium">{t("share.public_base")}</label>
@@ -61,6 +66,6 @@ export default function ShareLinksPanel() {
     </Flex>
     {error && <p role="alert" className="text-red-500 text-sm">{error}</p>}
     {url && <div className="flex flex-col gap-2"><p className="text-sm">{t("share.once")}</p><Flex gap="2"><TextField.Root readOnly value={url} className="flex-1" aria-label={t("share.link")} /><Button onClick={() => { void navigator.clipboard.writeText(url).then(() => toast.success(t("share.copied"))).catch(() => toast.error(t("share.action_error"))); }}>{t("share.copy")}</Button></Flex></div>}
-    <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr>{["node", "duration", "created_at", "expires", "state"].map(key => <th className="p-2 text-left" key={key}>{t(`share.${key}`)}</th>)}<th /></tr></thead><tbody>{links.map(l => <tr key={l.id} className="border-t"><td className="p-2">{l.node_name}<br /><span className="text-xs opacity-60">{l.token_mask}</span></td><td className="p-2">{t(`share.${l.duration}`)}</td><td className="p-2">{new Date(l.created_at).toLocaleString()}</td><td className="p-2">{l.expires_at ? new Date(l.expires_at).toLocaleString() : t("share.forever")}</td><td className="p-2">{t(`share.${l.status}`)}</td><td className="p-2">{l.status === "active" && <Button color="red" variant="soft" disabled={busy} onClick={() => void revoke(l.id)}>{t("share.revoke")}</Button>}</td></tr>)}</tbody></table>{!links.length && <p className="text-sm opacity-60">{t("share.no_links")}</p>}</div>
+    <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr>{["node", "duration", "created_at", "expires", "state"].map(key => <th className="p-2 text-left" key={key}>{t(`share.${key}`)}</th>)}<th /></tr></thead><tbody>{links.map(l => <tr key={l.id} className="border-t"><td className="p-2">{l.node_name}<br /><span className="text-xs opacity-60">{l.token_mask}</span></td><td className="p-2">{t(`share.${l.duration}`)}</td><td className="p-2">{new Date(l.created_at).toLocaleString()}</td><td className="p-2">{l.expires_at ? new Date(l.expires_at).toLocaleString() : t("share.forever")}</td><td className="p-2">{t(`share.${l.status}`)}</td><td className="p-2">{l.status === "active" && <Flex gap="2"><Button variant="soft" disabled={busy} onClick={() => void resetSessions(l.id)}>重置访问会话</Button><Button color="red" variant="soft" disabled={busy} onClick={() => void revoke(l.id)}>{t("share.revoke")}</Button></Flex>}</td></tr>)}</tbody></table>{!links.length && <p className="text-sm opacity-60">{t("share.no_links")}</p>}</div>
   </div>;
 }

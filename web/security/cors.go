@@ -69,7 +69,7 @@ func (ctrl *CorsController) Middleware() gin.HandlerFunc {
 		origin := c.GetHeader("Origin")
 		allowOrigin := ""
 		if origin != "" && (IsAPIKeyRequest(c.Request) ||
-			OriginMatchesHost(origin, c.Request.Host) ||
+			OriginMatchesRequest(origin, c.Request) ||
 			OriginInAllowlist(origin, corsAllowedOrigins)) {
 			allowOrigin = origin
 		}
@@ -83,7 +83,7 @@ func (ctrl *CorsController) Middleware() gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Origin", allowOrigin)
 			c.Header("Vary", "Origin")
 			c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS")
-			c.Header("Access-Control-Allow-Headers", "Origin, Content-Length, Content-Type, Authorization, Accept, X-CSRF-Token, X-Requested-With, Set-Cookie, X-2FA-Code, X-Two-Factor-Code")
+			c.Header("Access-Control-Allow-Headers", "Origin, Content-Length, Content-Type, Authorization, Accept, X-CSRF-Token, X-Requested-With, X-2FA-Code, X-Two-Factor-Code, X-Reauth-Password, X-Agent-Token, X-Setup-Token")
 			c.Header("Access-Control-Expose-Headers", "Content-Length, Authorization, Set-Cookie")
 			if !authorizationPreflight {
 				c.Header("Access-Control-Allow-Credentials", "true")

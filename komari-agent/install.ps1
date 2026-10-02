@@ -191,7 +191,7 @@ Log-Step "Installation configuration:"
 Log-Config "Service name: $ServiceName"
 Log-Config "Install directory: $InstallDir"
 Log-Config "GitHub proxy: $ProxyDisplay"
-Log-Config "Agent arguments: $($KomariArgs -join ' ')"
+Log-Config "Agent arguments: values hidden (may contain credentials)"
 if ($InstallVersion -ne "") {
     Log-Config "Specified agent version: $InstallVersion"
 } else {
@@ -235,6 +235,22 @@ function Uninstall-Previous {
         Remove-Item $AgentPath -Force
     }
 }
+$credentialValues = @{}
+$publicArgs = @()
+for ($credentialIndex = 0; $credentialIndex -lt $KomariArgs.Count; $credentialIndex++) {
+    $argument = [string]$KomariArgs[$credentialIndex]
+    if ($argument -in @('-t', '--token', '--auto-discovery-key')) {
+        if ($credentialIndex + 1 -ge $KomariArgs.Count) { throw 'Missing credential value' }
+        $credentialIndex++
+        $field = if ($argument -eq '--auto-discovery-key') { 'auto_discovery_key' } else { 'token' }
+        $credentialValues[$field] = [string]$KomariArgs[$credentialIndex]
+    } elseif ($argument -match '^--(token|auto-discovery-key)=(.*)$') {
+        $field = if ($Matches[1] -eq 'token') { 'token' } else { 'auto_discovery_key' }
+        $credentialValues[$field] = $Matches[2]
+    } else { $publicArgs += $argument }
+}
+if ($credentialValues.Count -gt 0 -and @($publicArgs | Where-Object { $_ -eq '--config' -or $_ -like '--config=*' }).Count -gt 0) { throw 'Put credentials in --config instead of combining it with credential flags' }
+
 Uninstall-Previous
 
 function Get-LatestSnapshotVersion {
@@ -318,6 +334,28 @@ $DownloadUrl = if ($GitHubProxy) { "$GitHubProxy/https://github.com/oKafuChino/M
 
 # Download and install
 New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
+if ((Get-Item -LiteralPath $InstallDir).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Installation directory must not be a reparse point' }
+# Auto-discovery state is written beside the executable and must inherit the
+# same restricted permissions as the service credential file.
+$installACL = New-Object Security.AccessControl.DirectorySecurity
+$installACL.SetAccessRuleProtection($true, $false)
+foreach ($sid in @('S-1-5-18', 'S-1-5-32-544')) {
+    $identity = New-Object Security.Principal.SecurityIdentifier($sid)
+    $rule = New-Object Security.AccessControl.FileSystemAccessRule($identity, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow')
+    $installACL.AddAccessRule($rule)
+}
+Set-Acl -LiteralPath $InstallDir -AclObject $installACL
+$discoveryFile = Join-Path $InstallDir 'auto-discovery.json'
+if (Test-Path -LiteralPath $discoveryFile) {
+    if ((Get-Item -LiteralPath $discoveryFile).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Auto-discovery file must not be a reparse point' }
+    $discoveryACL = New-Object Security.AccessControl.FileSecurity
+    $discoveryACL.SetAccessRuleProtection($true, $false)
+    foreach ($sid in @('S-1-5-18', 'S-1-5-32-544')) {
+        $identity = New-Object Security.Principal.SecurityIdentifier($sid)
+        $discoveryACL.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($identity, 'FullControl', 'Allow')))
+    }
+    Set-Acl -LiteralPath $discoveryFile -AclObject $discoveryACL
+}
 Log-Info "URL: $DownloadUrl"
 try {
     Invoke-WebRequest -Uri $DownloadUrl -OutFile $AgentPath -UseBasicParsing
@@ -330,7 +368,28 @@ Log-Success "Downloaded and saved to $AgentPath"
 
 # Register and start service
 Log-Step "Configuring Windows service with nssm..."
-$argString = $KomariArgs -join ' '
+if ($credentialValues.Count -gt 0) {
+    $credentialDir = Join-Path $InstallDir 'credentials'
+    New-Item -ItemType Directory -Path $credentialDir -Force | Out-Null
+    if ((Get-Item -LiteralPath $credentialDir).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Credential directory must not be a reparse point' }
+    $credentialACL = New-Object Security.AccessControl.DirectorySecurity
+    $credentialACL.SetAccessRuleProtection($true, $false)
+    foreach ($sid in @('S-1-5-18', 'S-1-5-32-544')) {
+        $identity = New-Object Security.Principal.SecurityIdentifier($sid)
+        $rule = New-Object Security.AccessControl.FileSystemAccessRule($identity, 'FullControl', 'ContainerInherit,ObjectInherit', 'None', 'Allow')
+        $credentialACL.AddAccessRule($rule)
+    }
+    Set-Acl -LiteralPath $credentialDir -AclObject $credentialACL
+    $credentialFile = Join-Path $credentialDir 'agent.json'
+    if (Test-Path -LiteralPath $credentialFile) {
+        if ((Get-Item -LiteralPath $credentialFile).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Credential file must not be a reparse point' }
+        Remove-Item -LiteralPath $credentialFile -Force
+    }
+    [IO.File]::WriteAllText($credentialFile, ($credentialValues | ConvertTo-Json -Compress), (New-Object Text.UTF8Encoding($false)))
+    $publicArgs += @('--config', $credentialFile)
+    $credentialValues.Clear()
+}
+$argString = ($publicArgs | ForEach-Object { ConvertTo-CommandLineArg ([string]$_) }) -join ' '
 # The application path is passed WITHOUT literal quotes: PowerShell already
 # quotes native arguments containing spaces on the command line, while
 # embedded quotes made nssm store a broken Application path (komari-agent#118).
@@ -346,4 +405,4 @@ Log-Success "Service $ServiceName installed and started using nssm."
 
 Log-Success "Komari Agent installation completed!"
 Log-Config "Service name: $ServiceName"
-Log-Config "Arguments: $argString"
+Log-Config "Arguments: values hidden (may contain credentials)"

@@ -15,6 +15,8 @@ import (
 // 消息发送器与 OIDC 提供者配置 RPC2 方法（admin 命名空间）。
 
 func init() {
+	rpc.MarkSensitive("admin:setOidcProvider")
+	rpc.MarkSensitive("admin:getOidcProvider")
 	reg("getOidcProvider", adminGetOidc, "Get OIDC provider config or templates")
 	reg("setOidcProvider", adminSetOidc, "Set OIDC provider config")
 }

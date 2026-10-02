@@ -5,11 +5,12 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	logger "github.com/komari-monitor/komari/utils/log"
-	"io"
+
 	"net"
 	"net/http"
 	"strings"
 	"time"
+	"github.com/komari-monitor/komari/internal/securitylimit"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -20,6 +21,8 @@ import (
 	"github.com/komari-monitor/komari/web/connection"
 )
 
+var agentRPCBudget = securitylimit.New(10000)
+
 func readMaybeCompressedBody(r *http.Request) ([]byte, error) {
 	defer r.Body.Close()
 	if strings.EqualFold(r.Header.Get("Content-Encoding"), "gzip") {
@@ -28,9 +31,9 @@ func readMaybeCompressedBody(r *http.Request) ([]byte, error) {
 			return nil, err
 		}
 		defer zr.Close()
-		return io.ReadAll(zr)
+		return api.ReadBounded(zr, api.JSONBodyLimit)
 	}
-	return io.ReadAll(r.Body)
+	return api.ReadBounded(r.Body, api.JSONBodyLimit)
 }
 
 func bindV2Params[T any](raw any, target *T) error {
@@ -42,6 +45,7 @@ func bindV2Params[T any](raw any, target *T) error {
 }
 
 func handleV2RPC(uuid string, req v2.Request, allowWait bool) v2.Response {
+	if !agentRPCBudget.Allow(uuid,600,time.Minute) { return v2.Error(req.ID,-32000,"agent request rate exceeded",nil) }
 	if req.JSONRPC != v2.Version {
 		return v2.Error(req.ID, -32600, "invalid jsonrpc version", nil)
 	}
@@ -123,7 +127,10 @@ func UploadV2RPC(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, v2.Error(req.ID, -32001, "invalid token", nil))
 		return
 	}
+	initial := api.IdentifyPrincipal(c)
 	resp := handleV2RPC(uuid, req, true)
+	current := api.IdentifyPrincipal(c)
+	if current.Type!=initial.Type || current.ClientUUID!=initial.ClientUUID || current.UserUUID!=initial.UserUUID { c.AbortWithStatus(http.StatusUnauthorized); return }
 	status := http.StatusOK
 	if resp.Error != nil {
 		status = http.StatusBadRequest
@@ -142,6 +149,9 @@ func WebSocketV2RPC(c *gin.Context) {
 		return
 	}
 	defer conn.Close()
+	initial := api.IdentifyPrincipal(c)
+	stopGuard := conn.Guard(func() bool { p := api.IdentifyPrincipal(c); return p.Type == initial.Type && p.ClientUUID == initial.ClientUUID && p.UserUUID == initial.UserUUID })
+	defer stopGuard()
 
 	uuid, ok := clientUUIDFromContext(c)
 	if !ok {
@@ -173,6 +183,8 @@ func WebSocketV2RPC(c *gin.Context) {
 			return
 		}
 		message = bytes.TrimSpace(message)
+		p := api.IdentifyPrincipal(c)
+		if p.Type != initial.Type || p.ClientUUID != initial.ClientUUID || p.UserUUID != initial.UserUUID { return }
 		var req v2.Request
 		if err := json.Unmarshal(message, &req); err != nil {
 			conn.WriteJSON(v2.Error(nil, -32700, "parse error", err.Error()))

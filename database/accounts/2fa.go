@@ -2,14 +2,19 @@ package accounts
 
 import (
 	"image"
+	"fmt"
+	"time"
 
 	"github.com/komari-monitor/komari/database/dbcore"
 	"github.com/komari-monitor/komari/database/models"
 	"github.com/pquerna/otp/totp"
+	"github.com/komari-monitor/komari/internal/securitylimit"
+	"gorm.io/gorm"
 )
 
 var (
 	TwoFactorIssuer = "Komari Monitor"
+	factorAttempts = securitylimit.New(4096)
 )
 
 func Generate2Fa() (string, image.Image, error) {
@@ -29,10 +34,16 @@ func Generate2Fa() (string, image.Image, error) {
 
 func Enable2Fa(uuid, secret string) error {
 	db := dbcore.GetDBInstance()
-	return db.Model(&models.User{}).Where("uuid = ?", uuid).Update("two_factor", secret).Error
+	return db.Transaction(func(tx *gorm.DB) error {
+	result := tx.Model(&models.User{}).Where("uuid = ? AND (two_factor = '' OR two_factor IS NULL)", uuid).Update("two_factor", secret)
+	if result.Error != nil { return result.Error }
+	if result.RowsAffected != 1 { return fmt.Errorf("2FA is already enabled") }
+	return tx.Where("uuid = ?", uuid).Delete(&models.Session{}).Error
+	})
 }
 
 func Verify2Fa(uuid, code string) (bool, error) {
+	if !factorAttempts.Allow(uuid, 10, time.Minute) { return false, fmt.Errorf("too many verification attempts") }
 	db := dbcore.GetDBInstance()
 	var user models.User
 	err := db.Where("uuid = ?", uuid).First(&user).Error
@@ -54,5 +65,8 @@ func Verify2Fa(uuid, code string) (bool, error) {
 
 func Disable2Fa(uuid string) error {
 	db := dbcore.GetDBInstance()
-	return db.Model(&models.User{}).Where("uuid = ?", uuid).Update("two_factor", "").Error
+	return db.Transaction(func(tx *gorm.DB) error {
+	if err := tx.Model(&models.User{}).Where("uuid = ?", uuid).Update("two_factor", "").Error; err != nil { return err }
+	return tx.Where("uuid = ?", uuid).Delete(&models.Session{}).Error
+	})
 }

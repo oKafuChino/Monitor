@@ -36,6 +36,15 @@ type InstallOptions = {
 export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
   const refreshTable = React.useContext(DataTableRefreshContext);
   const [removing, setRemoving] = React.useState(false);
+	const [agentToken, setAgentToken] = React.useState("");
+	const revealToken = async () => {
+		try {
+			const response = await fetch(`/api/admin/client/${row.original.uuid}/token`);
+			const payload = await response.json();
+			if (!response.ok || payload.status !== "success") throw new Error(payload.message || "读取凭证失败");
+			setAgentToken(payload.token ?? payload.data?.token ?? "");
+		} catch (error) { toast.error(error instanceof Error ? error.message : "读取凭证失败"); }
+	};
   const [installOptions, setInstallOptions] = React.useState<InstallOptions>({
     disableAutoUpdate: false,
     ignoreUnsafeCert: false,
@@ -46,7 +55,8 @@ export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
 
   const generateCommand = () => {
     const host = window.location.origin;
-    const token = row.original.token ?? "";
+    const token = agentToken;
+    if (!token) return "点击显示部署凭证，然后复制安装命令。";
     const args: string[] = ["-e", host, "-t", token];
     // 根据安装选项生成参数
     if (installOptions.disableAutoUpdate) {
@@ -91,7 +101,7 @@ export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
 
   return (
     <div className="km-node-function flex gap-3 justify-center">
-      <Dialog.Root>
+      <Dialog.Root onOpenChange={(open) => { if (!open) setAgentToken(""); }}>
         <Dialog.Trigger>
           <IconButton
             variant="ghost"
@@ -106,6 +116,7 @@ export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
             {t("admin.nodeTable.installCommand", "一键部署指令")}
           </Dialog.Title>
           <div className="flex flex-col gap-4">
+			<Button onClick={() => void revealToken()}>显示部署凭证</Button>
             <Flex direction="column" gap="2">
               <label className="text-base font-bold">
                 {t("admin.nodeTable.installOptions", "安装选项")}

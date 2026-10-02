@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -55,6 +54,10 @@ var RootCmd = &cobra.Command{
 		if flags.PreferIPVersion != "" && flags.PreferIPVersion != "4" && flags.PreferIPVersion != "6" {
 			return fmt.Errorf("invalid --prefer-ip-version value %q: expected 4 or 6", flags.PreferIPVersion)
 		}
+		if err := dnsresolver.ConfigurePanelCA(flags.TLSCAFile); err != nil { return err }
+		panelTransport := http.DefaultTransport.(*http.Transport).Clone()
+		panelTransport.TLSClientConfig = dnsresolver.PanelTLSConfig()
+		http.DefaultTransport = panelTransport
 		// This project's probe only accepts ping, startup-config and version events.
 		flags.DisableWebSsh = true
 		if math.IsNaN(flags.Interval) || math.IsInf(flags.Interval, 0) || flags.Interval < 1 || flags.Interval > 3600 || flags.ReconnectInterval <= 0 {
@@ -119,10 +122,6 @@ var RootCmd = &cobra.Command{
 		}
 		log.Println("Monitoring Interfaces:", interfaceList)
 
-		// 忽略不安全的证书
-		if flags.IgnoreUnsafeCert {
-			http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		}
 		stopReports := collector.StartReports(stopCtx, time.Duration(flags.Interval*float64(time.Second)))
 		defer stopReports()
 		stopWarning := startSecurityWarning(stopCtx)
@@ -181,6 +180,7 @@ func init() {
 	//RootCmd.PersistentFlags().BoolVar(&flags.MemoryModeAvailable, "memory-mode-available", false, "[deprecated]Report memory as available instead of used.")
 	RootCmd.PersistentFlags().Float64VarP(&flags.Interval, "interval", "i", 3.0, "Interval in seconds")
 	RootCmd.PersistentFlags().BoolVarP(&flags.IgnoreUnsafeCert, "ignore-unsafe-cert", "u", false, "Ignore unsafe certificate errors")
+	RootCmd.PersistentFlags().StringVar(&flags.TLSCAFile, "tls-ca-file", "", "Additional PEM CA certificates for the panel (not binary updates)")
 	RootCmd.PersistentFlags().IntVarP(&flags.MaxRetries, "max-retries", "r", 3, "Maximum number of retries")
 	RootCmd.PersistentFlags().IntVarP(&flags.ReconnectInterval, "reconnect-interval", "c", 5, "Reconnect interval in seconds")
 	RootCmd.PersistentFlags().IntVar(&flags.InfoReportInterval, "info-report-interval", 5, "Interval in minutes for reporting basic info")

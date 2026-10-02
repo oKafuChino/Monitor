@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"github.com/komari-monitor/komari/cmd/flags"
 
 	logger "github.com/komari-monitor/komari/utils/log"
 	"github.com/komari-monitor/komari/web/backup"
@@ -18,6 +19,8 @@ func NewArchiveUploadHandler() *upload.Handler {
 }
 
 func finalizeBackupUpload(session upload.Session) (upload.Result, error) {
+	if !flags.IsSQLite() { return upload.Result{},fmt.Errorf("archive restore requires the default SQLite main database") }
+	if err := backup.CheckRestoreTarget(flags.DatabaseFile); err != nil { return upload.Result{},err }
 	restoreLock, err := backup.AcquireRestoreLock()
 	if err != nil {
 		return upload.Result{}, err

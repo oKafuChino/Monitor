@@ -9,7 +9,7 @@ import (
 	"github.com/komari-monitor/komari/database/clients"
 	"github.com/komari-monitor/komari/database/dbcore"
 	"github.com/komari-monitor/komari/database/models"
-	"github.com/komari-monitor/komari/database/records"
+	"github.com/komari-monitor/komari/internal/metricstore"
 	"github.com/komari-monitor/komari/database/tasks"
 	"github.com/komari-monitor/komari/pkg/rpc"
 	"github.com/komari-monitor/komari/utils"
@@ -116,15 +116,9 @@ func publicGetClientRecentRecords(ctx context.Context, req *rpc.JsonRpcRequest) 
 
 // isHiddenClient 查询指定 uuid 是否为隐藏节点。
 func isHiddenClient(uuid string) bool {
-	var hiddenClients []models.Client
-	db := dbcore.GetDBInstance()
-	_ = db.Select("uuid").Where("hidden = ?", true).Find(&hiddenClients).Error
-	for _, cli := range hiddenClients {
-		if cli.UUID == uuid {
-			return true
-		}
-	}
-	return false
+	var node models.Client
+	if err := dbcore.GetDBInstance().Select("uuid","hidden").Where("uuid = ?",uuid).First(&node).Error; err != nil { return true }
+	return node.Hidden
 }
 
 func publicGetRecordsByUUID(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc.JsonRpcError) {
@@ -149,6 +143,7 @@ func publicGetRecordsByUUID(ctx context.Context, req *rpc.JsonRpcRequest) (any, 
 	if err != nil {
 		return nil, rpc.MakeError(rpc.InvalidParams, "Invalid hours parameter", nil)
 	}
+	if hoursInt<=0 || !validMetricHours(float64(hoursInt)) { return nil,rpc.MakeError(rpc.InvalidParams,"invalid hours parameter",nil) }
 	validLoadTypes := map[string]bool{
 		"cpu": true, "ram": true, "swap": true,
 		"load": true, "temp": true, "disk": true, "network": true,
@@ -158,7 +153,7 @@ func publicGetRecordsByUUID(ctx context.Context, req *rpc.JsonRpcRequest) (any, 
 		return nil, rpc.MakeError(rpc.InvalidParams, "Invalid load_type parameter", nil)
 	}
 	now := time.Now().UTC()
-	clientRecords, err := records.GetRecordsByClientAndTime(params.UUID, now.Add(-time.Duration(hoursInt)*time.Hour), now)
+	clientRecords, err := metricstore.GetRecordsByClientAndTime(ctx, params.UUID, now.Add(-time.Duration(hoursInt)*time.Hour), now)
 	if err != nil {
 		return nil, rpc.MakeError(rpc.InternalError, "Failed to fetch records: "+err.Error(), nil)
 	}
@@ -175,7 +170,7 @@ func publicGetRecordsByUUID(ctx context.Context, req *rpc.JsonRpcRequest) (any, 
 		}
 	}
 	if params.LoadType == "" || params.LoadType == "all" || params.LoadType == "gpu" {
-		gpuRecords, err := records.GetGPURecordsByClientAndTime(params.UUID, now.Add(-time.Duration(hoursInt)*time.Hour), now)
+		gpuRecords, err := metricstore.GetGPURecordsByClientAndTime(ctx, params.UUID, now.Add(-time.Duration(hoursInt)*time.Hour), now)
 		if err == nil && len(gpuRecords) > 0 {
 			gpuDevices := make(map[string]any)
 			for _, record := range gpuRecords {
@@ -201,7 +196,11 @@ func publicGetRecordsByUUID(ctx context.Context, req *rpc.JsonRpcRequest) (any, 
 	return response, nil
 }
 
-func publicGetPublicPingTasks(_ context.Context, _ *rpc.JsonRpcRequest) (any, *rpc.JsonRpcError) {
+func publicGetPublicPingTasks(ctx context.Context, _ *rpc.JsonRpcRequest) (any, *rpc.JsonRpcError) {
+	visible, rpcErr := publicMetricEntityIDs(ctx, nil)
+	if rpcErr != nil { return nil, rpcErr }
+	allowed := map[string]bool{}
+	for _, id := range visible { allowed[id] = true }
 	pingTasks, err := tasks.GetAllPingTasks()
 	if err != nil {
 		return nil, rpc.MakeError(rpc.InternalError, err.Error(), nil)
@@ -217,11 +216,13 @@ func publicGetPublicPingTasks(_ context.Context, _ *rpc.JsonRpcRequest) (any, *r
 	}
 	out := make([]publicPingTask, len(pingTasks))
 	for i, task := range pingTasks {
+		filtered := make([]string, 0, len(task.Clients))
+		for _, id := range task.Clients { if allowed[id] { filtered = append(filtered, id) } }
 		out[i] = publicPingTask{
 			Id:        task.Id,
 			Weight:    task.Weight,
 			Name:      task.Name,
-			Clients:   task.Clients,
+			Clients:   filtered,
 			DefaultOn: task.DefaultOn,
 			Type:      task.Type,
 			Interval:  task.Interval,
@@ -335,6 +336,7 @@ func publicGetPingRecords(ctx context.Context, req *rpc.JsonRpcRequest) (any, *r
 	if err != nil {
 		hoursInt = 4
 	}
+	if hoursInt<=0 || !validMetricHours(float64(hoursInt)) { return nil,rpc.MakeError(rpc.InvalidParams,"invalid hours parameter",nil) }
 	endTime := time.Now().UTC()
 	startTime := endTime.Add(-time.Duration(hoursInt) * time.Hour)
 
@@ -346,9 +348,16 @@ func publicGetPingRecords(ctx context.Context, req *rpc.JsonRpcRequest) (any, *r
 		}
 	}
 
-	recs, err := tasks.GetPingRecords(params.UUID, taskId, startTime, endTime)
-	if err != nil {
-		return nil, rpc.MakeError(rpc.InternalError, "Failed to fetch ping records: "+err.Error(), nil)
+	requested := []string{}
+	if params.UUID!="" { requested = append(requested,params.UUID) }
+	visible, rpcErr := publicMetricEntityIDs(ctx,requested)
+	if rpcErr != nil { return nil,rpcErr }
+	if len(visible)>100 { return nil,rpc.MakeError(rpc.InvalidParams,"query entity budget exceeded",nil) }
+	var recs []models.PingRecord
+	for _, entity := range visible {
+		items, err := metricstore.GetPingRecords(ctx,entity,taskId,startTime,endTime)
+		if err != nil { return nil,rpc.MakeError(rpc.InternalError,"Failed to fetch ping records: "+err.Error(),nil) }
+		recs = append(recs,items...)
 	}
 
 	clientStats := make(map[string]struct {

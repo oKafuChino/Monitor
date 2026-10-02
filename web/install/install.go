@@ -2,6 +2,9 @@ package install
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/subtle"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,6 +17,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
+	"github.com/komari-monitor/komari/cmd/flags"
 	"github.com/komari-monitor/komari/database/accounts"
 	"github.com/komari-monitor/komari/database/models"
 	appconfig "github.com/komari-monitor/komari/internal/config"
@@ -49,10 +53,22 @@ type Controller struct {
 	mu     sync.Mutex
 	state  string
 	done   chan struct{}
+	setupToken string
+	setupError error
 }
 
 func NewController(db *gorm.DB) *Controller {
-	return &Controller{db: db, state: "ready", done: make(chan struct{})}
+	tokenBytes := make([]byte, 32)
+	_, err := rand.Read(tokenBytes)
+	token := hex.EncodeToString(tokenBytes)
+	if err == nil { err = os.MkdirAll("./data", 0700) }
+	if err == nil { err = os.Remove("./data/setup-token"); if os.IsNotExist(err) { err = nil } }
+	if err == nil {
+		var file *os.File
+		file,err = os.OpenFile("./data/setup-token",os.O_CREATE|os.O_EXCL|os.O_WRONLY,0600)
+		if err == nil { _,err = file.WriteString(token+"\n"); closeErr:=file.Close(); if err==nil { err=closeErr } }
+	}
+	return &Controller{db: db, state: "ready", done: make(chan struct{}), setupToken: token, setupError:err}
 }
 
 func (c *Controller) Activate() { c.active.Store(true) }
@@ -64,17 +80,24 @@ func (c *Controller) Done() <-chan struct{} { return c.done }
 func (c *Controller) Register(r *gin.Engine) {
 	g := r.Group(APIPath, c.requireActive)
 	g.GET("/status", c.status)
-	g.POST("/complete", c.complete)
+	g.POST("/complete", c.requireSetupToken, c.complete)
 	uploadHandler := upload.NewHandler(upload.DefaultStore, map[upload.Purpose]upload.Finalizer{
 		upload.PurposeBackup: c.finalizeBackupUpload,
 	})
 	uploadGroup := g.Group("/upload")
 	{
-		uploadGroup.POST("/init", uploadHandler.Init)
-		uploadGroup.POST("/chunk", uploadHandler.Chunk)
-		uploadGroup.POST("/merge", uploadHandler.Merge)
-		uploadGroup.POST("/cancel", uploadHandler.Cancel)
+		uploadGroup.POST("/init", c.requireSetupToken, uploadHandler.Init)
+		uploadGroup.POST("/chunk", c.requireSetupToken, uploadHandler.Chunk)
+		uploadGroup.POST("/merge", c.requireSetupToken, uploadHandler.Merge)
+		uploadGroup.POST("/cancel", c.requireSetupToken, uploadHandler.Cancel)
 	}
+}
+
+func (c *Controller) requireSetupToken(ctx *gin.Context) {
+	c.mu.Lock(); state := c.state; c.mu.Unlock()
+	if c.setupError != nil || state == "completed" { api.RespondError(ctx, 503, "Setup is unavailable; inspect the local setup-token file permissions"); ctx.Abort(); return }
+	if subtle.ConstantTimeCompare([]byte(ctx.GetHeader("X-Setup-Token")), []byte(c.setupToken)) != 1 { api.RespondError(ctx, http.StatusUnauthorized, "Setup token is required or invalid"); ctx.Abort(); return }
+	ctx.Next()
 }
 
 func (c *Controller) requireActive(ctx *gin.Context) {
@@ -93,6 +116,14 @@ func (c *Controller) status(ctx *gin.Context) {
 }
 
 func (c *Controller) finalizeBackupUpload(session upload.Session) (upload.Result, error) {
+	if !flags.IsSQLite() { return upload.Result{},fmt.Errorf("archive restore requires the default SQLite main database") }
+	if err := backup.CheckRestoreTarget(flags.DatabaseFile); err != nil { return upload.Result{},err }
+	c.mu.Lock()
+	if c.state != "ready" { c.mu.Unlock(); return upload.Result{}, fmt.Errorf("installation is already completed or running") }
+	c.state = "completing"
+	c.mu.Unlock()
+	success := false
+	defer func() { if !success { c.fail() } }()
 	archive, err := os.Open(session.ArchivePath)
 	if err != nil {
 		return upload.Result{}, fmt.Errorf("open merged backup: %w", err)
@@ -101,6 +132,9 @@ func (c *Controller) finalizeBackupUpload(session upload.Session) (upload.Result
 	if err := backup.SaveUploadedBackup(archive, session.Metadata.Filename); err != nil {
 		return upload.Result{}, err
 	}
+	c.mu.Lock(); c.state = "completed"; c.mu.Unlock()
+	success = true
+	_ = os.Remove("./data/setup-token")
 	go func() {
 		logger.InfoArgs("install", "Backup uploaded, restarting service to restore it on startup...")
 		time.Sleep(2 * time.Second)
@@ -150,6 +184,7 @@ func (c *Controller) complete(ctx *gin.Context) {
 	c.mu.Lock()
 	c.state = "completed"
 	c.mu.Unlock()
+	_ = os.Remove("./data/setup-token")
 	go func() {
 		time.Sleep(500 * time.Millisecond)
 		c.Deactivate()

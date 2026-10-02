@@ -58,7 +58,8 @@ func (s *Store) Init(purpose Purpose, filename string, size int64) (Session, err
 
 	id := uuid.NewString()
 	directory := filepath.Join(s.Root, id)
-	if err := os.MkdirAll(directory, 0755); err != nil {
+	if len(filename)>255 { return Session{},fmt.Errorf("filename is too long") }
+	if err := os.MkdirAll(directory, 0700); err != nil {
 		return Session{}, fmt.Errorf("create upload directory: %w", err)
 	}
 	metadata := Metadata{Purpose: purpose, Size: size, Filename: filename}

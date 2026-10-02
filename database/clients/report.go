@@ -21,6 +21,12 @@ func GetClientUUIDByToken(token string) (clientUUID string, err error) {
 
 // 检查数据防止异常数据导致数据库损坏
 func ReportVerify(report v2.Report) error {
+	if len(report.Message)>4096 || len(report.CPU.Name)>512 || len(report.CPU.Arch)>64 || len(report.Method)>64 { return fmt.Errorf("report string limit exceeded") }
+	if report.GPU != nil {
+		if report.GPU.Count<0 || report.GPU.Count>32 || len(report.GPU.DetailedInfo)>32 { return fmt.Errorf("GPU device limit exceeded") }
+		if math.IsNaN(report.GPU.AverageUsage) || math.IsInf(report.GPU.AverageUsage,0) || report.GPU.AverageUsage<0 || report.GPU.AverageUsage>100 { return fmt.Errorf("invalid GPU utilization") }
+		for _, device := range report.GPU.DetailedInfo { if len(device.Name)>256 || device.MemoryTotal<0 || device.MemoryUsed<0 || math.IsNaN(device.Utilization) || math.IsInf(device.Utilization,0) || device.Utilization<0 || device.Utilization>100 { return fmt.Errorf("invalid GPU device") } }
+	}
 	if err := report.DiskIO.Validate(); err != nil {
 		return err
 	}
@@ -34,7 +40,7 @@ func ReportVerify(report v2.Report) error {
 	}
 
 	checkFloat64 := func(name string, val float64) error {
-		if val > math.MaxFloat64-1 || val < -math.MaxFloat64+1 {
+		if math.IsNaN(val) || math.IsInf(val,0) || val > math.MaxFloat64-1 || val < -math.MaxFloat64+1 {
 			return fmt.Errorf("%s value exceeds float64 range: %g", name, val)
 		}
 		return nil
@@ -47,6 +53,7 @@ func ReportVerify(report v2.Report) error {
 	if err := checkFloat64("Load.Load1", report.Load.Load1); err != nil {
 		return err
 	}
+	for _, val := range []float64{report.Load.Load5, report.Load.Load15} { if err := checkFloat64("Load",val); err != nil { return err }; if val<0 || val>1000 { return fmt.Errorf("invalid load") } }
 
 	checkInt64 := func(name string, val int64) error {
 		if val < 0 {

@@ -1,6 +1,8 @@
 package accounts
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"time"
 
@@ -59,13 +61,11 @@ func GetSession(session string) (uuid string, err error) {
 }
 
 func GetUserBySession(session string) (models.User, error) {
-	db := dbcore.GetDBInstance()
-	var sessionRecord models.Session
-	err := db.Where("session = ?", session).First(&sessionRecord).Error
+	uuid, err := GetSession(session)
 	if err != nil {
 		return models.User{}, err
 	}
-	return GetUserByUUID(sessionRecord.UUID)
+	return GetUserByUUID(uuid)
 }
 
 // DeleteSession 删除指定会话
@@ -77,6 +77,19 @@ func DeleteSession(session string) (err error) {
 	}
 	return nil
 }
+
+// DeleteSessionMasked revokes a session using the short display token returned
+// by the admin session list, without exposing the reusable bearer value.
+func DeleteSessionMasked(masked string) error {
+	var sessions []models.Session
+	if err := dbcore.GetDBInstance().Find(&sessions).Error; err != nil { return err }
+	for _, item := range sessions {
+		if SessionDisplayID(item.Session) == masked { return DeleteSession(item.Session) }
+	}
+	return errors.New("session not found")
+}
+
+func SessionDisplayID(token string) string { digest := sha256.Sum256([]byte(token)); return hex.EncodeToString(digest[:]) }
 
 func DeleteAllSessions() error {
 	db := dbcore.GetDBInstance()

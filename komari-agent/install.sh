@@ -78,6 +78,10 @@ esac
 
 # Parse install-specific arguments
 komari_args=""
+agent_token=""
+agent_discovery_key=""
+agent_config_supplied=false
+custom_config_path=""
 # [[ ]] -> [ ] (POSIX)
 while [ $# -gt 0 ]; do
     case $1 in
@@ -89,6 +93,21 @@ while [ $# -gt 0 ]; do
             ;;
     esac
     case $1 in
+        -t|--token|--auto-discovery-key)
+            if [ $# -lt 2 ] || [ -z "$2" ]; then log_error "Missing credential value"; exit 1; fi
+            if [ "$1" = "--auto-discovery-key" ]; then agent_discovery_key="$2"; else agent_token="$2"; fi
+            shift 2
+            ;;
+        --token=*) agent_token="${1#*=}"; shift ;;
+        --auto-discovery-key=*) agent_discovery_key="${1#*=}"; shift ;;
+        --config)
+            if [ $# -lt 2 ] || [ -z "$2" ]; then log_error "Missing config path"; exit 1; fi
+            agent_config_supplied=true
+            case "$2" in *"'"*) log_error "Config path must not contain single quotes"; exit 1 ;; esac
+            custom_config_path="$2"
+            shift 2
+            ;;
+        --config=*) agent_config_supplied=true; custom_config_path="${1#*=}"; shift ;;
         --install-dir)
             target_dir="$2"
             install_dir_specified=true
@@ -121,6 +140,16 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+if [ "$agent_config_supplied" = true ] && [ -z "$custom_config_path" ]; then log_error "Missing config path"; exit 1; fi
+case "$target_dir$custom_config_path" in *"'"*|*'"'*|*'$'*|*'`'*|*'\'*) log_error "Installation/config paths contain unsupported shell characters"; exit 1 ;; esac
+
+# Validate credential/config combinations before touching an existing service.
+if [ -n "$agent_token" ] || [ -n "$agent_discovery_key" ]; then
+    if [ "$agent_config_supplied" = true ]; then log_error "Put credentials in --config instead of combining it with credential flags"; exit 1; fi
+    case "$agent_token$agent_discovery_key" in *[!a-zA-Z0-9_=-]*) log_error "Use a restricted JSON --config file for this credential format"; exit 1 ;; esac
+    case "$target_dir" in *"'"*) log_error "Credential path must not contain single quotes"; exit 1 ;; esac
+fi
 
 # Remove leading space from komari_args if present
 komari_args="${komari_args# }"
@@ -466,6 +495,27 @@ if [ "$installer_uid" -eq 0 ] && [ "$service_user" != "root" ]; then
     chown "$service_user" "$download_tmp" || exit 1
 fi
 # Only now replace the previous installation; API/download failures leave it intact.
+# Keep bearer credentials out of process arguments and public service files.
+# Generated credentials use this restricted alphabet, so JSON needs no shell
+# interpolation or escaping utility. Other credentials must use --config.
+service_public_args="$komari_args"
+credential_file="$custom_config_path"
+if [ -n "$agent_token" ] || [ -n "$agent_discovery_key" ]; then
+    credential_dir="${target_dir}/credentials"
+    if [ -L "$credential_dir" ]; then log_error "Credential directory must not be a symlink"; exit 1; fi
+    mkdir -p "$credential_dir" || exit 1
+    chmod 700 "$credential_dir" || exit 1
+    credential_file="${credential_dir}/agent.json"
+    credential_tmp=$(umask 077; mktemp "${credential_dir}/.agent-XXXXXX") || exit 1
+    printf '{"token":"%s","auto_discovery_key":"%s"}\n' "$agent_token" "$agent_discovery_key" > "$credential_tmp" || exit 1
+    chmod 600 "$credential_tmp" || exit 1
+    if [ "$installer_uid" -eq 0 ]; then chown "$service_user" "$credential_dir" "$credential_tmp" || exit 1; fi
+    mv -f "$credential_tmp" "$credential_file" || exit 1
+    case "$credential_file" in *"'"*) log_error "Credential path must not contain single quotes"; exit 1 ;; esac
+    agent_token=""; agent_discovery_key=""
+fi
+if [ -n "$credential_file" ]; then komari_args="$komari_args --config '$credential_file'"; fi
+
 uninstall_previous
 mv -f "$download_tmp" "$komari_agent_path" || exit 1
 trap - EXIT HUP INT TERM
@@ -677,7 +727,8 @@ STOP=10
 USE_PROCD=1
 
 PROG="${komari_agent_path}"
-ARGS="${komari_args}"
+ARGS="${service_public_args}"
+CREDENTIAL_CONFIG="${credential_file}"
 
 start_service() {
     procd_open_instance
@@ -685,6 +736,9 @@ start_service() {
     procd_set_param command "\$PROG"
     # shellcheck disable=SC2086
     procd_append_param command \$ARGS
+    if [ -n "\$CREDENTIAL_CONFIG" ]; then
+        procd_append_param command --config "\$CREDENTIAL_CONFIG"
+    fi
     procd_set_param respawn
     procd_set_param stdout 1
     procd_set_param stderr 1

@@ -24,6 +24,13 @@ func (q *QQ) GetConfiguration() factory.Configuration {
 
 func (q *QQ) GetAuthorizationURL(redirectURI string) (string, string) {
 	state := utils.GenerateRandomString(16)
+	// Require the aggregator to preserve the per-flow callback nonce.
+	callback, err := url.Parse(redirectURI)
+	if err != nil { return "", "" }
+	query := callback.Query(); query.Set("state", state); callback.RawQuery = query.Encode()
+	redirectURI = callback.String()
+	providerURL, err := url.Parse(q.Addition.AggregationURL)
+	if err != nil || providerURL.Scheme != "https" || providerURL.Host == "" || providerURL.User != nil { return "", "" }
 
 	// 构建请求QQ聚合登录平台的URL
 	requestURL := fmt.Sprintf(
@@ -36,16 +43,18 @@ func (q *QQ) GetAuthorizationURL(redirectURI string) (string, string) {
 	)
 
 	// 向聚合登录平台发送请求
-	resp, err := http.Get(requestURL)
+	client := qqHTTPClient()
+	resp, err := client.Get(requestURL)
 	if err != nil {
 		// 如果请求失败，返回错误信息
 		return "", state
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK { return "", state }
 
 	// 读取响应内容
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
+	body, err := io.ReadAll(io.LimitReader(resp.Body, (64<<10)+1))
+	if err != nil || len(body)>64<<10 {
 		return "", state
 	}
 
@@ -81,6 +90,7 @@ func (q *QQ) OnCallback(ctx *gin.Context, state string, query map[string]string,
 	if loginType == "" {
 		loginType = q.Addition.LoginType
 	}
+	if loginType != q.Addition.LoginType { return factory.OidcCallback{}, fmt.Errorf("OAuth login type changed") }
 
 	// 验证state防止CSRF攻击
 	if q.stateCache == nil {
@@ -89,6 +99,7 @@ func (q *QQ) OnCallback(ctx *gin.Context, state string, query map[string]string,
 	if _, ok := q.stateCache.Get(state); !ok {
 		return factory.OidcCallback{}, fmt.Errorf("invalid state")
 	}
+	q.stateCache.Delete(state)
 	if state == "" {
 		return factory.OidcCallback{}, fmt.Errorf("invalid state")
 	}
@@ -109,9 +120,9 @@ func (q *QQ) OnCallback(ctx *gin.Context, state string, query map[string]string,
 		url.QueryEscape(code),
 	)
 
-	resp, err := http.Get(callbackURL)
+	resp, err := qqHTTPClient().Get(callbackURL)
 	if err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to get user info: %v", err)
+		return factory.OidcCallback{}, fmt.Errorf("failed to contact QQ provider")
 	}
 	defer resp.Body.Close()
 
@@ -121,9 +132,9 @@ func (q *QQ) OnCallback(ctx *gin.Context, state string, query map[string]string,
 	}
 
 	// 读取响应
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to read response: %v", err)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, (64<<10)+1))
+	if err != nil || len(body)>64<<10 {
+		return factory.OidcCallback{}, fmt.Errorf("QQ provider response unreadable or too large")
 	}
 
 	// 解析响应
@@ -141,17 +152,17 @@ func (q *QQ) OnCallback(ctx *gin.Context, state string, query map[string]string,
 	}
 
 	if err := json.Unmarshal(body, &result); err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to parse callback response: %v, response body: %s", err, string(body))
+		return factory.OidcCallback{}, fmt.Errorf("failed to parse callback response: %v", err)
 	}
 
 	// 检查返回状态码
 	if result.Code != 0 {
-		return factory.OidcCallback{}, fmt.Errorf("QQ login callback failed with code %d: %s", result.Code, result.Msg)
+		return factory.OidcCallback{}, fmt.Errorf("QQ login callback failed with code %d", result.Code)
 	}
 
 	// 检查是否返回了用户唯一标识
 	if result.SocialUid == "" {
-		return factory.OidcCallback{}, fmt.Errorf("empty social_uid returned, full response: %s", string(body))
+		return factory.OidcCallback{}, fmt.Errorf("empty social_uid returned")
 	}
 
 	// 返回用户唯一标识
@@ -169,3 +180,7 @@ func (q *QQ) Destroy() error {
 }
 
 var _ factory.IOidcProvider = (*QQ)(nil)
+
+func qqHTTPClient() *http.Client {
+	return &http.Client{Timeout:10*time.Second, CheckRedirect:func(*http.Request,[]*http.Request) error { return http.ErrUseLastResponse }}
+}

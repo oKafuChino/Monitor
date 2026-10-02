@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -131,7 +130,7 @@ func EstablishWebSocketConnection(onRestartRequired func()) {
 }
 
 func buildWebSocketEndpoint() string {
-	websocketEndpoint := strings.TrimSuffix(flags.Endpoint, "/") + "/api/clients/v2/rpc?token=" + flags.Token
+	websocketEndpoint := strings.TrimSuffix(flags.Endpoint, "/") + "/api/clients/v2/rpc"
 	websocketEndpoint = "ws" + strings.TrimPrefix(websocketEndpoint, "http")
 	if convertedEndpoint, err := utils.ConvertIDNToASCII(websocketEndpoint); err == nil {
 		return convertedEndpoint
@@ -214,7 +213,7 @@ func postV2Request(payload []byte) (*v2.Response, error) {
 }
 
 func postV2RequestContext(ctx context.Context, payload []byte) (*v2.Response, error) {
-	endpoint := strings.TrimSuffix(flags.Endpoint, "/") + "/api/clients/v2/rpc?token=" + flags.Token
+	endpoint := strings.TrimSuffix(flags.Endpoint, "/") + "/api/clients/v2/rpc"
 	body := payload
 	compressed := false
 	if !flags.DisableCompression {
@@ -227,7 +226,8 @@ func postV2RequestContext(ctx context.Context, payload []byte) (*v2.Response, er
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+flags.Token)
+req.Header.Set("Content-Type", "application/json")
 	if compressed {
 		req.Header.Set("Content-Encoding", "gzip")
 	}
@@ -237,7 +237,8 @@ func postV2RequestContext(ctx context.Context, payload []byte) (*v2.Response, er
 		return nil, err
 	}
 	defer resp.Body.Close()
-	bytesBody, err := io.ReadAll(resp.Body)
+	bytesBody, err := io.ReadAll(io.LimitReader(resp.Body, (1<<20)+1))
+	if len(bytesBody)>1<<20 { return nil, fmt.Errorf("response exceeds size limit") }
 	if err != nil {
 		return nil, err
 	}
@@ -335,7 +336,7 @@ func markV2EventSeen(id string) bool {
 func connectWebSocket(websocketEndpoint string) (*ws.SafeConn, error) {
 	dialer := newWSDialer()
 
-	conn, resp, err := dialer.Dial(websocketEndpoint, nil)
+	conn, resp, err := dialer.Dial(websocketEndpoint, http.Header{"Authorization": []string{"Bearer "+flags.Token}})
 	if err != nil {
 		if resp != nil && resp.StatusCode != 101 {
 			return nil, &httpStatusError{StatusCode: resp.StatusCode, Status: resp.Status}
@@ -419,8 +420,6 @@ func newWSDialer() *websocket.Dialer {
 		Proxy:             http.ProxyFromEnvironment,
 		EnableCompression: !flags.DisableCompression,
 	}
-	if flags.IgnoreUnsafeCert {
-		d.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	}
+	d.TLSClientConfig = dnsresolver.PanelTLSConfig()
 	return d
 }

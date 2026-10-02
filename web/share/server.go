@@ -46,8 +46,11 @@ func New(service *sharing.Service, proxies []string) (*gin.Engine,error) {
  r.GET("/healthz",func(c *gin.Context){c.Status(204)})
  r.GET("/s/:token",func(c *gin.Context) {
   cookieName,secure:=cookieSettings(c)
-  if !limits.allow("token:"+sharing.Digest(c.Param("token")),30) { c.AbortWithStatus(429);return }
-  credential,expiry,err:=service.Exchange(c.Param("token"));if err!=nil { c.AbortWithStatus(404);return }
+  existing,_:=c.Cookie(cookieName)
+  previous,previousErr:=service.Authenticate(existing)
+  reuse:=previousErr==nil && previous.Link.TokenHash==sharing.Digest(c.Param("token"))
+  if !reuse && (!limits.allow("new-session-ip:"+c.ClientIP(),3) || !limits.allow("token:"+sharing.Digest(c.Param("token")),10)) { c.AbortWithStatus(429);return }
+  credential,expiry,err:=service.ExchangeExisting(c.Param("token"),existing);if err!=nil { c.AbortWithStatus(404);return }
   http.SetCookie(c.Writer,&http.Cookie{Name:cookieName,Value:credential,Path:"/",Secure:secure,HttpOnly:true,SameSite:http.SameSiteLaxMode,MaxAge:int(time.Until(expiry).Seconds()),Expires:expiry})
   c.Redirect(302,"/node")
  })

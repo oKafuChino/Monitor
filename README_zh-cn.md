@@ -10,11 +10,13 @@
 
 源码仓库：[oKafuChino/Monitor](https://github.com/oKafuChino/Monitor)，默认安装分支为 `main`。
 
+本轮安全修复、首次安装凭证、可信代理、Agent 配置及备份恢复兼容限制见 [安全修复实施结果](docs/安全修复实施结果.md)。后端编译与安全回归尚待实测。
+
 ## 1. 安装前准备
 
 - 使用 Linux 服务器，以及 root 或具有 sudo 权限的账号。
 - 服务器需要能访问 GitHub、Docker 镜像仓库及构建依赖源。首次安装会在 Docker 中编译前后端，无需在宿主机安装 Node.js 或 Go。
-- 默认对外端口为 TCP `25774`。根据服务器防火墙或云安全组配置放行该端口；脚本不会修改防火墙。
+- 默认 TCP `25774` 只映射到本机 loopback。远程访问使用 SSH 隧道或受控反代；脚本不会修改防火墙。
 - Debian/Ubuntu 可通过 `--install-docker` 补齐缺少的 Git、Docker 和 Compose。其他 Linux 发行版请先自行安装 Git、Docker、Docker Compose，以及 curl 或 wget。
 
 Debian/Ubuntu 如果没有 curl，先执行：
@@ -49,7 +51,7 @@ curl -fsSL --retry 3 https://raw.githubusercontent.com/oKafuChino/Monitor/main/i
 3. 构建整合镜像，启动 Docker Compose 服务。
 4. 等待网页可访问，成功后将端口保存到 `.env`。
 
-安装结束后访问 `http://服务器IP:25774`，创建管理员账号并填写站点信息。若配置了域名或 HTTPS 反向代理，请通过相应地址访问，并确保代理支持 WebSocket。
+安装结束后，在自己的电脑使用 `ssh -L 25774:127.0.0.1:25774 user@服务器`，再访问 `http://127.0.0.1:25774`。从服务器本地读取 `sudo cat /opt/monitor/data/setup-token`，在网页提示时输入，然后创建管理员或导入备份；完成后凭证文件删除。若使用 HTTPS 反代，需在 `.env` 的 `KOMARI_TRUSTED_PROXIES` 配置应用实际看到的代理 IP/CIDR，并确保代理支持 WebSocket。需要其他网卡时显式设置 `MONITOR_BIND` 并配套访问控制。
 
 ## 3. 安装目录、端口与版本
 
@@ -75,7 +77,7 @@ sudo bash /tmp/monitor-install.sh --install-docker --dir /opt/monitor --port 808
 sudo bash /opt/monitor/install.sh --port 8080 --skip-build
 ```
 
-之后访问 `http://服务器IP:8080`。未传 `--port` 时，使用环境变量/已有 `.env` 配置，否则使用 `25774`。
+之后通过隧道或反代访问所选端口。未传 `--port` 时，使用环境变量/已有 `.env` 配置，否则使用 `25774`。
 
 常用参数：
 

@@ -1,4 +1,5 @@
 import React, { StrictMode, useMemo } from "react";
+import { installReauthenticationFetch } from "./lib/reauth";
 import { createRoot } from "react-dom/client";
 import "./global.css";
 import { Theme } from "@radix-ui/themes";
@@ -97,6 +98,7 @@ const App = () => {
   );
 };
 
+installReauthenticationFetch();
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <StrictMode>

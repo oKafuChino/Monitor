@@ -135,6 +135,18 @@ func (s *Service) Exchange(token string) (string, time.Time, error) {
  return credential, expiry, err
 }
 
+// ExchangeExisting reuses only a still-valid session for exactly this link.
+func (s *Service) ExchangeExisting(token, existing string) (string, time.Time, error) {
+	if len(token) != 43 { return "", time.Time{}, ErrUnavailable }
+	if ctx, err := s.Authenticate(existing); err == nil && ctx.Link.TokenHash == Digest(token) {
+		return existing, ctx.SessionExpiresAt, nil
+	}
+	return s.Exchange(token)
+}
+
+// ResetSessions offers administrators a recovery path when a link is at capacity.
+func (s *Service) ResetSessions(id string) error { return s.DB.Where("share_link_id = ?",id).Delete(&models.ShareSession{}).Error }
+
 type Context struct { Link models.ShareLink; Node models.Client; SessionExpiresAt time.Time }
 func (s *Service) Authenticate(credential string) (*Context,error) {
  if len(credential) != 43 { return nil, ErrUnavailable }

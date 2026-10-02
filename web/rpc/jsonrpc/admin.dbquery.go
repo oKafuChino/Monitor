@@ -62,6 +62,7 @@ type databaseTablesResponse struct {
 }
 
 func init() {
+	for _, method := range []string{"admin:dbQuery", "admin:dbExec", "admin:dbTables"} { rpc.MarkSensitive(method) }
 	RegisterWithGroupAndMeta("dbQuery", rpc.RoleAdmin, adminDBQuery, &rpc.MethodMeta{
 		Name:    "admin:dbQuery",
 		Summary: "Execute a SQL query against the main or metrics database",
@@ -299,6 +300,8 @@ func collectDatabaseRows(rows *sql.Rows, limit int) ([]string, [][]any, bool, er
 		return nil, nil, false, err
 	}
 	resultRows := make([][]any, 0, limit)
+	if len(columns)>256 { return nil,nil,false,fmt.Errorf("query column budget exceeded") }
+	totalBytes := 0
 	values := make([]any, len(columns))
 	scans := make([]any, len(columns))
 	for i := range scans {
@@ -314,6 +317,8 @@ func collectDatabaseRows(rows *sql.Rows, limit int) ([]string, [][]any, bool, er
 		}
 		row := make([]any, len(values))
 		for i, value := range values {
+			switch typed := value.(type) { case []byte: totalBytes += len(typed); case string: totalBytes += len(typed); default: totalBytes += 32 }
+			if totalBytes>8<<20 { return nil,nil,false,fmt.Errorf("query result byte budget exceeded") }
 			row[i] = normalizeDatabaseValue(value)
 		}
 		resultRows = append(resultRows, row)

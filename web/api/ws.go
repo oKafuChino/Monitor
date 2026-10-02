@@ -3,14 +3,18 @@ package api
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/komari-monitor/komari/database/accounts"
+	"github.com/komari-monitor/komari/internal/config"
+	"github.com/komari-monitor/komari/internal/securitylimit"
 	"github.com/komari-monitor/komari/database/dbcore"
 	"github.com/komari-monitor/komari/database/models"
 	v2 "github.com/komari-monitor/komari/protocol/v2"
 	agent_runtime "github.com/komari-monitor/komari/web/agent"
 )
+
+var liveRequests = securitylimit.New(10000)
 
 func GetClients(c *gin.Context) {
 	// 升级到ws
@@ -25,29 +29,13 @@ func GetClients(c *gin.Context) {
 		return
 	}
 	defer conn.Close()
-
-	// 初始化用户信息
-	var (
-		isLogin    = false
-		hiddenMap  = map[string]bool{}
-		session, _ = c.Cookie("session_token")
-	)
-
-	// 登录状态检查
-	_, err = accounts.GetUserBySession(session)
-	if err == nil {
-		isLogin = true
-	}
-
-	// 仅在未登录时需要 Hidden 信息做过滤
-	if !isLogin {
-		var hiddenClients []models.Client
-		db := dbcore.GetDBInstance()
-		_ = db.Select("uuid").Where("hidden = ?", true).Find(&hiddenClients).Error
-		for _, cli := range hiddenClients {
-			hiddenMap[cli.UUID] = true
-		}
-	}
+	initial := IdentifyPrincipal(c)
+	stopGuard := conn.Guard(func() bool {
+		p := IdentifyPrincipal(c)
+		private, err := config.GetAs[bool](config.PrivateSiteKey, false)
+		return err == nil && p.Type == initial.Type && p.UserUUID == initial.UserUUID && (!private || p.PrimaryRole() == RoleAdmin)
+	})
+	defer stopGuard()
 
 	// 请求
 	for {
@@ -64,6 +52,15 @@ func GetClients(c *gin.Context) {
 			return
 		}
 		message := string(data)
+        if !liveRequests.Allow(c.ClientIP(),300,time.Minute) { return }
+        p := IdentifyPrincipal(c)
+        isLogin := p.PrimaryRole() == RoleAdmin
+        private, err := config.GetAs[bool](config.PrivateSiteKey, false)
+        if err != nil || (private && !isLogin) { return }
+        var currentClients []models.Client
+        if err := dbcore.GetDBInstance().Select("uuid", "hidden").Find(&currentClients).Error; err != nil { return }
+        visible := make(map[string]bool, len(currentClients))
+        for _, node := range currentClients { if isLogin || !node.Hidden { visible[node.UUID] = true } }
 
 		uuID := ""
 		if message != "get" { // 非请求全部内容
@@ -77,7 +74,7 @@ func GetClients(c *gin.Context) {
 
 		// 在线客户端uuid列表（WebSocket 与非 WebSocket）
 		for _, key := range agent_runtime.GetAllOnlineUUIDs() {
-			if !isLogin && hiddenMap[key] {
+			if !visible[key] {
 				continue
 			}
 			if uuID != "" && key != uuID {
@@ -88,7 +85,7 @@ func GetClients(c *gin.Context) {
 
 		//过往节点数据信息
 		for key, report := range agent_runtime.GetLatestReport() {
-			if !isLogin && hiddenMap[key] {
+			if !visible[key] {
 				continue
 			}
 			if uuID != "" && key != uuID {

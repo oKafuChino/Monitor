@@ -2,12 +2,14 @@ package public
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/komari-monitor/komari/database/accounts"
 	"github.com/komari-monitor/komari/database/auditlog"
 	"github.com/komari-monitor/komari/internal/config"
+	"github.com/komari-monitor/komari/internal/securitylimit"
 	"github.com/komari-monitor/komari/utils"
 	"github.com/komari-monitor/komari/web/api"
 
@@ -21,6 +23,11 @@ type LoginRequest struct {
 }
 
 const sessionCookieMaxAge = 2592000
+var loginLimiter = securitylimit.New(10000)
+
+func loginAllowed(account, ip string) bool {
+	return loginLimiter.Allow("global", 300, time.Minute) && loginLimiter.Allow("ip:"+ip, 30, time.Minute) && loginLimiter.Allow("account:"+account, 10, time.Minute)
+}
 
 func setSessionCookie(c *gin.Context, value string, maxAge int) {
 	http.SetCookie(c.Writer, &http.Cookie{
@@ -41,7 +48,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	bodyBytes, err := io.ReadAll(c.Request.Body)
+	bodyBytes, err := api.ReadBounded(c.Request.Body, 16<<10)
 	if err != nil {
 		api.RespondError(c, http.StatusBadRequest, "Invalid request body: "+err.Error())
 		return
@@ -56,6 +63,7 @@ func Login(c *gin.Context) {
 		api.RespondError(c, http.StatusBadRequest, "Invalid request body: Username and password are required")
 		return
 	}
+	if len(data.Username)>256 || len(data.Password)>1024 || !loginAllowed(strings.ToLower(strings.TrimSpace(data.Username)), c.ClientIP()) { api.RespondError(c, http.StatusTooManyRequests, "Too many login attempts"); return }
 
 	uuid, success := accounts.CheckPassword(data.Username, data.Password)
 	if !success {

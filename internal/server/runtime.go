@@ -25,6 +25,7 @@ import (
 	"github.com/komari-monitor/komari/internal/metricstore"
 	"github.com/komari-monitor/komari/internal/scheduler"
 	"github.com/komari-monitor/komari/utils/geoip"
+	"github.com/komari-monitor/komari/utils"
 	logger "github.com/komari-monitor/komari/utils/log"
 	"github.com/komari-monitor/komari/web/api"
 	"github.com/komari-monitor/komari/web/oauth"
@@ -96,9 +97,10 @@ func (a *App) BuildRouter() error {
 		})
 	}
 	r := gin.New()
+	if err := utils.ConfigureTrustedProxies(r); err != nil { return fmt.Errorf("trusted proxies: %w", err) }
 	r.Use(logger.GinLogger(), logger.GinRecovery())
 	cors := security.NewCorsController(a.settings.CorsOriginCheckEnabled, a.settings.CorsAllowedOrigins)
-	r.Use(cors.Middleware(), api.IdentityMiddleware(), api.PrivateSiteMiddleware(), noStoreAPIResponses())
+	r.Use(api.RequestLimits(), cors.Middleware(), security.CookieMutationProtection(), api.IdentityMiddleware(), api.PrivateSiteMiddleware(), noStoreAPIResponses())
 
 	// The recovery UI belongs only to its temporary restricted listener.
 	r.GET(recoveryweb.PagePath, func(c *gin.Context) {
@@ -114,7 +116,7 @@ func (a *App) BuildRouter() error {
 
 // Run starts the normal HTTP server and blocks until shutdown or fatal error.
 func (a *App) Run() error {
-	a.server = &http.Server{Addr: a.listenAddr, Handler: a.engine}
+	a.server = &http.Server{Addr: a.listenAddr, Handler: a.engine, ReadHeaderTimeout: 5*time.Second, ReadTimeout: 45*time.Second, IdleTimeout: 60*time.Second}
 	serverErr := make(chan error, 2)
 	// Bind both ports before serving either; a conflict rolls back atomically.
 	mainListener, err := net.Listen("tcp", a.listenAddr)

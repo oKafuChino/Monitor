@@ -1,10 +1,7 @@
 package api
 
 import (
-	"bytes"
 	"database/sql"
-	"encoding/json"
-	"io"
 	"net/http"
 	"strings"
 
@@ -140,6 +137,10 @@ func PrivateSiteMiddleware() gin.HandlerFunc {
 }
 
 func extractClientToken(c *gin.Context) string {
+	path := c.Request.URL.Path
+	if path != "/api/rpc2" && !strings.HasPrefix(path, "/api/clients/") { return "" }
+	if token := c.GetHeader("X-Agent-Token"); token != "" { return token }
+	if auth := c.GetHeader("Authorization"); strings.HasPrefix(auth, "Bearer ") { return strings.TrimPrefix(auth, "Bearer ") }
 	token := c.Query("token")
 	if token != "" {
 		return token
@@ -147,25 +148,6 @@ func extractClientToken(c *gin.Context) string {
 	// rpc2 约定:agent 经 ?Authorization=<token> 传入 client token。
 	if token := c.Query("Authorization"); token != "" {
 		return token
-	}
-
-	if c.Request.Method != http.MethodGet {
-		bodyBytes, err := io.ReadAll(c.Request.Body)
-		if err != nil {
-			return ""
-		}
-		c.Request.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-
-		var bodyMap map[string]interface{}
-		if len(bodyBytes) > 0 {
-			if err := json.Unmarshal(bodyBytes, &bodyMap); err == nil {
-				if tokenVal, exists := bodyMap["token"]; exists {
-					if str, ok := tokenVal.(string); ok && str != "" {
-						return str
-					}
-				}
-			}
-		}
 	}
 
 	return ""

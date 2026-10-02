@@ -28,6 +28,14 @@ func DeleteClient(clientUuid string) error {
 }
 
 func SaveClientInfo(update map[string]interface{}) error {
+	info := make(map[string]interface{}, len(update))
+	for key, value := range update { if key != "uuid" && key != "region" { info[key] = value } }
+	if err := ValidateAgentInfo(info); err != nil { return err }
+	for key := range update {
+		if !agentInfoFields[key] && key != "uuid" && key != "region" {
+			return fmt.Errorf("unsupported agent field: %s", key)
+		}
+	}
 	db := dbcore.GetDBInstance()
 	clientUUID, ok := update["uuid"].(string)
 	if !ok || clientUUID == "" {
@@ -88,7 +96,7 @@ func SaveClientInfo(update map[string]interface{}) error {
 		if !ok {
 			return fmt.Errorf("%s must be a valid number", name)
 		}
-		if numericValue < 0 || numericValue > maxValue {
+		if math.IsNaN(numericValue) || math.IsInf(numericValue, 0) || numericValue != math.Trunc(numericValue) || numericValue < 0 || numericValue > maxValue {
 			return fmt.Errorf("%s must be a valid non-negative number: %v", name, value)
 		}
 		return nil
@@ -214,6 +222,11 @@ func GetAllClientBasicInfo() (clients []models.Client, err error) {
 }
 
 func SaveClient(updates map[string]interface{}) error {
+	allowed := map[string]bool{"uuid":true,"name":true,"token":true,"remark":true,"public_remark":true,"weight":true,"price":true,"billing_cycle":true,"auto_renewal":true,"currency":true,"expired_at":true,"group":true,"tags":true,"hidden":true,"traffic_limit":true,"traffic_limit_type":true}
+	for key, value := range updates {
+		if !allowed[key] { return fmt.Errorf("unsupported administrator client field: %s", key) }
+		if text, ok := value.(string); ok && len(text)>16384 { return fmt.Errorf("client field too long: %s",key) }
+	}
 	db := dbcore.GetDBInstance()
 	clientUUID, ok := updates["uuid"].(string)
 	if !ok || clientUUID == "" {

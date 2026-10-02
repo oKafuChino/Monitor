@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -68,7 +69,7 @@ func tryUploadData(data map[string]interface{}) error {
 }
 
 func tryUploadDataWithProtocol(data map[string]interface{}) error {
-	endpoint := strings.TrimSuffix(flags.Endpoint, "/") + "/api/clients/v2/rpc?token=" + flags.Token
+	endpoint := strings.TrimSuffix(flags.Endpoint, "/") + "/api/clients/v2/rpc"
 	payload := v2.BuildBasicInfoPayload(data)
 	body := payload
 	compressed := false
@@ -83,6 +84,7 @@ func tryUploadDataWithProtocol(data map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+	req.Header.Set("Authorization", "Bearer "+flags.Token)
 	req.Header.Set("Content-Type", "application/json")
 	if compressed {
 		req.Header.Set("Content-Encoding", "gzip")
@@ -96,7 +98,8 @@ func tryUploadDataWithProtocol(data map[string]interface{}) error {
 	}
 	defer resp.Body.Close()
 
-	respBody, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(io.LimitReader(resp.Body, (1<<20)+1))
+	if len(respBody)>1<<20 { return fmt.Errorf("response exceeds size limit") }
 	if err != nil {
 		return err
 	}

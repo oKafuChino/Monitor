@@ -25,7 +25,7 @@ export function EditDialog({ item }: { item: z.infer<typeof schema> }) {
 
   function saveClientData(
     uuid: string,
-    formData: ClientFormData,
+    formData: Omit<ClientFormData, "token">,
     setLoadingCallback: (b: boolean) => void,
     onSuccess?: () => void
   ) {
@@ -126,9 +126,8 @@ export function EditDialog({ item }: { item: z.infer<typeof schema> }) {
             type="submit"
             className="w-full"
             onClick={() => {
-              const payload: ClientFormData = {
+              const payload: Omit<ClientFormData, "token"> = {
                 name: form.name,
-                token: form.token,
                 remark: form.remark,
                 public_remark: form.public_remark,
               };

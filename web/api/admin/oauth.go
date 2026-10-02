@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/komari-monitor/komari/database/accounts"
 	"github.com/komari-monitor/komari/web/api"
+	"github.com/komari-monitor/komari/web/oauth"
 )
 
 // oauth.go
@@ -17,8 +18,9 @@ func BindingExternalAccount(c *gin.Context) {
 		api.RespondError(c, 500, "No user found: "+err.Error())
 		return
 	}
-	c.SetCookie("binding_external_account", user.UUID, 3600, "/", "", false, true)
-	c.Redirect(302, "/api/oauth")
+	url, err := oauth.BeginFlow(c, "bind", user.UUID, session)
+	if err != nil { api.RespondError(c, 400, err.Error()); return }
+	api.RespondSuccess(c, gin.H{"url":url})
 }
 
 func UnbindExternalAccount(c *gin.Context) {

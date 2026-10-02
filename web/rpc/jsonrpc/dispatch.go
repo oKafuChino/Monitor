@@ -2,9 +2,11 @@ package jsonrpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/komari-monitor/komari/internal/config"
 	"github.com/komari-monitor/komari/pkg/rpc"
+	"github.com/komari-monitor/komari/pkg/metric"
 )
 
 // privateSiteLoginWhitelist 私有站点模式下仍允许匿名访问的方法白名单。
@@ -16,13 +18,19 @@ var privateSiteLoginWhitelist = map[string]bool{
 	"public:getVersion":         true,
 }
 
+var rpcWork = make(chan struct{}, 16)
+
 // Dispatch 是所有传输入口的统一分发点：私有站点检查 → 权限校验 → 执行方法。
 // ctx 携带可选的取消/超时；meta 为调用者身份元数据（Principal 为权威来源）。
 // 始终返回完整的 JsonRpcResponse（包含错误）。
 func Dispatch(ctx context.Context, meta *rpc.ContextMeta, req *rpc.JsonRpcRequest) *rpc.JsonRpcResponse {
+	select { case rpcWork <- struct{}{}: defer func(){ <-rpcWork }(); default: return rpc.ErrorResponse(req.ID, rpc.InternalError, "Server is busy, retry later", nil) }
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	ctx = metric.WithReadBudget(ctx, 200000, 512)
 	if meta == nil {
 		meta = &rpc.ContextMeta{Principal: rpc.NewAnonymousPrincipal()}
 	}
@@ -40,7 +48,7 @@ func Dispatch(ctx context.Context, meta *rpc.ContextMeta, req *rpc.JsonRpcReques
 
 	// 私有站点：未认证访客一律拒绝，但放行登录页所需的元信息接口(见 issue #567)。
 	if meta.Principal.Type == rpc.PrincipalAnonymous && !privateSiteLoginWhitelist[req.Method] {
-		if privateSite, _ := config.GetAs[bool](config.PrivateSiteKey); privateSite {
+		if privateSite, err := config.GetAs[bool](config.PrivateSiteKey); err != nil || privateSite {
 			return rpc.ErrorResponse(req.ID, rpc.PermissionDenied, "Private site enabled, please login first", nil)
 		}
 	}

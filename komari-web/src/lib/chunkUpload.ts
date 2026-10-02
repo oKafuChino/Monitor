@@ -42,7 +42,7 @@ export function createChunkUploadTask(basePath: string): ChunkUploadTask {
     if (uploadID) {
       void fetch(`${basePath}/cancel`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...((window as typeof window & { __setupToken?: string }).__setupToken ? { "X-Setup-Token": (window as typeof window & { __setupToken?: string }).__setupToken! } : {}) },
         body: JSON.stringify({ upload_id: uploadID }),
       });
     }
@@ -84,6 +84,8 @@ export function createChunkUploadTask(basePath: string): ChunkUploadTask {
       form.append("chunk_index", String(index));
       form.append("chunk_data", chunk, `chunk-${index}`);
       xhr.open("POST", `${basePath}/chunk`);
+      const setupToken = (window as typeof window & { __setupToken?: string }).__setupToken;
+      if (setupToken) xhr.setRequestHeader("X-Setup-Token", setupToken);
       xhr.send(form);
     });
 
@@ -97,7 +99,7 @@ export function createChunkUploadTask(basePath: string): ChunkUploadTask {
       try {
         const initResponse = await fetch(`${basePath}/init`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...((window as typeof window & { __setupToken?: string }).__setupToken ? { "X-Setup-Token": (window as typeof window & { __setupToken?: string }).__setupToken! } : {}) },
           body: JSON.stringify({ purpose, size: file.size, filename: file.name }),
           signal: controller.signal,
         });
@@ -157,7 +159,7 @@ export function createChunkUploadTask(basePath: string): ChunkUploadTask {
 
         const mergeResponse = await fetch(`${basePath}/merge`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...((window as typeof window & { __setupToken?: string }).__setupToken ? { "X-Setup-Token": (window as typeof window & { __setupToken?: string }).__setupToken! } : {}) },
           body: JSON.stringify({ upload_id: uploadID }),
           signal: controller.signal,
         });

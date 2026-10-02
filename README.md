@@ -10,11 +10,13 @@ Repository: [oKafuChino/Monitor](https://github.com/oKafuChino/Monitor). The def
 
 Optional single-node sharing uses a separate listener and domain, with revocable links. See [configuration and deployment](docs/临时分享节点部署.md). Keep the main listener on loopback/private networking; a different sharing port does not hide a public main port.
 
+Security changes, deployment credentials, trusted proxies, Agent configuration and restore compatibility are documented in [the security implementation record](docs/安全修复实施结果.md). Backend and security regression verification remains pending.
+
 ## 1. Requirements
 
 - A Linux server and a root account or an account with sudo access.
 - Access to GitHub, Docker registries and build dependency sources. The first installation compiles both frontend and backend inside Docker; host installations of Node.js and Go are not required.
-- TCP port `25774` is the default exposed port. Allow the selected port in your firewall or cloud security group as appropriate; the script does not change firewall rules.
+- TCP port `25774` is mapped to loopback by default. Use an SSH tunnel or an access-controlled reverse proxy for remote access; the script does not change firewall rules.
 - On Debian/Ubuntu, `--install-docker` can install missing Git, Docker and Compose dependencies. On other Linux distributions, install Git, Docker, Docker Compose, and curl or wget first.
 
 If curl is missing on Debian/Ubuntu:
@@ -44,7 +46,7 @@ Omit `--install-docker` if Git, Docker and Compose are already available. For a 
 
 The installer checks the environment, downloads source when necessary, builds the integrated image, starts the Compose service, waits for HTTP readiness and then saves the port to `.env`.
 
-Open `http://<server-ip>:25774` to create an administrator account and configure the site. If using a domain or HTTPS reverse proxy, use that address and ensure the proxy supports WebSocket connections.
+Use `ssh -L 25774:127.0.0.1:25774 user@server`, then open `http://127.0.0.1:25774`. Read `data/setup-token` locally on the server and enter it when prompted to create the administrator or import a backup. The token is removed after setup. For a domain/HTTPS reverse proxy, configure the actual proxy peer in `KOMARI_TRUSTED_PROXIES` and ensure it supports WebSocket connections. Set `MONITOR_BIND` only when you need another protected network interface.
 
 ## 3. Directory, port and version settings
 
@@ -70,7 +72,7 @@ If already installed and source has not changed, reuse the existing image when c
 sudo bash /opt/monitor/install.sh --port 8080 --skip-build
 ```
 
-Then open `http://<server-ip>:8080`. Without `--port`, the installer uses the environment/existing `.env` value, falling back to `25774`.
+Use the chosen port through your tunnel or reverse proxy. Without `--port`, the installer uses the environment/existing `.env` value, falling back to `25774`.
 
 | Option | Purpose |
 | --- | --- |

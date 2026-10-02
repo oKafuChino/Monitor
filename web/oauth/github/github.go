@@ -1,10 +1,10 @@
 package github
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -33,7 +33,7 @@ func (g *Github) GetAuthorizationURL(_ string) (string, string) {
 		url.QueryEscape(g.Addition.ClientId),
 		url.QueryEscape(state),
 	)
-	g.stateCache.Set(state, true, cache.NoExpiration)
+	g.stateCache.Set(state, true, cache.DefaultExpiration)
 	return authURL, state
 }
 func (g *Github) OnCallback(ctx *gin.Context, state string, query map[string]string, _ string) (factory.OidcCallback, error) {
@@ -51,6 +51,7 @@ func (g *Github) OnCallback(ctx *gin.Context, state string, query map[string]str
 		return factory.OidcCallback{}, fmt.Errorf("invalid state")
 	}
 
+	g.stateCache.Delete(state)
 	// 获取code
 	//code := c.Query("code")
 	if code == "" {
@@ -65,15 +66,10 @@ func (g *Github) OnCallback(ctx *gin.Context, state string, query map[string]str
 		"code":          {code},
 	}
 
-	req, _ := http.NewRequest("POST", tokenURL, nil)
-	req.URL.RawQuery = data.Encode()
+	req, err := http.NewRequestWithContext(ctx.Request.Context(), "POST", tokenURL, strings.NewReader(data.Encode()))
+	if err != nil { return factory.OidcCallback{}, fmt.Errorf("invalid provider endpoint") }
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Accept", "application/json")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to get access token: %s", utils.DataMasking(err.Error(), []string{g.Addition.ClientSecret, g.Addition.ClientId}))
-	}
-	defer resp.Body.Close()
 
 	var tokenResp struct {
 		AccessToken string `json:"access_token"`
@@ -81,25 +77,17 @@ func (g *Github) OnCallback(ctx *gin.Context, state string, query map[string]str
 		Scope       string `json:"scope"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to parse access token response: %s", utils.DataMasking(err.Error(), []string{g.Addition.ClientSecret, g.Addition.ClientId}))
-	}
+	if err := factory.FetchJSON(req, &tokenResp); err != nil { return factory.OidcCallback{}, err }
+	if tokenResp.AccessToken == "" { return factory.OidcCallback{}, fmt.Errorf("provider returned no access token") }
 
 	// 获取用户信息
-	userReq, _ := http.NewRequest("GET", "https://api.github.com/user", nil)
+	userReq, err := http.NewRequestWithContext(ctx.Request.Context(), "GET", "https://api.github.com/user", nil)
+	if err != nil { return factory.OidcCallback{}, fmt.Errorf("invalid provider user endpoint") }
 	userReq.Header.Set("Authorization", "Bearer "+tokenResp.AccessToken)
 	userReq.Header.Set("Accept", "application/json")
 
-	userResp, err := http.DefaultClient.Do(userReq)
-	if err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to get user info: %v", err)
-	}
-	defer userResp.Body.Close()
-
 	var githubUser GitHubUser
-	if err := json.NewDecoder(userResp.Body).Decode(&githubUser); err != nil {
-		return factory.OidcCallback{}, fmt.Errorf("failed to parse user info response: %v", err)
-	}
+	if err := factory.FetchJSON(userReq, &githubUser); err != nil { return factory.OidcCallback{}, err }
 
 	return factory.OidcCallback{UserId: fmt.Sprintf("%d", githubUser.ID)}, nil
 }

@@ -9,6 +9,7 @@ type Config struct {
 	Endpoint            string  `json:"endpoint" env:"AGENT_ENDPOINT"`                             // 面板地址
 	Interval            float64 `json:"interval" env:"AGENT_INTERVAL"`                             // 数据采集间隔，单位秒
 	IgnoreUnsafeCert    bool    `json:"ignore_unsafe_cert" env:"AGENT_IGNORE_UNSAFE_CERT"`         // 忽略不安全的证书
+	TLSCAFile           string  `json:"tls_ca_file" env:"AGENT_TLS_CA_FILE"` // 主站额外信任的 PEM CA，更新不使用此配置
 	MaxRetries          int     `json:"max_retries" env:"AGENT_MAX_RETRIES"`                       // 最大重试次数
 	ReconnectInterval   int     `json:"reconnect_interval" env:"AGENT_RECONNECT_INTERVAL"`         // 重连间隔，单位秒
 	InfoReportInterval  int     `json:"info_report_interval" env:"AGENT_INFO_REPORT_INTERVAL"`     // 基础信息上报间隔，单位分钟

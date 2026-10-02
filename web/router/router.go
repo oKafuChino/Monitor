@@ -82,34 +82,34 @@ func registerAdminRoutes(r *gin.Engine) {
 	g.PATCH("/ui/settings", admin.PatchUISettings)
 
 	// --- 二进制/流/重定向类，保留 REST handler ---
-	g.GET("/download/backup", admin.DownloadBackup)
+	g.GET("/download/backup", api.RequireSensitive2FA(), admin.DownloadBackup)
 	uploadHandler := admin.NewArchiveUploadHandler()
 	uploadGroup := g.Group("/upload")
 	{
 		uploadGroup.POST("/init", uploadHandler.Init)
 		uploadGroup.POST("/chunk", uploadHandler.Chunk)
-		uploadGroup.POST("/merge", uploadHandler.Merge)
+		uploadGroup.POST("/merge", api.RequireSensitive2FA(), uploadHandler.Merge)
 		uploadGroup.POST("/cancel", uploadHandler.Cancel)
 	}
 	g.GET("/test/geoip", jsonRpc.Bind("admin:testGeoip", jsonRpc.WithQuery("ip")))
 	g.POST("/update/mmdb", admin.UpdateMmdbGeoIP)
-	g.POST("/update/user", admin.UpdateUser)
+	g.POST("/update/user", api.RequireSensitive2FA(), admin.UpdateUser)
 	g.PUT("/update/favicon", admin.UploadFavicon)
 	g.POST("/update/favicon", admin.DeleteFavicon)
 
 	// 2FA 含二维码 PNG / 敏感操作，保留 REST handler。
 	twoFactor := g.Group("/2fa")
 	{
-		twoFactor.GET("/generate", admin.Generate2FA)
-		twoFactor.POST("/enable", admin.Enable2FA)
+		twoFactor.GET("/generate", api.RequireSensitive2FA(), admin.Generate2FA)
+		twoFactor.POST("/enable", api.RequireSensitive2FA(), admin.Enable2FA)
 		twoFactor.POST("/disable", api.RequireSensitive2FA(), admin.Disable2FA)
 	}
 
 	// oauth2 绑定走重定向，保留 REST handler。
 	oauth2 := g.Group("/oauth2")
 	{
-		oauth2.GET("/bind", admin.BindingExternalAccount)
-		oauth2.POST("/unbind", admin.UnbindExternalAccount)
+		oauth2.POST("/bind", api.RequireSensitive2FA(), admin.BindingExternalAccount)
+		oauth2.POST("/unbind", api.RequireSensitive2FA(), admin.UnbindExternalAccount)
 	}
 
 	// --- 以下全部 JSON -> RPC2 ---
@@ -118,6 +118,7 @@ func registerAdminRoutes(r *gin.Engine) {
 	settings := g.Group("/settings")
 	{
 		settings.GET("/", jsonRpc.Bind("admin:getSettings"))
+		settings.GET("/credentials", jsonRpc.Bind("admin:getCredentials"))
 		settings.POST("/", jsonRpc.Bind("admin:editSettings"))
 		settings.POST("/oidc", jsonRpc.Bind("admin:setOidcProvider"))
 		settings.GET("/oidc", jsonRpc.Bind("admin:getOidcProvider", jsonRpc.WithQuery("provider")))
