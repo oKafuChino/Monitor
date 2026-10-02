@@ -15,6 +15,16 @@ type LoginResponse = {
   message?: string;
 };
 
+async function readLoginResponse(response: Response): Promise<LoginResponse> {
+  const text = await response.text();
+  if (!text.trim()) return {};
+  try {
+    return JSON.parse(text) as LoginResponse;
+  } catch {
+    return {};
+  }
+}
+
 const AdminLoginPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -59,7 +69,7 @@ const AdminLoginPage = () => {
           ...(twoFactor ? { "2fa_code": twoFactor } : {}),
         }),
       });
-      const payload = (await response.json()) as LoginResponse;
+      const payload = await readLoginResponse(response);
       if (!response.ok) {
         if (payload.message === "2FA code is required") {
           setRequireTwoFactor(true);

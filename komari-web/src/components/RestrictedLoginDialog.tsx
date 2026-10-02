@@ -22,6 +22,16 @@ type RestrictedLoginDialogProps = {
   requestFailedKey?: string;
 };
 
+async function readLoginResponse(response: Response): Promise<APIResponse> {
+  const text = await response.text();
+  if (!text.trim()) return { status: "error" };
+  try {
+    return JSON.parse(text) as APIResponse;
+  } catch {
+    return { status: "error" };
+  }
+}
+
 export default function RestrictedLoginDialog({
   auth,
   onAuthenticated,
@@ -48,7 +58,7 @@ export default function RestrictedLoginDialog({
           ...(twoFactor ? { "2fa_code": twoFactor } : {}),
         }),
       });
-      const payload = (await response.json()) as APIResponse;
+      const payload = await readLoginResponse(response);
       if (!response.ok) {
         if (payload.message === "2FA code is required") {
           setRequireTwoFactor(true);

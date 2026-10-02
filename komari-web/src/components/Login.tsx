@@ -20,6 +20,16 @@ type LoginDialogProps = {
   onLoginSuccess?: () => void;
 };
 
+async function readLoginResponse(response: Response): Promise<{ message?: string }> {
+  const text = await response.text();
+  if (!text.trim()) return {};
+  try {
+    return JSON.parse(text) as { message?: string };
+  } catch {
+    return {};
+  }
+}
+
 const LoginDialog = ({ trigger, autoOpen = false, showSettings = true, info, onLoginSuccess }: LoginDialogProps) => {
   const InnerLayout = () => {
     const { account, loading, error, refresh } = useAccount();
@@ -66,7 +76,7 @@ const LoginDialog = ({ trigger, autoOpen = false, showSettings = true, info, onL
             ...(twoFac && !account?.["2fa_enabled"] ? { "2fa_code": twoFac } : {}),
           }),
         });
-        const data = await res.json();
+        const data = await readLoginResponse(res);
         if (res.status === 200) {
           refresh();
           if (typeof onLoginSuccess === "function") {

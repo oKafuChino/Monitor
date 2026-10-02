@@ -95,13 +95,13 @@ func (ctrl *CorsController) Middleware() gin.HandlerFunc {
 			if allowOrigin != "" {
 				c.AbortWithStatus(http.StatusNoContent)
 			} else {
-				c.AbortWithStatus(http.StatusForbidden)
+				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "error", "message": "Origin is not allowed"})
 			}
 			return
 		}
 
 		if origin != "" && allowOrigin == "" {
-			c.AbortWithStatus(http.StatusForbidden)
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"status": "error", "message": "Origin is not allowed"})
 			return
 		}
 
