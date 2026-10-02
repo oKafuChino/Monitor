@@ -8,6 +8,7 @@ import type { Row } from "@tanstack/react-table";
 import { EditDialog } from "./NodeEditDialog";
 import { quoteShellArgs } from "@/utils/shellQuote";
 import { AGENT_INSTALL_SCRIPT } from "@/utils/agentDistribution";
+import { useDeploymentToken } from "@/hooks/useDeploymentToken";
 import {
   Button,
   Checkbox,
@@ -36,15 +37,7 @@ type InstallOptions = {
 export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
   const refreshTable = React.useContext(DataTableRefreshContext);
   const [removing, setRemoving] = React.useState(false);
-	const [agentToken, setAgentToken] = React.useState("");
-	const revealToken = async () => {
-		try {
-			const response = await fetch(`/api/admin/client/${row.original.uuid}/token`);
-			const payload = await response.json();
-			if (!response.ok || payload.status !== "success") throw new Error(payload.message || "读取凭证失败");
-			setAgentToken(payload.token ?? payload.data?.token ?? "");
-		} catch (error) { toast.error(error instanceof Error ? error.message : "读取凭证失败"); }
-	};
+  const { token: agentToken, loading: tokenLoading, reveal, clear } = useDeploymentToken(row.original.uuid);
   const [installOptions, setInstallOptions] = React.useState<InstallOptions>({
     disableAutoUpdate: false,
     ignoreUnsafeCert: false,
@@ -56,7 +49,7 @@ export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
   const generateCommand = () => {
     const host = window.location.origin;
     const token = agentToken;
-    if (!token) return "点击显示部署凭证，然后复制安装命令。";
+    if (!token) return "";
     const args: string[] = ["-e", host, "-t", token];
     // 根据安装选项生成参数
     if (installOptions.disableAutoUpdate) {
@@ -101,7 +94,7 @@ export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
 
   return (
     <div className="km-node-function flex gap-3 justify-center">
-      <Dialog.Root onOpenChange={(open) => { if (!open) setAgentToken(""); }}>
+      <Dialog.Root onOpenChange={clear}>
         <Dialog.Trigger>
           <IconButton
             variant="ghost"
@@ -116,7 +109,9 @@ export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
             {t("admin.nodeTable.installCommand", "一键部署指令")}
           </Dialog.Title>
           <div className="flex flex-col gap-4">
-			<Button onClick={() => void revealToken()}>显示部署凭证</Button>
+            <Button disabled={tokenLoading || Boolean(agentToken)} onClick={() => void reveal()}>
+              {tokenLoading ? "正在读取部署凭证…" : agentToken ? "部署凭证已读取" : "获取部署凭证"}
+            </Button>
             <Flex direction="column" gap="2">
               <label className="text-base font-bold">
                 {t("admin.nodeTable.installOptions", "安装选项")}
@@ -225,12 +220,14 @@ export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
                   className="w-full"
                   style={{ minHeight: "80px" }}
                   value={generateCommand()}
+                  placeholder="请先获取部署凭证，完成身份验证后再复制安装命令。"
                 />
               </div>
             </Flex>
             <Flex justify="center">
               <Button
                 style={{ width: "100%" }}
+                disabled={!agentToken || tokenLoading}
                 onClick={() => copyToClipboard(generateCommand())}
               >
                 <Copy size={16} />

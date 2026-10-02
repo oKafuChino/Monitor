@@ -80,6 +80,7 @@ import {
 import { useSettings } from "@/lib/api";
 import { SelectOrInput } from "@/components/ui/select-or-input";
 import { useRPC2Call } from "@/contexts/RPC2Context";
+import { useDeploymentToken } from "@/hooks/useDeploymentToken";
 
 
 const NodeDetailsPage = () => {
@@ -1452,6 +1453,7 @@ function GenerateCommandButton({
   settings: any;
   isSnapshotBackend: boolean;
 }) {
+  const { token, loading: tokenLoading, reveal, clear } = useDeploymentToken(node.uuid);
   const [selectedPlatform, setSelectedPlatform] =
     React.useState<Platform>("linux");
   const [installOptions, setInstallOptions] = React.useState<InstallOptions>({
@@ -1505,7 +1507,7 @@ function GenerateCommandButton({
       }
       return `http://${settings.script_domain.replace(/\/+$/, "")}`;
     }();
-    const token = node.token || "";
+    if (!token) return "";
     let args = ["-e", host, "-t", token];
     // 根据安装选项生成参数
     if (installOptions.disableAutoUpdate) {
@@ -1630,7 +1632,7 @@ function GenerateCommandButton({
   };
   const { t } = useTranslation();
   return (
-    <Dialog.Root>
+    <Dialog.Root onOpenChange={clear}>
       <Dialog.Trigger>
         <IconButton variant="ghost" title={t("admin.nodeTable.installCommand")}>
           <Download size="18" />
@@ -1641,6 +1643,9 @@ function GenerateCommandButton({
           {t("admin.nodeTable.installCommand", "一键部署指令")}
         </Dialog.Title>
         <div className="flex flex-col gap-4">
+          <Button disabled={tokenLoading || Boolean(token)} onClick={() => void reveal()}>
+            {tokenLoading ? "正在读取部署凭证…" : token ? "部署凭证已读取" : "获取部署凭证"}
+          </Button>
           <SegmentedControl.Root
             value={selectedPlatform}
             onValueChange={(value) => setSelectedPlatform(value as Platform)}
@@ -2197,12 +2202,14 @@ function GenerateCommandButton({
                 className="w-full"
                 style={{ minHeight: "80px" }}
                 value={generateCommand()}
+                placeholder="请先获取部署凭证，完成身份验证后再复制安装命令。"
               />
             </div>
           </Flex>
           <Flex justify="center">
             <Button
               style={{ width: "100%" }}
+              disabled={!token || tokenLoading}
               onClick={() => copyToClipboard(generateCommand())}
             >
               <Copy size={16} />
