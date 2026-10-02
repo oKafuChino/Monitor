@@ -8,7 +8,7 @@ A self-hosted monitoring panel with real-time metrics, history charts and Ping m
 
 Repository: [oKafuChino/Monitor](https://github.com/oKafuChino/Monitor). The default installation branch is `main`.
 
-Optional single-node sharing uses a separate listener and domain, with revocable links. See [configuration and deployment](docs/临时分享节点部署.md). Keep the main listener on loopback/private networking; a different sharing port does not hide a public main port.
+The installer and Docker Compose enable the single-node sharing listener by default on port `25775`, using a separate domain and revocable links. See [configuration and deployment](docs/临时分享节点部署.md). Keep the main listener on loopback/private networking; a different sharing port does not hide a public main port.
 
 Security changes, deployment credentials, trusted proxies, Agent configuration and restore compatibility are documented in [the security implementation record](docs/安全修复实施结果.md). Backend and security regression verification remains pending.
 
@@ -55,7 +55,7 @@ With `/opt/monitor` as the installation directory:
 | Path | Purpose |
 | --- | --- |
 | `/opt/monitor/` | Git checkout and deployment configuration |
-| `/opt/monitor/.env` | Port and other settings; the installer only changes `MONITOR_PORT` |
+| `/opt/monitor/.env` | Port and other settings; the installer changes `MONITOR_PORT` and `MONITOR_SHARE_PORT` |
 | `/opt/monitor/data/` | Persistent databases and site files |
 
 Rebuilding the image, replacing containers or running `docker compose down` does not intentionally delete this `data/` directory.
@@ -74,12 +74,15 @@ sudo bash /opt/monitor/install.sh --port 8080 --skip-build
 
 Use the chosen port through your tunnel or reverse proxy. Without `--port`, the installer uses the environment/existing `.env` value, falling back to `25774`.
 
+Sharing is enabled by default. Add `--share-port 8081` to the installation or redeployment command to choose its port. Otherwise, `MONITOR_SHARE_PORT` from the environment/existing `.env` is reused, falling back to `25775`. The two ports must differ and be in `1–65535`. The sharing port binds to server loopback; proxy a separate domain over HTTPS to it and save that origin (for example `https://share.example.com`) in the sharing settings under Settings → Site. Update the proxy target when changing ports. Links cannot be created until the public sharing URL is configured.
+
 | Option | Purpose |
 | --- | --- |
 | `--dir /opt/monitor` | Destination. Defaults to an existing local checkout, otherwise `/opt/monitor` for root or `~/monitor` for a regular user |
 | `--repo oKafuChino/Monitor` | GitHub repository in `OWNER/REPO` form |
 | `--ref main` | Branch or tag; defaults to `main` initially, then reuses the saved ref |
 | `--port 8080` | Port to save after successful deployment |
+| `--share-port 8081` | Sharing port to save after successful deployment; default `25775` |
 | `--install-docker` | Install missing Git/Docker/Compose on Debian/Ubuntu; conflicting packages are not automatically removed |
 | `--update` | Fetch and fast-forward source, then rebuild and deploy |
 | `--skip-build` | Use the existing image; unavailable for a new source download |

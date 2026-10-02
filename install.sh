@@ -14,6 +14,7 @@ SOURCE_PARENT=''
 BOOTSTRAP_LOCK=''
 BOOTSTRAP_LOCK_OWNED=0
 PORT=''
+SHARE_PORT=''
 TIMEOUT=180
 INSTALL_DOCKER=0
 SKIP_BUILD=0
@@ -29,6 +30,7 @@ Komari Linux 一键部署（在 Docker 中构建前后端）
 默认 GitHub: https://github.com/oKafuChino/Monitor，分支 main
 用法: bash install.sh [选项]
   --port PORT        服务端口，默认沿用已有配置或 25774
+  --share-port PORT  临时分享端口，默认沿用已有配置或 25775（默认开启）
   --install-docker   缺少 Docker 时，通过官方 APT 仓库安装（Debian/Ubuntu）
   --skip-build       使用已有 Compose 镜像，不重新构建
   --timeout SECONDS  启动就绪超时，默认 180 秒
@@ -51,6 +53,7 @@ number_in_range() {
 while (( $# )); do
   case "$1" in
     --port) need_value "$@"; PORT=$2; shift 2 ;;
+    --share-port) need_value "$@"; SHARE_PORT=$2; shift 2 ;;
     --timeout) need_value "$@"; TIMEOUT=$2; shift 2 ;;
     --dir) need_value "$@"; ROOT=$2; shift 2 ;;
     --repo) need_value "$@"; GITHUB_REPO=$2; REPO_EXPLICIT=1; shift 2 ;;
@@ -64,6 +67,7 @@ while (( $# )); do
   esac
 done
 [[ -z $PORT ]] || number_in_range "$PORT" 1 65535 || fail '端口必须是 1–65535 的整数'
+[[ -z $SHARE_PORT ]] || number_in_range "$SHARE_PORT" 1 65535 || fail '分享端口必须是 1–65535 的整数'
 number_in_range "$TIMEOUT" 1 86400 || fail '超时必须是 1–86400 秒'
 TIMEOUT=$((10#$TIMEOUT))
 [[ $(uname -s) == Linux ]] || fail '仅支持 Linux 部署'
@@ -247,6 +251,14 @@ fi
 number_in_range "$PORT" 1 65535 || fail 'MONITOR_PORT 必须是 1–65535 的整数'
 PORT=$((10#$PORT))
 export MONITOR_PORT="$PORT"
+if [[ -z $SHARE_PORT ]]; then
+  SHARE_PORT=$(compose config --environment | awk -F= '$1=="MONITOR_SHARE_PORT" {sub(/^[^=]*=/, ""); value=$0} END {print value}')
+  SHARE_PORT=${SHARE_PORT:-25775}
+fi
+number_in_range "$SHARE_PORT" 1 65535 || fail 'MONITOR_SHARE_PORT 必须是 1–65535 的整数'
+SHARE_PORT=$((10#$SHARE_PORT))
+(( PORT != SHARE_PORT )) || fail '主站端口和分享端口不能相同，请使用 --share-port 指定其他端口'
+export MONITOR_SHARE_PORT="$SHARE_PORT"
 compose config --quiet
 if command -v curl >/dev/null; then
   http_ready() { curl --noproxy '*' -fsSL --max-time 5 -o /dev/null "http://127.0.0.1:$PORT/"; }
@@ -255,29 +267,30 @@ elif command -v wget >/dev/null; then
 else
   fail '需要 curl 或 wget 检查网页就绪状态'
 fi
-if (( CHECK_ONLY )); then info "检查通过；源码: $ROOT；端口: $PORT"; exit 0; fi
+if (( CHECK_ONLY )); then info "检查通过；源码: $ROOT；主站端口: $PORT；分享端口: $SHARE_PORT"; exit 0; fi
 [[ -w "$ROOT" && ( ! -e $ENV_FILE || -w $ENV_FILE ) ]] || fail '没有写入源码目录或 .env 的权限'
 
-# Prepare only the changed setting. Keep other values, comments and file mode.
+# Prepare both ports. Keep other values, comments and file mode.
 ENV_TEMP=$(mktemp "$ROOT/.env.deploy.XXXXXX")
 if [[ -f $ENV_FILE ]]; then
   cp -p -- "$ENV_FILE" "$ENV_TEMP"
-  content=$(awk -v port="$PORT" '
+  content=$(awk -v port="$PORT" -v share_port="$SHARE_PORT" '
     /^[[:space:]]*(export[[:space:]]+)?MONITOR_PORT[[:space:]]*=/ {if (!written++) print "MONITOR_PORT=" port; next}
+    /^[[:space:]]*(export[[:space:]]+)?MONITOR_SHARE_PORT[[:space:]]*=/ {if (!share_written++) print "MONITOR_SHARE_PORT=" share_port; next}
     {print}
-    END {if (!written) print "MONITOR_PORT=" port}
+    END {if (!written) print "MONITOR_PORT=" port; if (!share_written) print "MONITOR_SHARE_PORT=" share_port}
   ' "$ENV_FILE")
   printf '%s\n' "$content" > "$ENV_TEMP"
 else
   chmod 600 "$ENV_TEMP"
-  printf 'MONITOR_PORT=%s\n' "$PORT" > "$ENV_TEMP"
+  printf 'MONITOR_PORT=%s\nMONITOR_SHARE_PORT=%s\n' "$PORT" "$SHARE_PORT" > "$ENV_TEMP"
 fi
 mkdir -p -- "$ROOT/data"
 if (( ! SKIP_BUILD )); then
   info '构建整合镜像；已有服务会继续运行到构建完成'
   compose build monitor
 fi
-info "启动服务，端口 $PORT"
+info "启动服务，主站端口 $PORT，分享端口 $SHARE_PORT"
 compose up -d --no-build monitor
 container_id=$(compose ps -q monitor)
 [[ -n $container_id && $container_id != *$'\n'* ]] || fail '未找到唯一的 monitor 容器'
@@ -294,7 +307,8 @@ if (( ! ready )); then
 fi
 mv -f -- "$ENV_TEMP" "$ENV_FILE"
 ENV_TEMP=''
-info "部署完成：http://127.0.0.1:$PORT（远程访问请替换为服务器 IP）"
+info "部署完成：主站 http://127.0.0.1:$PORT；分享监听 http://127.0.0.1:$SHARE_PORT"
+printf '分享页面已默认开启。请将独立分享域名通过 HTTPS 反代到分享端口，并在后台「设置 → 站点 → 临时分享节点」保存分享公开地址。\n默认端口仅供服务器本机访问；主站请通过隧道或受控反代访问。\n'
 printf '首次访问请按页面向导创建管理员账号。\n数据目录: %s/data\n端口已保存到 .env；获取并部署新版本: bash install.sh --update。\n查看日志: docker compose logs -f monitor（在源码根目录执行）\n' "$ROOT"
 
 }

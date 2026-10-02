@@ -5,8 +5,11 @@ services:
       target: runtime
     ports:
       - "${MONITOR_BIND:-127.0.0.1}:${MONITOR_PORT:-25774}:25774"
+      - "127.0.0.1:${MONITOR_SHARE_PORT:-25775}:25775"
     volumes:
       - ./data:/app/data
     environment:
+      KOMARI_SHARE_LISTEN: "0.0.0.0:25775"
+      KOMARI_SHARE_TRUSTED_PROXY: "${KOMARI_SHARE_TRUSTED_PROXY:-}"
       KOMARI_TRUSTED_PROXIES: "${KOMARI_TRUSTED_PROXIES:-}"
     restart: unless-stopped

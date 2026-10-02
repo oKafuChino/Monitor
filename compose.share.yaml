@@ -1,4 +1,4 @@
-# Opt-in: docker compose -f compose.yaml -f compose.share.yaml up -d --build
+# Legacy compatibility override. Sharing is enabled in compose.yaml by default.
 services:
   monitor:
     environment:

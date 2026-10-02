@@ -1,6 +1,6 @@
 # Komari
 
-新增可选的临时分享节点功能：独立端口与域名、单节点链接、固定有效期及撤销。启用与反代示例见 [临时分享节点部署](docs/临时分享节点部署.md)。主站需通过 loopback/内网或访问控制保护，换端口不保证主站不可扫描。
+安装脚本和 Docker Compose 默认开启临时分享节点监听，端口为 `25775`，支持独立域名、单节点链接、固定有效期及撤销。配置与反代示例见 [临时分享节点部署](docs/临时分享节点部署.md)。主站需通过 loopback/内网或访问控制保护，换端口不保证主站不可扫描。
 
 [English](./README.md) | [简体中文](./README_zh-cn.md)
 
@@ -60,7 +60,7 @@ curl -fsSL --retry 3 https://raw.githubusercontent.com/oKafuChino/Monitor/main/i
 | 路径 | 用途 |
 | --- | --- |
 | `/opt/monitor/` | Git 源码及部署配置 |
-| `/opt/monitor/.env` | 保存端口等配置，脚本只修改 `MONITOR_PORT` |
+| `/opt/monitor/.env` | 保存端口等配置，脚本修改 `MONITOR_PORT` 和 `MONITOR_SHARE_PORT` |
 | `/opt/monitor/data/` | 数据库、站点文件等持久化数据 |
 
 重建镜像、重建容器或 `docker compose down` 不会主动删除上述 `data/` 目录。
@@ -79,6 +79,8 @@ sudo bash /opt/monitor/install.sh --port 8080 --skip-build
 
 之后通过隧道或反代访问所选端口。未传 `--port` 时，使用环境变量/已有 `.env` 配置，否则使用 `25774`。
 
+临时分享默认开启，可在上述命令后添加 `--share-port 8081`。未指定时沿用环境变量/已有 `.env` 中的 `MONITOR_SHARE_PORT`，否则使用 `25775`。两个端口必须不同，范围均为 `1–65535`。分享端口绑定服务器 `127.0.0.1`；请用独立域名通过 HTTPS 反代到该端口，并在后台「设置 → 站点 → 临时分享节点 → 分享公开地址」保存域名，例如 `https://share.example.com`。修改端口后同步更新反代目标；未配置公开地址时无法创建分享链接。
+
 常用参数：
 
 | 参数 | 说明 |
@@ -87,6 +89,7 @@ sudo bash /opt/monitor/install.sh --port 8080 --skip-build
 | `--repo oKafuChino/Monitor` | 首次下载的 GitHub 仓库，格式为 `OWNER/REPO` |
 | `--ref main` | 分支或标签。首次默认为 `main`，后续沿用安装时记录的值 |
 | `--port 8080` | 设置访问端口，部署成功后保存 |
+| `--share-port 8081` | 设置临时分享端口，默认 `25775`，部署成功后保存 |
 | `--install-docker` | 在 Debian/Ubuntu 补齐缺少的 Git/Docker/Compose；不会自动卸载冲突软件包 |
 | `--update` | 获取远端源码并快进更新，然后重新构建、部署 |
 | `--skip-build` | 跳过构建，仅使用已有镜像；不适用于首次下载 |

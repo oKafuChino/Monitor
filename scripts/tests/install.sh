@@ -22,11 +22,13 @@ case "$1" in
   config)
     [[ ${MOCK_FAIL:-} != config ]] || exit 11
     if [[ ${2:-} == --environment ]]; then
-      if [[ -n ${MONITOR_PORT:-} ]]; then echo "MONITOR_PORT=$MONITOR_PORT"
+      for key in MONITOR_PORT MONITOR_SHARE_PORT; do
+      if [[ -n ${!key:-} ]]; then echo "$key=${!key}"
       elif [[ -f $root/.env ]]; then
-        value=$(awk -F= '/^MONITOR_PORT=/ {sub(/^[^=]*=/, ""); gsub(/["\047\r]/, ""); value=$0} END {print value}' "$root/.env")
-        echo "MONITOR_PORT=$value"
+        value=$(awk -F= -v key="$key" '$1==key {sub(/^[^=]*=/, ""); gsub(/["\047\r]/, ""); value=$0} END {print value}' "$root/.env")
+        echo "$key=$value"
       fi
+      done
     fi ;;
   build) [[ ${MOCK_FAIL:-} != build ]] || exit 12 ;;
   up) [[ "$*" == 'up -d --no-build monitor' ]] || exit 93; [[ ${MOCK_FAIL:-} != up ]] || exit 13 ;;
@@ -41,7 +43,7 @@ cat > "$TEST_ROOT/bin/curl" <<'MOCK'
 MOCK
 chmod +x "$TEST_ROOT/bin/docker" "$TEST_ROOT/bin/curl"
 export PATH="$TEST_ROOT/bin:$PATH"
-unset MONITOR_PORT
+unset MONITOR_PORT MONITOR_SHARE_PORT
 new_case() {
   case_root="$TEST_ROOT/$1 with spaces"
   mkdir -p "$case_root/komari-web" "$case_root/data" "$case_root/scripts"
@@ -59,18 +61,20 @@ assert_preserved() {
   [[ -z $(find "$case_root" -maxdepth 1 -name '.env.deploy.*' -print) ]]
 }
 new_case success
-run_install --port 28001
+run_install --port 28001 --share-port 28011
+grep -qx 'MONITOR_SHARE_PORT=28011' "$case_root/.env"
 [[ $(grep '^MONITOR_PORT=' "$case_root/.env") == MONITOR_PORT=28001 ]]
 grep -q '^# keep comment$' "$case_root/.env"
 grep -q '^OTHER_SETTING=keep=value$' "$case_root/.env"
 assert_preserved
 echo 'PASS successful deploy preserves other settings and data'
 run_install --skip-build
+grep -qx 'MONITOR_SHARE_PORT=28011' "$case_root/.env"
 [[ $(grep '^MONITOR_PORT=' "$case_root/.env") == MONITOR_PORT=28001 ]]
 echo 'PASS repeat deployment reuses saved port'
 new_case readonly
 cp "$case_root/.env" "$case_root/expected.env"
-run_install --check --install-docker --port 28002
+run_install --check --install-docker --port 28002 --share-port 28012
 cmp "$case_root/.env" "$case_root/expected.env"
 ! grep -Eq ' build | up ' "$MOCK_LOG"
 assert_preserved
@@ -78,15 +82,23 @@ echo 'PASS check mode is read-only'
 new_case invalid
 for port in 0 65536 nope -1; do
   if run_install --port "$port"; then echo "invalid port accepted: $port" >&2; exit 1; fi
+  if run_install --share-port "$port"; then echo "invalid share port accepted: $port" >&2; exit 1; fi
   [[ ! -s $MOCK_LOG ]]
 done
 assert_preserved
 echo 'PASS invalid ports fail before Docker or filesystem changes'
+new_case conflict
+cp "$case_root/.env" "$case_root/expected.env"
+if run_install --port 28000 --share-port 28000; then echo 'port conflict accepted' >&2; exit 1; fi
+cmp "$case_root/.env" "$case_root/expected.env"
+! grep -Eq ' build | up ' "$MOCK_LOG"
+assert_preserved
+echo 'PASS conflicting ports do not deploy or change saved settings'
 for reason in build up readiness; do
   new_case "failed-$reason"
   cp "$case_root/.env" "$case_root/expected.env"
   export MOCK_FAIL="$reason"
-  if run_install --port 28003 --timeout 1; then echo "failure ignored: $reason" >&2; exit 1; fi
+  if run_install --port 28003 --share-port 28013 --timeout 1; then echo "failure ignored: $reason" >&2; exit 1; fi
   cmp "$case_root/.env" "$case_root/expected.env"
   if [[ $reason == build ]]; then ! grep -q ' up ' "$MOCK_LOG"; fi
   assert_preserved
@@ -113,7 +125,7 @@ echo 'PASS symlink configuration is rejected without touching its target'
 new_case fresh
 rm "$case_root/.env"
 run_install
-[[ $(cat "$case_root/.env") == MONITOR_PORT=25774 ]]
+[[ $(cat "$case_root/.env") == $'MONITOR_PORT=25774\nMONITOR_SHARE_PORT=25775' ]]
 [[ $(stat -c '%a' "$case_root/.env") == 600 ]]
 assert_preserved
 echo 'PASS fresh install persists the default port with private file permissions'
@@ -169,7 +181,7 @@ printf 'v2\n' > "$MOCK_REMOTE/version.txt"
 "$REAL_GIT" -C "$MOCK_REMOTE" -c commit.gpgsign=false commit -qam 'fixture v2'
 cat "$REPO/install.sh" | bash -s -- --dir "$case_root" --update > "$TEST_ROOT/update.log" 2>&1 || { cat "$TEST_ROOT/update.log"; exit 1; }
 [[ $(cat "$case_root/version.txt") == v2 ]]
-[[ $(cat "$case_root/.env") == MONITOR_PORT=28010 ]]
+[[ $(cat "$case_root/.env") == $'MONITOR_PORT=28010\nMONITOR_SHARE_PORT=25775' ]]
 assert_preserved
 echo 'PASS shallow Git checkout fast-forwards while preserving data and port'
 printf 'local edit\n' > "$case_root/version.txt"
@@ -233,6 +245,6 @@ printf 'MONITOR_PORT=1\n' > "$MOCK_REMOTE/.env"
 "$REAL_GIT" -C "$MOCK_REMOTE" -c commit.gpgsign=false commit -qm 'fixture accidentally tracks runtime config'
 if run_install --update; then echo 'remote runtime config overwrote local settings' >&2; exit 1; fi
 grep -q '远端源码包含运行数据路径 .env' "$TEST_ROOT/last-install.log"
-[[ $(cat "$case_root/.env") == MONITOR_PORT=28010 ]]
+[[ $(cat "$case_root/.env") == $'MONITOR_PORT=28010\nMONITOR_SHARE_PORT=25775' ]]
 assert_preserved
 echo 'PASS upstream runtime files cannot overwrite local persistence'
