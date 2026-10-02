@@ -15,13 +15,24 @@ export default function ShareLinksPanel() {
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [publicBase, setPublicBase] = useState("");
+  const [savedPublicBase, setSavedPublicBase] = useState("");
   useEffect(() => {
     let mounted = true;
-    void Promise.all([client.call<object, { uuid: string; name: string; hidden: boolean }[]>("admin:listClients", {}), client.call<object, Link[]>("admin:listShareLinks", {})]).then(([n, l]) => {
-      if (mounted) { setNodes(n.filter(item => !item.hidden)); setLinks(l); }
+    void Promise.all([client.call<object, { uuid: string; name: string; hidden: boolean }[]>("admin:listClients", {}), client.call<object, Link[]>("admin:listShareLinks", {}), client.call<object, { share_public_base_url?: string }>("admin:getSettings", {})]).then(([n, l, settings]) => {
+      if (mounted) { setNodes(n.filter(item => !item.hidden)); setLinks(l); setPublicBase(settings.share_public_base_url ?? ""); setSavedPublicBase(settings.share_public_base_url ?? ""); }
     }).catch(() => { if (mounted) setError(t("share.action_error")); });
     return () => { mounted = false; };
   }, [client, t]);
+  const savePublicBase = async () => {
+    setBusy(true); setError("");
+    try {
+      const base = publicBase.trim();
+      await client.call("admin:editSettings", { share_public_base_url: base });
+      setPublicBase(base); setSavedPublicBase(base); setUrl("");
+      toast.success(t("share.saved"));
+    } catch (e) { setError(e instanceof Error ? e.message : t("share.action_error")); } finally { setBusy(false); }
+  };
   const create = async () => {
     setBusy(true); setUrl(""); setError("");
     try {
@@ -37,10 +48,16 @@ export default function ShareLinksPanel() {
   };
   return <div className="flex flex-col gap-4 w-full">
     <p className="text-sm text-muted-foreground">{t("share.setup")}</p>
+    <label htmlFor="share-public-base" className="text-sm font-medium">{t("share.public_base")}</label>
+    <Flex gap="2" wrap="wrap">
+      <TextField.Root id="share-public-base" value={publicBase} onChange={e => setPublicBase(e.target.value)} placeholder="https://share.example.com" className="flex-1" disabled={busy} />
+      <Button disabled={busy || publicBase === savedPublicBase} onClick={() => void savePublicBase()}>{t("share.save")}</Button>
+    </Flex>
+    <p className="text-sm text-muted-foreground">{t("share.public_base_help")}</p>
     <Flex gap="3" wrap="wrap">
       <Select.Root value={node} onValueChange={setNode}><Select.Trigger placeholder={t("share.select_node")} /><Select.Content>{nodes.map(n => <Select.Item key={n.uuid} value={n.uuid}>{n.name}</Select.Item>)}</Select.Content></Select.Root>
       <Select.Root value={duration} onValueChange={setDuration}><Select.Trigger aria-label={t("share.duration")} /><Select.Content>{["1d", "1w", "1mo", "forever"].map(d => <Select.Item key={d} value={d}>{t(`share.${d}`)}</Select.Item>)}</Select.Content></Select.Root>
-      <Button disabled={!node || busy} onClick={() => void create()}>{t("share.create")}</Button>
+      <Button disabled={!node || !savedPublicBase || publicBase.trim() !== savedPublicBase || busy} onClick={() => void create()}>{t("share.create")}</Button>
     </Flex>
     {error && <p role="alert" className="text-red-500 text-sm">{error}</p>}
     {url && <div className="flex flex-col gap-2"><p className="text-sm">{t("share.once")}</p><Flex gap="2"><TextField.Root readOnly value={url} className="flex-1" aria-label={t("share.link")} /><Button onClick={() => { void navigator.clipboard.writeText(url).then(() => toast.success(t("share.copied"))).catch(() => toast.error(t("share.action_error"))); }}>{t("share.copy")}</Button></Flex></div>}

@@ -18,6 +18,7 @@ import (
 	"github.com/komari-monitor/komari/internal/config"
 	"github.com/komari-monitor/komari/internal/lifecycle"
 	"github.com/komari-monitor/komari/internal/metricstore"
+	"github.com/komari-monitor/komari/internal/sharing"
 	"github.com/komari-monitor/komari/pkg/rpc"
 )
 
@@ -145,6 +146,9 @@ func adminEditSettings(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc.
 	if value, ok := cfg[config.ThemeKey]; ok && value != "default" {
 		return nil, rpc.MakeError(rpc.InvalidParams, "only the built-in interface is supported", nil)
 	}
+	if err := validateSharePublicBaseSetting(cfg); err != nil {
+		return nil, rpc.MakeError(rpc.InvalidParams, err.Error(), nil)
+	}
 	removeRetiredLowResourceMode(cfg)
 	if err := validateMetricRollupSettingChanges(cfg); err != nil {
 		return nil, rpc.MakeError(rpc.InvalidParams, err.Error(), nil)
@@ -218,6 +222,18 @@ func auditSettingsUpdate(ctx context.Context, cfg map[string]interface{}) {
 	}
 	actor, ip := auditActor(ctx)
 	auditlog.Log(ip, actor, message, "info")
+}
+
+func validateSharePublicBaseSetting(cfg map[string]interface{}) error {
+ value, exists := cfg[config.SharePublicBaseURLKey]
+ if !exists { return nil }
+ base, ok := value.(string)
+ if !ok { return fmt.Errorf("share public URL must be a string") }
+ base = strings.TrimSpace(base)
+ // Empty deliberately disables share access until configured again.
+ if base != "" { if _, err := sharing.ValidatePublicBase(base); err != nil { return err } }
+ cfg[config.SharePublicBaseURLKey] = base
+ return nil
 }
 
 // removeRetiredLowResourceMode keeps older admin clients from recreating its

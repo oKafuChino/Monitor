@@ -1205,7 +1205,7 @@
     "copy": "复制",
     "link": "分享链接",
     "once": "完整链接只显示一次，请在离开页面前复制。",
-    "setup": "配置 KOMARI_SHARE_LISTEN 和 KOMARI_SHARE_PUBLIC_BASE_URL 后重启。分享站与主站需使用不同域名。",
+    "setup": "部署时启用 KOMARI_SHARE_LISTEN，再在下方配置公开地址。分享站与主站需使用不同域名。",
     "created": "链接已生成",
     "copied": "链接已复制",
     "revoke": "撤销",
@@ -1268,6 +1268,10 @@
       "connections_udp": "UDP",
       "process_count": "连接 / 进程"
     },
-    "io_unavailable": "I/O 暂不可用"
+    "io_unavailable": "I/O 暂不可用",
+    "public_base": "分享公开地址",
+    "public_base_help": "填写 HTTPS origin，例如 https://share.example.com。保存后链接生成和 Host 校验立即生效。更换域名需调整 DNS/反代，已有链接也需改用新域名；留空停止分享访问。仅本机开发地址允许 HTTP。",
+    "save": "保存",
+    "saved": "分享公开地址已保存"
   }
 }

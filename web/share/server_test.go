@@ -4,7 +4,6 @@ import (
  "encoding/json"
  "net/http"
  "net/http/httptest"
- "net/url"
  "path/filepath"
  "strings"
  "testing"
@@ -23,7 +22,7 @@ func TestShareClosedRoutesAndBinding(t *testing.T){
  if err:=db.AutoMigrate(&models.Client{},&models.ShareLink{},&models.ShareSession{},&models.PingTask{});err!=nil{t.Fatal(err)}
  if err:=db.Create(&models.Client{UUID:"a",Name:"Shared",Token:"secret-agent",IPv4:"192.0.2.1",Remark:"private",PublicRemark:"main.example.com",Price:42}).Error;err!=nil{t.Fatal(err)}
  sharing.Configure("https://share.example.com");service:=sharing.New(db)
- link,full,err:=service.Create("a","1d","admin");if err!=nil{t.Fatal(err)};origin,_:=url.Parse(sharing.PublicBase());router,err:=New(service,origin,nil);if err!=nil{t.Fatal(err)}
+ link,full,err:=service.Create("a","1d","admin");if err!=nil{t.Fatal(err)};router,err:=New(service,nil);if err!=nil{t.Fatal(err)}
  request:=func(method,path,body string,cookie *http.Cookie)*httptest.ResponseRecorder{r:=httptest.NewRequest(method,"https://share.example.com"+path,strings.NewReader(body));if cookie!=nil{r.AddCookie(cookie)};w:=httptest.NewRecorder();router.ServeHTTP(w,r);return w}
  for _,p:=range []string{"/","/api/nodes","/api/rpc2","/api/login","/admin","/sw.js","/manifest.webmanifest","/assets/main.js","/api/clients","/node/other","/node?uuid=b"}{w:=request("GET",p,"",nil);if w.Code!=404&&w.Code!=400{t.Fatalf("route leaked %s: %d",p,w.Code)}}
  legacy:=&http.Cookie{Name:"temp_key",Value:"legacy"};if w:=request("GET","/node","",legacy);w.Code!=404{t.Fatal("legacy token accepted")}
@@ -40,6 +39,13 @@ func TestShareClosedRoutesAndBinding(t *testing.T){
  if w:=request("POST","/api/share/rpc",`[{"jsonrpc":"2.0","id":1,"method":"share:getNode"}]`,cookie);w.Code!=400{t.Fatal("batch allowed")}
  r:=httptest.NewRequest("POST","https://share.example.com/api/share/rpc",strings.NewReader("{}"));r.AddCookie(cookie);r.Header.Set("Origin","https://evil.example.com");w=httptest.NewRecorder();router.ServeHTTP(w,r);if w.Code!=403{t.Fatal("cross origin allowed")}
  if err:=service.Revoke(link.ID);err!=nil{t.Fatal(err)};if w:=rpcCall("share:getNode","{}");w.Code!=404{t.Fatal("revocation delayed")}
+ // The same router changes its Host allowlist immediately after a save.
+ sharing.Configure("https://new-share.example.com")
+ if w:=request("GET","/healthz","",nil);w.Code!=404{t.Fatal("old host still allowed")}
+ r=httptest.NewRequest("GET","https://new-share.example.com/healthz",nil);w=httptest.NewRecorder();router.ServeHTTP(w,r)
+ if w.Code!=204{t.Fatal("new host not effective without restart")}
+ sharing.Configure("")
+ w=httptest.NewRecorder();router.ServeHTTP(w,r);if w.Code!=404{t.Fatal("cleared origin still allows access")}
 }
 func TestQueryBoundaryAndSafeReport(t *testing.T){
  now:=time.Now().UTC();p:=queryParams{MetricKeys:[]string{"disk.io.read.rate"},Hours:720,MaxPoints:500};if !validateQuery(&p,now){t.Fatal("valid max window refused")}

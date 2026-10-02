@@ -1205,7 +1205,7 @@
     "copy": "コピー",
     "link": "共有リンク",
     "once": "完全なリンクは一度だけ表示されます。移動前にコピーしてください。",
-    "setup": "KOMARI_SHARE_LISTEN と KOMARI_SHARE_PUBLIC_BASE_URL を設定して再起動してください。共有サイトとメインサイトには別のドメインが必要です。",
+    "setup": "デプロイ時に KOMARI_SHARE_LISTEN を有効にし、下で公開 URL を設定してください。共有サイトとメインサイトには別のドメインが必要です。",
     "created": "リンクを作成しました",
     "copied": "コピーしました",
     "revoke": "取り消す",
@@ -1268,6 +1268,10 @@
       "connections_udp": "UDP",
       "process_count": "接続 / プロセス"
     },
-    "io_unavailable": "I/O を取得できません"
+    "io_unavailable": "I/O を取得できません",
+    "public_base": "共有公開 URL",
+    "public_base_help": "https://share.example.com のような HTTPS origin を入力します。保存後、リンク作成と Host 検証に即時反映されます。ドメイン変更時は DNS/プロキシと既存リンクのドメインも変更してください。空欄で共有アクセスを停止します。HTTP はローカル開発のみ許可されます。",
+    "save": "保存",
+    "saved": "共有公開 URL を保存しました"
   }
 }

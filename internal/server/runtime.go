@@ -82,15 +82,18 @@ func (a *App) registerReloadHandlers(cors *security.CorsController) {
 
 // BuildRouter constructs the normal application router and starts reloads.
 func (a *App) BuildRouter() error {
-	origin, err := sharing.ValidateConfig(a.listenAddr, a.shareListen, a.sharePublicBase)
+	_, err := sharing.ValidateConfig(a.listenAddr, a.shareListen, "")
 	if err != nil { return err }
 	sharing.Configure("")
-	if origin != nil {
+	if a.shareListen != "" {
 		var proxies []string
 		if a.shareTrustedProxy != "" { for _, p := range strings.Split(a.shareTrustedProxy, ",") { proxies = append(proxies, strings.TrimSpace(p)) } }
-		a.shareEngine, err = share.New(sharing.New(dbcore.GetDBInstance()), origin, proxies)
+		a.shareEngine, err = share.New(sharing.New(dbcore.GetDBInstance()), proxies)
 		if err != nil { return err }
-		sharing.Configure(origin.String())
+		sharing.ConfigureSource(func() string {
+			base, err := config.GetAs[string](config.SharePublicBaseURLKey)
+			if err != nil { return "" }; return base
+		})
 	}
 	r := gin.New()
 	r.Use(logger.GinLogger(), logger.GinRecovery())

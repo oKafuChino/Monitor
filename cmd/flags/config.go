@@ -13,7 +13,6 @@ var (
 
 	Listen string
 	ShareListen string
-	SharePublicBase string
 	ShareTrustedProxy string
 )
 

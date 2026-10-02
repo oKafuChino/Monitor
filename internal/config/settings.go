@@ -15,6 +15,7 @@ type Settings struct {
 	ApiKey                 string `json:"api_key" default:""`                                  // API 密钥，默认空字符串
 	AutoDiscoveryKey       string `json:"auto_discovery_key" default:""`                       // 自动发现密钥
 	ScriptDomain           string `json:"script_domain" default:""`                            // 自定义脚本域名
+	SharePublicBaseURL     string `json:"share_public_base_url" default:""`                    // 分享站公开 origin，后台配置
 	SendIpAddrToGuest      bool   `json:"send_ip_addr_to_guest" default:"false"`               // 是否向访客页面发送 IP 地址，默认 false
 	SSRFProtectionEnabled  bool   `json:"ssrf_protection_enabled" default:"false"`             // 是否启用 SSRF 防护，默认关闭
 	EulaAccepted           bool   `json:"eula_accepted" default:"false"`
@@ -45,6 +46,7 @@ const (
 	ApiKeyKey                 = "api_key"
 	AutoDiscoveryKeyKey       = "auto_discovery_key"
 	ScriptDomainKey           = "script_domain"
+	SharePublicBaseURLKey     = "share_public_base_url"
 	SendIpAddrToGuestKey      = "send_ip_addr_to_guest"
 	SSRFProtectionEnabledKey  = "ssrf_protection_enabled"
 	EulaAcceptedKey           = "eula_accepted"

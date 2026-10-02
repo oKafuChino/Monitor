@@ -1205,7 +1205,7 @@
     "copy": "Salin",
     "link": "Tautan berbagi",
     "once": "Tautan lengkap hanya ditampilkan sekali. Salin sebelum meninggalkan halaman.",
-    "setup": "Atur KOMARI_SHARE_LISTEN dan KOMARI_SHARE_PUBLIC_BASE_URL lalu mulai ulang. Situs berbagi dan situs utama harus memakai domain berbeda.",
+    "setup": "Aktifkan KOMARI_SHARE_LISTEN saat deployment, lalu atur URL publik di bawah. Situs berbagi dan situs utama harus memakai domain berbeda.",
     "created": "Tautan dibuat",
     "copied": "Tautan disalin",
     "revoke": "Cabut",
@@ -1268,6 +1268,10 @@
       "connections_udp": "UDP",
       "process_count": "Koneksi / proses"
     },
-    "io_unavailable": "I/O tidak tersedia"
+    "io_unavailable": "I/O tidak tersedia",
+    "public_base": "URL publik berbagi",
+    "public_base_help": "Masukkan origin HTTPS, misalnya https://share.example.com. Penyimpanan langsung berlaku untuk tautan baru dan validasi Host. Perubahan domain memerlukan pembaruan DNS/proksi serta domain tautan lama. Kosongkan untuk menonaktifkan akses berbagi. HTTP hanya diizinkan pada loopback untuk pengembangan.",
+    "save": "Simpan",
+    "saved": "URL publik berbagi disimpan"
   }
 }

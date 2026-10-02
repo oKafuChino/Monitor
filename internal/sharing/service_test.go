@@ -64,3 +64,17 @@ func TestTokenCollisionRetryAndNodeLimit(t *testing.T){
  if _,_,err:=s.Create("a","forever","admin");err==nil{t.Fatal("node active cap ignored")}
  if _,_,err:=s.Create("b","forever","admin");err!=nil{t.Fatal("node cap affected another node",err)}
 }
+
+func TestPublicBaseChangesWithoutRestart(t *testing.T) {
+ s := testService(t)
+ base := "https://first.example.com"
+ ConfigureSource(func() string { return base })
+ _, first, err := s.Create("a", "1d", "admin")
+ if err != nil || !strings.HasPrefix(first,base+"/s/") { t.Fatalf("first URL: %s %v",first,err) }
+ base = "https://second.example.com"
+ _, second, err := s.Create("a", "1d", "admin")
+ if err != nil || !strings.HasPrefix(second,base+"/s/") { t.Fatalf("updated URL: %s %v",second,err) }
+ base = ""
+ if _,_,err := s.Create("a","1d","admin"); err == nil { t.Fatal("creation allowed without origin") }
+ if _,err := ValidateConfig("127.0.0.1:25774","127.0.0.1:25775",""); err != nil { t.Fatal("listener cannot start before admin configuration",err) }
+}

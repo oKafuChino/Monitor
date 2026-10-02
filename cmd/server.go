@@ -26,7 +26,6 @@ func init() {
 	listenAddr := GetEnv("KOMARI_LISTEN", "0.0.0.0:25774")
 	ServerCmd.PersistentFlags().StringVarP(&flags.Listen, "listen", "l", listenAddr, "监听地址 [env: KOMARI_LISTEN]")
 	ServerCmd.PersistentFlags().StringVar(&flags.ShareListen, "share-listen", GetEnv("KOMARI_SHARE_LISTEN", ""), "分享监听地址（默认关闭） [env: KOMARI_SHARE_LISTEN]")
-	ServerCmd.PersistentFlags().StringVar(&flags.SharePublicBase, "share-public-base-url", GetEnv("KOMARI_SHARE_PUBLIC_BASE_URL", ""), "分享公开 origin [env: KOMARI_SHARE_PUBLIC_BASE_URL]")
 	ServerCmd.PersistentFlags().StringVar(&flags.ShareTrustedProxy, "share-trusted-proxy", GetEnv("KOMARI_SHARE_TRUSTED_PROXY", ""), "分享可信代理 IP/CIDR，逗号分隔 [env: KOMARI_SHARE_TRUSTED_PROXY]")
 	RootCmd.AddCommand(ServerCmd)
 }
@@ -40,7 +39,7 @@ func RunServer() {
 		logger.Fatalf("server", "prepare default frontend failed: %v", err)
 	}
 
-	app := appserver.New(appserver.Options{ListenAddr: flags.Listen, ShareListen: flags.ShareListen, SharePublicBase: flags.SharePublicBase, ShareTrustedProxy: flags.ShareTrustedProxy})
+	app := appserver.New(appserver.Options{ListenAddr: flags.Listen, ShareListen: flags.ShareListen, ShareTrustedProxy: flags.ShareTrustedProxy})
 	if err := app.Bootstrap(); err != nil {
 		_ = app.Shutdown()
 		logger.Fatalf("server", "server startup failed at %q: %v", "bootstrap", err)

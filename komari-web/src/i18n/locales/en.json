@@ -1205,7 +1205,7 @@
     "copy": "Copy",
     "link": "Share link",
     "once": "This full link is shown once. Copy it before leaving this page.",
-    "setup": "Configure KOMARI_SHARE_LISTEN and KOMARI_SHARE_PUBLIC_BASE_URL, then restart. Share and main sites must use different domains.",
+    "setup": "Enable KOMARI_SHARE_LISTEN at deployment, then set the public URL below. Share and main sites must use different domains.",
     "created": "Link created",
     "copied": "Link copied",
     "revoke": "Revoke",
@@ -1268,6 +1268,10 @@
       "connections_udp": "UDP",
       "process_count": "Processes"
     },
-    "io_unavailable": "I/O unavailable"
+    "io_unavailable": "I/O unavailable",
+    "public_base": "Share public URL",
+    "public_base_help": "An HTTPS origin, for example https://share.example.com. Save takes effect immediately for new links and Host checks. Changing domains requires updating DNS/proxy and using the new domain for existing links. Clearing disables share access. HTTP is allowed only on loopback for development.",
+    "save": "Save",
+    "saved": "Share public URL saved"
   }
 }

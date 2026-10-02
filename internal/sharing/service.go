@@ -24,10 +24,17 @@ const MaxActiveGlobal = 1000
 const MaxSessionsPerLink = 100
 var configMu sync.RWMutex
 var publicBase string
+var publicBaseSource func() string
 
-// Configure is called at startup only. URLs never depend on request headers.
-func Configure(base string) { configMu.Lock(); publicBase = base; configMu.Unlock() }
-func PublicBase() string { configMu.RLock(); defer configMu.RUnlock(); return publicBase }
+// URLs come from administrator configuration, never request headers.
+func Configure(base string) { configMu.Lock(); publicBase = base; publicBaseSource = nil; configMu.Unlock() }
+// ConfigureSource reads persisted settings for each request. A save takes
+// effect immediately without replacing either HTTP listener.
+func ConfigureSource(source func() string) { configMu.Lock(); publicBaseSource = source; publicBase = ""; configMu.Unlock() }
+func PublicBase() string {
+ configMu.RLock(); source, base := publicBaseSource, publicBase; configMu.RUnlock()
+ if source != nil { return source() }; return base
+}
 
 func ValidateConfig(main, listen, base string) (*url.URL, error) {
  if listen == "" { if base != "" { return nil, errors.New("share URL requires share listener") }; return nil, nil }
@@ -38,6 +45,11 @@ func ValidateConfig(main, listen, base string) (*url.URL, error) {
  _, mainPort, err := net.SplitHostPort(main)
  mainNumber, portErr := strconv.Atoi(mainPort)
  if err != nil || portErr != nil || n == mainNumber { return nil, errors.New("main and share ports must differ") }
+ if base == "" { return nil, nil }
+ return ValidatePublicBase(base)
+}
+
+func ValidatePublicBase(base string) (*url.URL,error) {
  u, err := url.Parse(base)
  if err != nil || u.Host == "" || u.User != nil || u.Path != "" || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || u.Opaque != "" {
   return nil, errors.New("share public URL must be an origin without path, credentials, query or fragment")
@@ -72,7 +84,9 @@ func New(db *gorm.DB) *Service { return &Service{DB:db} }
 func (s *Service) token() (string,error) { if s.generateToken != nil { return s.generateToken() }; return randomToken() }
 
 func (s *Service) Create(node, duration, actor string) (models.ShareLink, string, error) {
- if PublicBase() == "" { return models.ShareLink{}, "", errors.New("share listener is disabled") }
+ base := PublicBase()
+ if base == "" { return models.ShareLink{}, "", errors.New("enable share listener and configure share public URL in site settings") }
+ if _, err := ValidatePublicBase(base); err != nil { return models.ShareLink{}, "", err }
  now := time.Now().UTC(); expiry, err := Expiry(now, duration)
  if err != nil { return models.ShareLink{}, "", err }
  var link models.ShareLink; var token string
@@ -92,7 +106,7 @@ func (s *Service) Create(node, duration, actor string) (models.ShareLink, string
   }; return errors.New("unable to allocate share credential")
  })
  if err != nil { return models.ShareLink{}, "", err }
- return link, PublicBase()+"/s/"+token, nil
+ return link, base+"/s/"+token, nil
 }
 
 func valid(link models.ShareLink, now time.Time) bool { return link.RevokedAt == nil && (link.ExpiresAt == nil || now.Before(*link.ExpiresAt)) }

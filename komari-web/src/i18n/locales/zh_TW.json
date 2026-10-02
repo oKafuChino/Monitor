@@ -1205,7 +1205,7 @@
     "copy": "複製",
     "link": "分享連結",
     "once": "完整連結只顯示一次，請在離開頁面前複製。",
-    "setup": "設定 KOMARI_SHARE_LISTEN 和 KOMARI_SHARE_PUBLIC_BASE_URL 後重新啟動。分享站與主站需使用不同網域。",
+    "setup": "部署時啟用 KOMARI_SHARE_LISTEN，再於下方設定公開網址。分享站與主站需使用不同網域。",
     "created": "連結已產生",
     "copied": "連結已複製",
     "revoke": "撤銷",
@@ -1268,6 +1268,10 @@
       "connections_udp": "UDP",
       "process_count": "連線 / 程序"
     },
-    "io_unavailable": "I/O 暫時無法使用"
+    "io_unavailable": "I/O 暫時無法使用",
+    "public_base": "分享公開網址",
+    "public_base_help": "填寫 HTTPS origin，例如 https://share.example.com。儲存後連結產生與 Host 驗證立即生效。更換網域需調整 DNS/反向代理，既有連結也需改用新網域；留空停止分享存取。僅本機開發網址允許 HTTP。",
+    "save": "儲存",
+    "saved": "分享公開網址已儲存"
   }
 }
