@@ -1,4 +1,5 @@
 {
+  "liquid": { "reading": "Tampilan jelas", "reducedMotion": "Kurangi gerakan" },
   "diskIO": {
     "title": "Disk I/O",
     "read": "Baca",

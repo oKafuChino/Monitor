@@ -1,4 +1,5 @@
 {
+  "liquid": { "reading": "読みやすく表示", "reducedMotion": "動きを減らす" },
   "diskIO": {
     "title": "ディスク I/O",
     "read": "読み取り",

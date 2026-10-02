@@ -1,4 +1,5 @@
 {
+  "liquid": { "reading": "Clear reading", "reducedMotion": "Reduce motion" },
   "diskIO": {
     "title": "Disk I/O",
     "read": "Read",

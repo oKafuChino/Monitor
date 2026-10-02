@@ -9,6 +9,7 @@ import {
 } from "@radix-ui/themes";
 import type { LiveData, Record } from "../types/LiveData";
 import UsageBar from "./UsageBar";
+import { diskIOStatusKey, formatDiskIORate } from "@/utils/diskIO";
 import Flag from "./Flag";
 import { useTranslation } from "react-i18next";
 import Tips from "./ui/tips";
@@ -72,11 +73,8 @@ const Node = React.memo(
   //const totalTraffic = formatBytes(liveData.network.totalUp + liveData.network.totalDown);
   return (
     <Card
-      style={{
-        width: "100%",
-        margin: "0 auto",
-        transition: "all 0.2s ease-in-out",
-      }}
+      style={{ width: "100%", margin: "0 auto" }}
+      data-online={online}
       id={basic.uuid}
       className="km-node-card node-card hover:cursor-pointer hover:shadow-lg hover:bg-accent-2"
     >
@@ -145,6 +143,12 @@ const Node = React.memo(
         </Flex>
 
         <Separator size="4" className="-mt-1" />
+        <div className="km-node-io">
+          <span>{t("diskIO.title")}</span>
+          <span>{online && live?.disk_io?.status === "ok"
+            ? `${t("diskIO.read")} ${formatDiskIORate(live.disk_io.read_bytes_per_sec ?? 0)} · ${t("diskIO.write")} ${formatDiskIORate(live.disk_io.write_bytes_per_sec ?? 0)}`
+            : t(diskIOStatusKey(live?.disk_io, online))}</span>
+        </div>
 
         <Flex direction="column" gap="2">
           <Flex justify="between" hidden={isMobile}>
@@ -164,10 +168,10 @@ const Node = React.memo(
           </Flex>
           <Flex className="md:flex-col flex-row md:gap-1 gap-4">
             {/* CPU Usage */}
-            <UsageBar label={t("admin.nodeDetail.cpu")} value={liveData.cpu.usage} />
+            <UsageBar unavailable={!online || !live} label={t("admin.nodeDetail.cpu")} value={liveData.cpu.usage} />
 
             {/* Memory Usage */}
-            <UsageBar label={t("nodeCard.ram")} value={memoryUsagePercent} />
+            <UsageBar unavailable={!online || !live} label={t("nodeCard.ram")} value={memoryUsagePercent} />
             <Text
               className="md:block hidden"
               size="1"
@@ -179,7 +183,7 @@ const Node = React.memo(
             </Text>
 
             {/* Disk Usage */}
-            <UsageBar label={t("nodeCard.disk")} value={diskUsagePercent} />
+            <UsageBar unavailable={!online || !live} label={t("nodeCard.disk")} value={diskUsagePercent} />
             <Text
               size="1"
               className="md:block hidden"

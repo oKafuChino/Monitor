@@ -4,12 +4,13 @@ import React from "react";
 interface UsageBarProps {
   value: number; // Utilization percentage (0–100)
   label: string; // Label for the bar (e.g., "CPU", "Memory", "Disk")
+  unavailable?: boolean;
   compact?: boolean; // Whether to show in compact mode (for tables)
   max?: number; // Maximum value for the bar (e.g., total RAM, total disk space)
 }
 
 const UsageBar = React.memo(
-  ({ value, label, compact = false, max = 100 }: UsageBarProps) => {
+  ({ value, label, compact = false, max = 100, unavailable = false }: UsageBarProps) => {
     // Ensure value is between 0 and 100
     const clampedValue = Math.min(Math.max(value, 0), max);
 
@@ -24,7 +25,7 @@ const UsageBar = React.memo(
 
     if (compact) {
       return (
-        <Box className="km-usage-bar" style={{ width: "100%" }}>
+        <Box className="km-usage-bar" data-level={unavailable ? "unknown" : barColor} style={{ width: "100%" }}>
           <Box
             className="km-usage-bar-track"
             style={{
@@ -42,27 +43,27 @@ const UsageBar = React.memo(
                 backgroundColor: `var(--${barColor}-9)`,
                 borderRadius: "3px",
                 width: "100%",
-                transform: `scaleX(${clampedValue / 100})`,
+                transform: `scaleX(${unavailable ? 0 : clampedValue / 100})`,
                 transformOrigin: "left center",
                 transition: "transform 0.5s ease-out",
               }}
             />
           </Box>
           <label color="gray" className="text-sm">
-            {clampedValue.toFixed(1)}%
+            {unavailable ? "—" : `${clampedValue.toFixed(1)}%`}
           </label>
         </Box>
       );
     }
 
     return (
-      <Flex direction="column" gap="1" className="km-usage-bar" style={{ width: "100%" }}>
+      <Flex direction="column" gap="1" className="km-usage-bar" data-level={unavailable ? "unknown" : barColor} style={{ width: "100%" }}>
         <Flex justify="between" align="center">
           <Text size="2" color="gray">
             {label}
           </Text>
           <Text size="2" weight="medium">
-            {clampedValue.toFixed(1)}%
+            {unavailable ? "—" : `${clampedValue.toFixed(1)}%`}
           </Text>
         </Flex>
         <Box
@@ -81,7 +82,7 @@ const UsageBar = React.memo(
               backgroundColor: `var(--${barColor}-9)`,
               borderRadius: "4px",
               width: "100%",
-              transform: `scaleX(${clampedValue / 100})`,
+              transform: `scaleX(${unavailable ? 0 : clampedValue / 100})`,
               transformOrigin: "left center",
               transition: "transform 0.5s ease-out",
             }}

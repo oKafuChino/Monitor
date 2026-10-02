@@ -216,6 +216,16 @@ export default function InstancePage() {
           </Card>
         </div>
       )}
+      {showServerListInDetails && isMobile && (
+        <label className="liquid-node-picker">
+          <span>{t("common.serverList")}</span>
+          <select value={uuid ?? ""} onChange={event => navigate(`/instance/${event.target.value}`)}>
+            {groupedNodes.map(group => <optgroup key={group.group ?? "ungrouped"} label={group.group || t("common.ungrouped")}>
+              {group.nodes.map(item => <option key={item.uuid} value={item.uuid}>{item.name}</option>)}
+            </optgroup>)}
+          </select>
+        </label>
+      )}
       <div className="km-instance-main flex flex-col h-full items-center gap-2">
         <div className="km-instance-header flex flex-col gap-1 md:p-4 p-3 border-0 rounded-md">
           <h1 className="km-instance-title flex items-center flex-wrap">

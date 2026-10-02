@@ -39,6 +39,7 @@ const NavBar = () => {
 
       <div className="km-navbar-controls flex items-center gap-2 flex-shrink-0">
         <IconButton
+          aria-label="GitHub"
           variant="soft"
           onClick={() => {
             window.open("https://github.com/komari-monitor", "_blank");

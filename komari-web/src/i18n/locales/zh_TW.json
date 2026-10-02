@@ -1,4 +1,5 @@
 {
+  "liquid": { "reading": "清晰閱讀", "reducedMotion": "減少動態" },
   "diskIO": {
     "title": "磁碟 I/O",
     "read": "讀取",
