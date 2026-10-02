@@ -1,5 +1,5 @@
 {
-  "liquid": { "reading": "読みやすく表示", "reducedMotion": "動きを減らす" },
+  "liquid": {"reading":"読みやすく表示","reducedMotion":"動きを減らす","welcome":"すべてのサーバーを、ひとつの場所で","explore":"ノードを見る","cores":"{{count}} コア","load":"負荷","loadNormalized":"1分 · コア数で正規化","up":"送信","down":"受信","upTotal":"送信合計","downTotal":"受信合計","remaining":"残り","expires":"期限"},
   "diskIO": {
     "title": "ディスク I/O",
     "read": "読み取り",

@@ -1,386 +1,84 @@
 import React from "react";
-import {
-  Card,
-  Flex,
-  Text,
-  Badge,
-  Separator,
-  IconButton,
-} from "@radix-ui/themes";
-import type { LiveData, Record } from "../types/LiveData";
-import UsageBar from "./UsageBar";
-import { diskIOStatusKey, formatDiskIORate } from "@/utils/diskIO";
-import Flag from "./Flag";
+import { Card, IconButton } from "@radix-ui/themes";
+import { Cpu, MemoryStick, HardDrive, Gauge, ArrowUp, ArrowDown, Globe, Clock, CalendarDays, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import type { LiveData, Record } from "../types/LiveData";
+import type { NodeBasicInfo } from "@/contexts/NodeListContext";
+import { usePublicInfo } from "@/contexts/PublicInfoContext";
+import { diskIOStatusKey, formatDiskIORate } from "@/utils/diskIO";
+import { formatBytes } from "@/utils/unitHelper";
+import { getOSImage, getOSName } from "@/utils";
+import Flag from "./Flag";
+import PriceTags from "./PriceTags";
+import MiniPingChartFloat from "./MiniPingChartFloat";
 import Tips from "./ui/tips";
 
-import { formatBytes } from "@/utils/unitHelper";
-
-/** 格式化秒*/
 export function formatUptime(seconds: number, t: TFunction): string {
-  if (!seconds || seconds < 0) return t("nodeCard.time_second", { val: 0 });
-  const d = Math.floor(seconds / 86400);
-  const h = Math.floor((seconds % 86400) / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  const parts = [];
-  if (d) parts.push(`${d} ${t("nodeCard.time_day")}`);
-  if (h) parts.push(`${h} ${t("nodeCard.time_hour")}`);
-  if (m) parts.push(`${m} ${t("nodeCard.time_minute")}`);
-  if (s || parts.length === 0) parts.push(`${s} ${t("nodeCard.time_second")}`);
-  return parts.join(" ");
-}
-
-interface NodeProps {
-  basic: NodeBasicInfo;
-  live: Record | undefined;
-  online: boolean;
-  isMobile: boolean;
-  showIpTagsInCard: boolean;
-}
-const DEFAULT_NODE_LIVE = {
-  cpu: { usage: 0 },
-  ram: { used: 0 },
-  swap: { used: 0 },
-  load: { load1: 0, load5: 0, load15: 0 },
-  disk: { used: 0 },
-  network: { up: 0, down: 0, totalUp: 0, totalDown: 0 },
-  connections: { tcp: 0, udp: 0 },
-  uptime: 0,
-  process: 0,
-  message: "",
-  updated_at: "",
-} as Record;
-
-const Node = React.memo(
-  ({ basic, live, online, isMobile, showIpTagsInCard }: NodeProps) => {
-  const [t] = useTranslation();
-  const liveData = live || DEFAULT_NODE_LIVE;
-  const osImage = React.useMemo(() => getOSImage(basic.os), [basic.os]);
-  const osName = React.useMemo(() => getOSName(basic.os), [basic.os]);
-
-  const memoryUsagePercent = basic.mem_total
-    ? (liveData.ram.used / basic.mem_total) * 100
-    : 0;
-  const diskUsagePercent = basic.disk_total
-    ? (liveData.disk.used / basic.disk_total) * 100
-    : 0;
-
-  const uploadSpeed = formatBytes(liveData.network.up);
-  const downloadSpeed = formatBytes(liveData.network.down);
-  const totalUpload = formatBytes(liveData.network.totalUp);
-  const totalDownload = formatBytes(liveData.network.totalDown);
-  //const totalTraffic = formatBytes(liveData.network.totalUp + liveData.network.totalDown);
-  return (
-    <Card
-      style={{ width: "100%", margin: "0 auto" }}
-      data-online={online}
-      id={basic.uuid}
-      className="km-node-card node-card hover:cursor-pointer hover:shadow-lg hover:bg-accent-2"
-    >
-      <Flex direction="column" gap="2">
-        <Flex justify="between" align="center" my={isMobile ? "-1" : "0"}>
-          <Flex justify="start" align="center" style={{ flex: 1, minWidth: 0 }} className="km-node-region">
-            <Flag flag={basic.region} />
-            <Link
-              to={`/instance/${basic.uuid}`}
-              style={{ flex: 1, minWidth: 0 }}
-            >
-              <Flex direction="column" style={{ minWidth: 0 }}>
-                <Text
-                  className="km-node-name"
-                  weight="bold"
-                  size={isMobile ? "2" : "4"}
-                  truncate
-                  style={{ maxWidth: "100%" }}
-                >
-                  {basic.name}
-                </Text>
-                <Text
-                  color="gray"
-                  hidden={!isMobile}
-                  style={{
-                    marginTop: "-3px",
-                    fontSize: "0.728rem",
-                  }}
-                  className="text-sm"
-                >
-                  {formatUptime(liveData.uptime, t)}
-                </Text>
-                <PriceTags
-                  hidden={isMobile}
-                  price={basic.price}
-                  billing_cycle={basic.billing_cycle}
-                  expired_at={basic.expired_at}
-                  currency={basic.currency}
-                  tags={basic.tags}
-                  ip4={showIpTagsInCard ? basic.ipv4 : undefined}
-                  ip6={showIpTagsInCard ? basic.ipv6 : undefined}
-                />
-              </Flex>
-            </Link>
-          </Flex>
-          <Flex gap="2" align="center" style={{ flex: "none" }} className="km-node-chart">
-            {live?.message && <Tips color="#CE282E">{live.message}</Tips>}
-            <MiniPingChartFloat
-              uuid={basic.uuid}
-              hours={24}
-              trigger={
-                <IconButton
-                  variant="ghost"
-                  size="1"
-                  title={t("nodeCard.chart", "Chart")}
-                  aria-label={t("nodeCard.chart", "Chart")}
-                >
-                  <TrendingUp size="14" />
-                </IconButton>
-              }
-            />
-            <Badge color={online ? "green" : "red"} variant="soft" className="km-node-status">
-              {online ? t("nodeCard.online") : t("nodeCard.offline")}
-            </Badge>
-          </Flex>
-        </Flex>
-
-        <Separator size="4" className="-mt-1" />
-        <div className="km-node-io">
-          <span>{t("diskIO.title")}</span>
-          <span>{online && live?.disk_io?.status === "ok"
-            ? `${t("diskIO.read")} ${formatDiskIORate(live.disk_io.read_bytes_per_sec ?? 0)} · ${t("diskIO.write")} ${formatDiskIORate(live.disk_io.write_bytes_per_sec ?? 0)}`
-            : t(diskIOStatusKey(live?.disk_io, online))}</span>
-        </div>
-
-        <Flex direction="column" gap="2">
-          <Flex justify="between" hidden={isMobile}>
-            <Text size="2" color="gray">
-              OS
-            </Text>
-            <Flex align="center">
-              <img
-                src={osImage}
-                alt={basic.os}
-                className="w-5 h-5 mr-2"
-              />
-              <Text size="2">
-                {osName} / {basic.arch}
-              </Text>
-            </Flex>
-          </Flex>
-          <Flex className="md:flex-col flex-row md:gap-1 gap-4">
-            {/* CPU Usage */}
-            <UsageBar unavailable={!online || !live} label={t("admin.nodeDetail.cpu")} value={liveData.cpu.usage} />
-
-            {/* Memory Usage */}
-            <UsageBar unavailable={!online || !live} label={t("nodeCard.ram")} value={memoryUsagePercent} />
-            <Text
-              className="md:block hidden"
-              size="1"
-              color="gray"
-              style={{ marginTop: "-4px" }}
-            >
-              ({formatBytes(liveData.ram.used)} / {formatBytes(basic.mem_total)}
-              )
-            </Text>
-
-            {/* Disk Usage */}
-            <UsageBar unavailable={!online || !live} label={t("nodeCard.disk")} value={diskUsagePercent} />
-            <Text
-              size="1"
-              className="md:block hidden"
-              color="gray"
-              style={{ marginTop: "-4px" }}
-            >
-              ({formatBytes(liveData.disk.used)} /{" "}
-              {formatBytes(basic.disk_total)})
-            </Text>
-          </Flex>
-          {basic.traffic_limit > 0 ? (
-            <Flex justify="between" hidden={isMobile} direction="column">
-              <UsageBar
-                label={t("nodeCard.totalTraffic")}
-                value={getTrafficPercentage(
-                  liveData.network.totalUp,
-                  liveData.network.totalDown,
-                  basic.traffic_limit,
-                  basic.traffic_limit_type ?? "sum",
-                )}
-                max={Infinity}
-              />
-              <Flex wrap="nowrap" justify="between">
-                <Text size="1" className="md:block hidden" color="gray">
-                  ↑ {totalUpload} ↓ {totalDownload}
-                </Text>
-                <Text size="1" className="md:block hidden" color="gray">
-                  {basic.traffic_limit_type &&
-                    basic.traffic_limit_type.charAt(0).toUpperCase() +
-                      basic.traffic_limit_type.slice(1)}
-                  ({formatBytes(basic.traffic_limit)})
-                </Text>
-              </Flex>
-            </Flex>
-          ) : (
-            <Flex justify="between" hidden={isMobile}>
-              <Text size="2" color="gray">
-                {t("nodeCard.totalTraffic")}
-              </Text>
-              <Text size="2">
-                ↑ {totalUpload} ↓ {totalDownload}
-              </Text>
-            </Flex>
-          )}
-
-          <Flex justify="between" hidden={isMobile}>
-            <Text size="2" color="gray" className="flex items-center">
-              {t("nodeCard.networkSpeed")}
-            </Text>
-            <Text size="2">
-              ↑ {uploadSpeed}/s ↓ {downloadSpeed}/s
-            </Text>
-          </Flex>
-
-          <Flex justify="between" gap="2" hidden={!isMobile}>
-            <Text size="2">{t("nodeCard.networkSpeed")}</Text>
-            <Text size="2">
-              ↑ {uploadSpeed}/s ↓ {downloadSpeed}/s
-            </Text>
-          </Flex>
-          <Flex justify="between" gap="2" hidden={!isMobile}>
-            <Text size="2">{t("nodeCard.totalTraffic")}</Text>
-            <Flex direction="column">
-              <Text size="2">
-                ↑ {totalUpload} ↓ {totalDownload}
-              </Text>
-            </Flex>
-          </Flex>
-          {basic.traffic_limit > 0 && isMobile && (
-            <UsageBar
-              label={`${basic.traffic_limit_type && basic.traffic_limit_type.charAt(0).toUpperCase() + basic.traffic_limit_type.slice(1)}(${formatBytes(basic.traffic_limit)})`}
-              max={Infinity}
-              value={getTrafficPercentage(
-                liveData.network.totalUp,
-                liveData.network.totalDown,
-                basic.traffic_limit,
-                basic.traffic_limit_type ?? "sum",
-              )}
-            />
-          )}
-          <Flex justify="between" hidden={isMobile}>
-            <Text size="2" color="gray">
-              {t("nodeCard.uptime")}
-            </Text>
-            {online ? (
-              <Text size="2">{formatUptime(liveData.uptime, t)}</Text>
-            ) : (
-              <Text size="2" color="gray">
-                -
-              </Text>
-            )}
-          </Flex>
-        </Flex>
-        <PriceTags
-          hidden={!isMobile}
-          price={basic.price}
-          billing_cycle={basic.billing_cycle}
-          expired_at={basic.expired_at}
-          currency={basic.currency}
-          tags={basic.tags || ""}
-        />
-      </Flex>
-    </Card>
-  );
-});
-
-export default Node;
-
-type NodeGridProps = {
-  nodes: NodeBasicInfo[];
-  liveData: LiveData;
-  onlineSet: ReadonlySet<string>;
-};
-
-import { Box } from "@radix-ui/themes";
-import type { TFunction } from "i18next";
-import { Link } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
-import type { NodeBasicInfo } from "@/contexts/NodeListContext";
-import PriceTags from "./PriceTags";
-import { TrendingUp } from "lucide-react";
-import MiniPingChartFloat from "./MiniPingChartFloat";
-import { getOSImage, getOSName } from "@/utils";
-import { usePublicInfo } from "@/contexts/PublicInfoContext";
-export const NodeGrid = ({ nodes, liveData, onlineSet }: NodeGridProps) => {
-  const { publicInfo } = usePublicInfo();
-  const isMobile = useIsMobile();
-  const showIpTagsInCard = Boolean(
-    publicInfo?.theme_settings?.showIpTagsInCard,
-  );
-  const offlineServerPosition =
-    publicInfo?.theme_settings?.offlineServerPosition; // "First/Keep/Last"
-
-  // 排序节点：先按权重排序，权重大的靠前，再根据用户设置排序
-  const sortedNodes = React.useMemo(() => [...nodes].sort((a, b) => {
-    const aIsOnline = onlineSet.has(a.uuid);
-    const bIsOnline = onlineSet.has(b.uuid);
-
-    if (offlineServerPosition === "First") {
-      if (!aIsOnline && bIsOnline) return -1;
-      if (aIsOnline && !bIsOnline) return 1;
-    } else if (offlineServerPosition !== "Keep") {
-      if (aIsOnline && !bIsOnline) return -1;
-      if (!aIsOnline && bIsOnline) return 1;
-    }
-    return a.weight - b.weight;
-  }), [nodes, offlineServerPosition, onlineSet]);
-
-  return (
-    <Box
-      className="km-node-list gap-2 md:gap-4"
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-        padding: "1rem",
-        width: "100%",
-        boxSizing: "border-box",
-      }}
-    >
-      {sortedNodes.map((node) => {
-        const isOnline = onlineSet.has(node.uuid);
-        const nodeData = liveData.data[node.uuid];
-
-        return (
-          <Node
-            key={node.uuid}
-            basic={node}
-            live={nodeData}
-            online={isOnline}
-            isMobile={isMobile}
-            showIpTagsInCard={showIpTagsInCard}
-          />
-        );
-      })}
-    </Box>
-  );
-};
-
-function getTrafficPercentage(
-  totalUp: number,
-  totalDown: number,
-  limit: number,
-  type: "max" | "min" | "sum" | "up" | "down",
-) {
-  if (limit === 0) return 0;
-  switch (type) {
-    case "max":
-      return (Math.max(totalUp, totalDown) / limit) * 100;
-    case "min":
-      return (Math.min(totalUp, totalDown) / limit) * 100;
-    case "sum":
-      return ((totalUp + totalDown) / limit) * 100;
-    case "up":
-      return (totalUp / limit) * 100;
-    case "down":
-      return (totalDown / limit) * 100;
-    default:
-      return 0;
+  if (!seconds || seconds < 0) return `0 ${t("nodeCard.time_second", { val: 0 })}`;
+  const parts: string[] = [];
+  const units = [[86400, 'day'], [3600, 'hour'], [60, 'minute'], [1, 'second']] as const;
+  let remaining = seconds;
+  for (const [size, name] of units) {
+    const val = Math.floor(remaining / size);
+    if (val) parts.push(`${val} ${t(`nodeCard.time_${name}`, { val })}`);
+    remaining %= size;
   }
+  return parts.join(' ');
 }
+function Segments({ value, tone }: { value?: number; tone: string }) {
+  const clamped = value === undefined ? 0 : Math.min(100, Math.max(0, value));
+  return <div className="liquid-segments" data-tone={tone} aria-hidden="true">{Array.from({ length: 20 }, (_, i) => <i key={i} data-filled={value !== undefined && i < Math.ceil(clamped / 5)} />)}</div>;
+}
+function Metric({ icon, label, value, detail, percent, tone }: { icon: React.ReactNode; label: string; value: string; detail: string; percent?: number; tone: string }) {
+  return <div className="liquid-metric"><div className="liquid-metric-heading"><span>{icon}{label}</span><strong>{value}</strong></div><small>{detail}</small><Segments value={percent} tone={tone} /></div>;
+}
+const Node = React.memo(({ basic, live, online, showIpTagsInCard }: { basic: NodeBasicInfo; live?: Record; online: boolean; showIpTagsInCard: boolean }) => {
+  const { t, i18n } = useTranslation();
+  const available = online && !!live;
+  const memory = available && basic.mem_total > 0 ? live.ram.used / basic.mem_total * 100 : undefined;
+  const disk = available && basic.disk_total > 0 ? live.disk.used / basic.disk_total * 100 : undefined;
+  const cpu = available ? live.cpu.usage : undefined;
+  const load = available ? live.load.load1 : undefined;
+  const percent = (v?: number) => v === undefined ? '—' : `${v.toFixed(1)}%`;
+  const up = live?.network.totalUp;
+  const down = live?.network.totalDown;
+  const mode = basic.traffic_limit_type ?? 'sum';
+  const used = up === undefined || down === undefined ? undefined : ({ sum: up + down, max: Math.max(up, down), min: Math.min(up, down), up, down })[mode];
+  const limit = basic.traffic_limit;
+  const expires = basic.expired_at ? new Date(basic.expired_at) : null;
+  const io = live?.disk_io;
+  return <Card className="km-node-card liquid-node" data-online={online} id={basic.uuid}>
+    <div className="liquid-node-heading">
+      <Flag flag={basic.region} /><Link className="km-node-name" to={`/instance/${basic.uuid}`}>{basic.name}</Link>
+      {live?.message && <Tips color="#CE282E">{live.message}</Tips>}
+      <MiniPingChartFloat uuid={basic.uuid} hours={24} trigger={<IconButton variant="ghost" size="1" aria-label={t('nodeCard.chart')}><TrendingUp size={16}/></IconButton>}/>
+      <img src={getOSImage(basic.os)} alt={getOSName(basic.os)} title={`${basic.os} / ${basic.arch}`} width={18} height={18}/>
+    </div>
+    <div className="liquid-node-badges"><span className="km-node-status">{t(online ? 'nodeCard.online' : 'nodeCard.offline')}</span>{showIpTagsInCard && basic.ipv4 && <span>V4</span>}{showIpTagsInCard && basic.ipv6 && <span>V6</span>}<span className="liquid-node-os">{getOSName(basic.os)} · {basic.arch}</span></div>
+    <div className="liquid-node-metrics">
+      <Metric icon={<Cpu size={13}/>} label="CPU" value={percent(cpu)} detail={t('liquid.cores', { count: basic.cpu_cores })} percent={cpu} tone="cpu"/>
+      <Metric icon={<MemoryStick size={13}/>} label={t('nodeCard.ram')} value={percent(memory)} detail={`${available ? formatBytes(live.ram.used) : '—'} / ${formatBytes(basic.mem_total)}`} percent={memory} tone="memory"/>
+      <Metric icon={<HardDrive size={13}/>} label={t('nodeCard.disk')} value={percent(disk)} detail={`${available ? formatBytes(live.disk.used) : '—'} / ${formatBytes(basic.disk_total)}`} percent={disk} tone="disk"/>
+      <Metric icon={<Gauge size={13}/>} label={t('liquid.load')} value={load === undefined ? '—' : load.toFixed(2)} detail={t('liquid.loadNormalized')} percent={load !== undefined && basic.cpu_cores > 0 ? load / basic.cpu_cores * 100 : undefined} tone="load"/>
+    </div>
+    <div className="liquid-node-network">
+      {(['up', 'down'] as const).map(direction => <div key={direction} className="liquid-network-cell"><div><span>{direction === 'up' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>} {t(`liquid.${direction}`)}</span><strong>{available ? formatBytes(live.network[direction]) : '—'}<small>{available ? '/s' : ''}</small></strong></div><div className="liquid-network-total"><span><Globe size={13}/>{t(`liquid.${direction}Total`)}</span><span>{live ? formatBytes(direction === 'up' ? live.network.totalUp : live.network.totalDown) : '—'}</span></div></div>)}
+    </div>
+    <div className="liquid-node-quota"><div><span><HardDrive size={13}/>{t('liquid.remaining')}</span><strong>{used === undefined ? '—' : limit > 0 ? formatBytes(Math.max(0, limit - used)) : '∞'}</strong><small>{used === undefined ? '—' : formatBytes(used)} / {limit > 0 ? formatBytes(limit) : '∞'} · {mode}</small></div><Segments value={limit > 0 && used !== undefined ? used / limit * 100 : undefined} tone="quota"/></div>
+    <div className="liquid-node-io"><span>{t('diskIO.title')}</span><strong>{available && io?.status === 'ok' ? `${t('diskIO.read')} ${formatDiskIORate(io.read_bytes_per_sec ?? 0)} · ${t('diskIO.write')} ${formatDiskIORate(io.write_bytes_per_sec ?? 0)}` : t(diskIOStatusKey(io, online))}</strong></div>
+    <div className="liquid-node-footer"><div><span><Clock size={13}/>{t('nodeCard.uptime')}</span><strong>{available ? formatUptime(live.uptime, t) : '—'}</strong></div><div><span><CalendarDays size={13}/>{t('liquid.expires')}</span><strong>{expires && Number.isFinite(expires.getTime()) ? expires.toLocaleDateString(i18n.language) : '—'}</strong></div></div>
+    <PriceTags price={basic.price} billing_cycle={basic.billing_cycle} expired_at={basic.expired_at} currency={basic.currency} tags={basic.tags || ''}/>
+  </Card>;
+});
+export default Node;
+export const NodeGrid = ({ nodes, liveData, onlineSet }: { nodes: NodeBasicInfo[]; liveData: LiveData; onlineSet: ReadonlySet<string> }) => {
+  const { publicInfo } = usePublicInfo();
+  const position = publicInfo?.theme_settings?.offlineServerPosition;
+  const sorted = React.useMemo(() => [...nodes].sort((a,b) => {
+    if (position !== 'Keep' && onlineSet.has(a.uuid) !== onlineSet.has(b.uuid)) return (onlineSet.has(a.uuid) ? 1 : -1) * (position === 'First' ? 1 : -1);
+    return a.weight - b.weight;
+  }), [nodes, onlineSet, position]);
+  return <div className="km-node-list liquid-node-grid">{sorted.map(node => <Node key={node.uuid} basic={node} live={liveData.data[node.uuid]} online={onlineSet.has(node.uuid)} showIpTagsInCard={Boolean(publicInfo?.theme_settings?.showIpTagsInCard)} />)}</div>;
+};

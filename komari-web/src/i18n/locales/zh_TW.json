@@ -1,5 +1,5 @@
 {
-  "liquid": { "reading": "清晰閱讀", "reducedMotion": "減少動態" },
+  "liquid": {"reading":"清晰閱讀","reducedMotion":"減少動態","welcome":"每一台伺服器，都在此刻與你相連","explore":"查看節點","cores":"{{count}} 核","load":"負載","loadNormalized":"1 分鐘 · 按核心數正規化","up":"上行","down":"下行","upTotal":"出站","downTotal":"入站","remaining":"剩餘","expires":"到期"},
   "diskIO": {
     "title": "磁碟 I/O",
     "read": "讀取",

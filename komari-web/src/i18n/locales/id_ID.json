@@ -1,5 +1,5 @@
 {
-  "liquid": { "reading": "Tampilan jelas", "reducedMotion": "Kurangi gerakan" },
+  "liquid": {"reading":"Tampilan jelas","reducedMotion":"Kurangi gerakan","welcome":"Semua server Anda, dalam satu tempat","explore":"Lihat node","cores":"{{count}} inti","load":"Beban","loadNormalized":"1 menit · per inti","up":"Unggah","down":"Unduh","upTotal":"Keluar","downTotal":"Masuk","remaining":"Sisa","expires":"Berakhir"},
   "diskIO": {
     "title": "Disk I/O",
     "read": "Baca",

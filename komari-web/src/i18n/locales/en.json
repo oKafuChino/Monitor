@@ -1,5 +1,5 @@
 {
-  "liquid": { "reading": "Clear reading", "reducedMotion": "Reduce motion" },
+  "liquid": {"reading":"Clear reading","reducedMotion":"Reduce motion","welcome":"Welcome to your monitoring space","explore":"Explore nodes","cores":"{{count}} cores","load":"Load","loadNormalized":"1 min · normalized by cores","up":"Upload","down":"Download","upTotal":"Outbound","downTotal":"Inbound","remaining":"Remaining","expires":"Expires"},
   "diskIO": {
     "title": "Disk I/O",
     "read": "Read",
