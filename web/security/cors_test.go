@@ -27,10 +27,10 @@ func TestCorsMiddlewareValidatesAPIOrigins(t *testing.T) {
 			wantStatus: http.StatusOK,
 		},
 		{
-			name:            "allows same host Origin",
-			origin:          "https://api.example",
+			name:            "allows same origin",
+			origin:          "http://api.example",
 			wantStatus:      http.StatusOK,
-			wantAllowOrigin: "https://api.example",
+			wantAllowOrigin: "http://api.example",
 		},
 		{
 			name:            "allows configured Origin",
@@ -75,6 +75,40 @@ func TestCorsMiddlewareAllowsAPIKeyRequestsFromAnyOrigin(t *testing.T) {
 	}
 	if got := response.Header().Get("Access-Control-Allow-Origin"); got != "https://evil.example" {
 		t.Fatalf("Access-Control-Allow-Origin = %q, want %q", got, "https://evil.example")
+	}
+}
+
+func TestProxiedLoginPassesBothOriginGuards(t *testing.T) {
+	t.Setenv("KOMARI_TRUSTED_PROXIES", "")
+	setupCORSConfigDB(t, "")
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.Use(NewCorsController(true, "").Middleware(), CookieMutationProtection())
+	router.POST("/api/login", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "success"})
+	})
+	for _, tc := range []struct {
+		name, origin, fetchSite string
+		want int
+	}{
+		{"same origin through proxy", "https://panel.example", "same-origin", http.StatusOK},
+		{"cross site with matching referer", "https://evil.example", "cross-site", http.StatusForbidden},
+		{"same site is not same origin", "https://other.example", "same-site", http.StatusForbidden},
+		{"referer alone cannot establish target origin", "https://evil.example", "", http.StatusForbidden},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			request := httptest.NewRequest(http.MethodPost, "http://monitor:25774/api/login", nil)
+			request.Header.Set("Origin", tc.origin)
+			request.Header.Set("Referer", tc.origin+"/login")
+			request.Header.Set("Sec-Fetch-Site", tc.fetchSite)
+			// A stale cookie must not make a legitimate new login fail CSRF.
+			request.AddCookie(&http.Cookie{Name: "session_token", Value: "expired-session"})
+			response := httptest.NewRecorder()
+			router.ServeHTTP(response, request)
+			if response.Code != tc.want {
+				t.Fatalf("status = %d, want %d", response.Code, tc.want)
+			}
+		})
 	}
 }
 

@@ -29,9 +29,23 @@ func OriginMatchesHost(origin, host string) bool {
 }
 
 func OriginMatchesRequest(origin string, r *http.Request) bool {
- left, _, ok := normalizeOrigin(origin); if !ok { return false }
- right, _, ok := normalizeOrigin(utils.RequestScheme(r)+"://"+r.Host)
- return ok && left == right
+	left, _, ok := normalizeOrigin(origin)
+	if !ok {
+		return false
+	}
+	// Browsers compute this forbidden request header from the public URL,
+	// before a reverse proxy terminates TLS or rewrites Host. Page scripts
+	// cannot forge it on cross-origin requests. Accept only same-origin:
+	// same-site still includes sibling subdomains and different ports.
+	// Non-browser clients can set this header, but do not gain credentials
+	// or bypass authentication by passing the browser CSRF/origin boundary.
+	if strings.EqualFold(strings.TrimSpace(r.Header.Get("Sec-Fetch-Site")), "same-origin") {
+		return true
+	}
+	// Older clients and proxies that remove Fetch Metadata still require
+	// an exact origin using direct TLS or explicitly trusted proxy headers.
+	right, _, ok := normalizeOrigin(utils.RequestScheme(r) + "://" + r.Host)
+	return ok && left == right
 }
 
 func OriginInAllowlist(origin, rawAllowlist string) bool {
