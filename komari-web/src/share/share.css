@@ -20,21 +20,21 @@ article { min-width: 0; background: #fff; border: 1px solid #e7e5ee; border-radi
 :root { color: #281e31; background: #f5edf5; font-variant-numeric: tabular-nums; font-optical-sizing: auto; }
 body { min-height: 100svh; background: radial-gradient(ellipse at 10% 0%,#f8d7e6,transparent 55%),radial-gradient(ellipse at 90% 60%,#dcefe7,transparent 55%); }
 main { padding-top: 24px; }
-header { padding: 12px 20px; border-radius: 999px; background: #fff4f833; border: 1px solid #ffffffa0; box-shadow: 0 10px 28px #3f1d4110; }
-article,.hardware { background: #fff4f83d; border: 1px solid #ffffffa0; border-radius: 24px; box-shadow: inset 0 1px #ffffff70,0 2px 6px #3f1d4110,0 10px 28px #3f1d4110; backdrop-filter: blur(3px); }
+header { padding: 12px 20px; border-radius: 999px; background: #ffffff; border: 1px solid #eae3ee; box-shadow: 0 10px 28px #3f1d4110; }
+article,.hardware { background: #ffffff; border: 1px solid #eae3ee; border-radius: 24px; box-shadow: inset 0 1px #ffffff70,0 2px 6px #3f1d4110,0 10px 28px #3f1d4110; backdrop-filter: none; }
 .stats strong { font-weight: 600; }
 .stats span,.muted,.hero p,.eyebrow,.hardware strong { color: #66596f; }
 select { min-height: 44px; border-radius: 999px; border-color: #8a345c40; }
 select:focus-visible { outline: 2px solid #8a345c; outline-offset: 3px; }
 .presence.online { color: #176552; background: #9eebd75c; }
-.charts .recharts-wrapper { background: #fff8fcde; border-radius: 14px; }
+.charts .recharts-wrapper { background: #faf7fc; border-radius: 14px; }
 @media(prefers-color-scheme:dark) {
  :root { color: #f7f2fa; background: #191522; }
  body { background: radial-gradient(ellipse at 10% 0%,#452b43,transparent 55%),radial-gradient(ellipse at 90% 50%,#203d3c,transparent 55%); }
- header,article,.hardware { background: #26172e29; border-color: #ffddf047; box-shadow: inset 0 1px #ffddf024,0 10px 28px #05030c40; }
+ header,article,.hardware { background: #292333; border-color: #43384e; box-shadow: inset 0 1px #ffddf024,0 10px 28px #05030c40; }
  .stats span,.muted,.hero p,.eyebrow,.hardware strong { color: #d6cddf; }
  .presence.online { color: #9eebd7; background: #17655260; }
- .charts .recharts-wrapper { background: #231a2ce8; }
+ .charts .recharts-wrapper { background: #312a3b; }
 }
 @media(prefers-reduced-motion:reduce) { * { transition:none !important; animation:none !important; } }
 @media(prefers-contrast:more),(prefers-reduced-transparency:reduce) { article,.hardware,header { backdrop-filter:none; background: Canvas; color: CanvasText; border-color: GrayText; } }

@@ -41,13 +41,13 @@ test("retired remote command clients cannot enter the shipped application", () =
   assert.ok(entries.has("sw.js"));
 });
 
-test("the shipped public layout includes Liquid Kawaii styles and preferences", () => {
+test("the shipped public layout includes Liquid Kawaii styles and welcome layout", () => {
   const entries = archiveEntries();
   const styles = [...entries].filter(([name]) => name.endsWith(".css") &&
     entries.get(name).toString().includes("--liquid-surface"));
   assert.ok(styles.length > 0, "Liquid theme CSS is missing from the Go archive");
   const scripts = [...entries].filter(([name]) => name.endsWith(".js"));
-  assert.ok(scripts.some(([, data]) => data.toString().includes("komari-liquid-reading")),
+  assert.ok(scripts.some(([, data]) => data.toString().includes("liquid-hero-wave")),
     "The public layout is still the pre-Liquid version");
   for (const [name, data] of styles) {
     assert.deepEqual(data, fs.readFileSync(path.join(root, "komari-web/dist", name)));

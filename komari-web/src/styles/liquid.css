@@ -2,9 +2,9 @@
 .km-layout {
   --liquid-ink: #281e31;
   --liquid-muted: #66596f;
-  --liquid-surface: rgba(255,226,238,.09);
-  --liquid-reading: rgba(255,245,250,.88);
-  --liquid-rim: rgba(255,255,255,.65);
+  --liquid-surface: #ffffff;
+  --liquid-reading: #faf7fc;
+  --liquid-rim: #eae3ee;
   --liquid-shadow: rgba(63,29,65,.09);
   --liquid-mint: #176552;
   --liquid-rose: #8a345c;
@@ -23,9 +23,9 @@
 .dark .km-layout {
   --liquid-ink: #f7f2fa;
   --liquid-muted: #d6cddf;
-  --liquid-surface: rgba(38,23,46,.16);
-  --liquid-reading: rgba(35,26,44,.91);
-  --liquid-rim: rgba(255,221,240,.28);
+  --liquid-surface: #292333;
+  --liquid-reading: #312a3b;
+  --liquid-rim: #43384e;
   --liquid-shadow: rgba(5,3,12,.25);
   --liquid-mint: #9eebd7;
   --liquid-rose: #f497bf;
@@ -37,11 +37,11 @@
 .km-layout .km-main { padding: 16px clamp(12px,2vw,32px) 32px; max-width: 100%; min-width: 0; }
 .km-layout :is(.km-navbar,.km-summary-card,.km-node-card,.km-instance-server-list-card,.km-instance-header,.km-load-chart-canvas .rt-Card,.node-table-container) {
   position: relative;
-  background: linear-gradient(135deg,rgba(255,238,249,.12),transparent 40%,rgba(154,224,218,.05)),var(--liquid-surface);
+  background: var(--liquid-surface);
   border: 1px solid var(--liquid-rim);
   border-radius: 24px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.25),inset 0 -1px 0 rgba(244,151,191,.16),0 2px 6px var(--liquid-shadow),0 10px 28px var(--liquid-shadow);
-  backdrop-filter: blur(3px) saturate(105%);
+  box-shadow: 0 3px 14px var(--liquid-shadow);
+  backdrop-filter: none;
   color: var(--liquid-ink);
 }
 .km-layout .rt-Card:where(.km-node-card,.km-summary-card)::before,
@@ -93,11 +93,7 @@
 .km-layout .km-callouts { margin: 0; }
 .km-layout .km-callout { margin: 0 0 16px; border-radius: 16px; background: var(--liquid-reading); }
 .km-layout :is(button,a,input,select):focus-visible { outline: 2px solid var(--liquid-rose); outline-offset: 3px; }
-.km-layout .liquid-preferences { display: flex; gap: 12px; flex-wrap: wrap; margin: 0 0 16px; justify-content: end; font-size: 12px; }
-.km-layout .liquid-preferences label { display: flex; align-items: center; gap: 8px; background: var(--liquid-reading); padding: 6px 12px; border-radius: 999px; min-height: 44px; }
-.km-layout[data-reading='true'] { --liquid-surface: var(--liquid-reading); }
 @media (hover:hover) and (prefers-reduced-motion:no-preference) {
- .km-layout:not([data-motion='reduced']) .km-node-card:hover { transform: translateY(-2px); }
 }
 @media (max-width:767px) {
  .km-layout .km-navbar { border-radius: 24px; padding: 12px; gap: 12px; }
@@ -117,23 +113,16 @@
 @media (prefers-reduced-motion:reduce) {
  .km-layout *, .km-layout *::before, .km-layout *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
-.km-layout[data-motion='reduced'] *, .km-layout[data-motion='reduced'] *::before, .km-layout[data-motion='reduced'] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-.km-layout .km-node-card::after {
-  display: block !important; content: ''; position: absolute; inset: 1px 10px auto;
-  height: 22px; border-radius: 50%; border-top: 1px solid #ffcee7;
-  opacity: var(--liquid-streak-opacity,0); transform: translateY(var(--liquid-streak,0px));
-  transition: opacity 100ms ease, transform 80ms ease-out; pointer-events: none;
-}
+.km-layout .km-node-card::after { display:none !important; }
 .km-layout .km-details-grid.rt-Card { background: transparent; box-shadow: none; }
 .km-layout .km-details-grid.rt-Card::before,.km-layout .km-details-grid.rt-Card::after { display:none; }
 .km-layout .km-node-card[data-online='false'] .km-usage-bar-track { opacity: .4; }
 .km-layout .km-instance-title { overflow-wrap:anywhere; }
 .km-layout .km-instance-title .rt-Text { white-space:normal; }
 @media(prefers-reduced-motion:reduce) { .km-layout .km-node-card::after { display:none !important; } }
-.km-layout[data-motion='reduced'] .km-node-card::after { display:none !important; }
 .km-layout .liquid-node-picker { display:flex; align-items:center; gap:12px; width:100%; padding:12px 16px; border-radius:20px; background:var(--liquid-reading); font-size:13px; }
 .km-layout .liquid-node-picker select { min-width:0; flex:1; min-height:44px; color:var(--liquid-ink); background:var(--liquid-reading); border:1px solid var(--liquid-rim); border-radius:12px; padding:8px; }
-.km-layout .km-node-card::after { background:none; box-shadow:none; bottom:auto; }
+.km-layout .km-node-card::after { display:none !important; }
 @supports not (backdrop-filter:blur(3px)) { .km-layout { --liquid-surface:var(--liquid-reading); } }
 /* Welcome landing and compact two-column telemetry cards. */
 .km-layout { --liquid-page:#f6eff8; }
@@ -141,7 +130,7 @@
 .km-layout[data-home='true'] { background:var(--liquid-page); }
 .km-layout .liquid-hero { position:relative; min-height:620px; height:78svh; max-height:1000px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(ellipse at 20% 15%,#daaccd,transparent 55%),linear-gradient(125deg,#736388,#759caa); background-position:center; background-size:cover; }
 .km-layout .liquid-hero-nav { position:absolute; inset:20px 0 auto; width: min(1280px,calc(100% - 48px)); margin:auto; z-index:2; }
-.km-layout .liquid-hero .km-navbar { background:rgba(35,26,44,.13); color:#fff; border-color:#ffffff40; box-shadow:0 4px 24px #25182c12; }
+.km-layout .liquid-hero .km-navbar { background:var(--liquid-surface); color:var(--liquid-ink); border-color:var(--liquid-rim); box-shadow:0 4px 24px #25182c12; }
 .km-layout .liquid-hero-copy { position:relative; text-align:center; color:#fff; max-width: min(850px,calc(100% - 40px)); padding:30px 20px; text-shadow:0 2px 5px #20152f90,0 6px 28px #20152f60; }
 .km-layout .liquid-hero-eyebrow { font-size:11px; letter-spacing:.28em; font-weight:600; }
 .km-layout .liquid-hero h1 { font-size:clamp(40px,6vw,76px); letter-spacing:-.04em; line-height:1.15; font-weight:700; margin:16px 0; overflow-wrap:anywhere; }
@@ -150,7 +139,7 @@
 .km-layout .liquid-hero-wave { position:absolute; bottom:-1px; width:100%; height:80px; fill:var(--liquid-page); pointer-events:none; }
 .km-layout[data-home='true'] .km-main { padding-top:12px; max-width:1480px; scroll-margin-top:16px; }
 .km-layout .km-node-list.liquid-node-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr)) !important; gap:20px; align-items:start; }
-.km-layout .km-node-card.liquid-node { padding:18px; border-radius:20px; background:color-mix(in srgb,var(--liquid-reading) 75%,transparent); }
+.km-layout .km-node-card.liquid-node { padding:18px; border-radius:20px; background:var(--liquid-surface); }
 .km-layout .liquid-node-heading { display:flex; align-items:center; gap:8px; min-width:0; }
 .km-layout .liquid-node-heading .km-node-name { flex:1; line-height:1.4; }
 .km-layout .liquid-node-heading .rt-IconButton { width:36px; height:36px; }
@@ -196,3 +185,12 @@
  .km-layout .liquid-node-metrics,.km-layout .liquid-node-network,.km-layout .liquid-node-footer { column-gap:12px; }
 }
 @media(prefers-contrast:more) { .km-layout .liquid-hero-copy { background:Canvas; color:CanvasText; text-shadow:none; border-radius:20px; } }
+
+/* Two identical periods per layer keep the wave loop seamless. */
+.km-layout .liquid-hero-wave { overflow:hidden; }
+.km-layout .hero-wave-layer { position:absolute; inset:0 auto 0 0; width:200%; height:100%; fill:var(--liquid-page); animation:hero-wave-drift 18s linear infinite; }
+.km-layout .hero-wave-layer-0 { opacity:.35; top:-14px; animation-duration:24s; }
+.km-layout .hero-wave-layer-1 { opacity:.55; top:-7px; animation-duration:20s; animation-direction:reverse; }
+.km-layout .hero-wave-layer-2 { animation-duration:16s; }
+@keyframes hero-wave-drift { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+@media(prefers-reduced-motion:reduce) { .km-layout .hero-wave-layer { animation:none; } }
