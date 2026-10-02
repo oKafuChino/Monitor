@@ -1,4 +1,7 @@
 import * as React from "react";
+import { InlineReauthentication } from "@/components/admin/InlineReauthentication";
+import { useInlineReauthentication } from "@/hooks/useInlineReauthentication";
+import { fetchWithInlineReauthentication } from "@/lib/reauth";
 import {
   DndContext,
   KeyboardSensor,
@@ -177,22 +180,28 @@ export function DataTable() {
   );
   const [newNodeName, setNewNodeName] = React.useState("");
   const [isAddingNode, setIsAddingNode] = React.useState(false);
+  const [addOpen, setAddOpen] = React.useState(false);
+  const addAuth = useInlineReauthentication();
 
   async function handleAddNode() {
+    if (isAddingNode || !addAuth.ready) return;
     setIsAddingNode(true);
     try {
-      const response = await fetch("/api/admin/client/add", {
+      const response = await fetchWithInlineReauthentication("/api/admin/client/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...addAuth.takeHeaders() },
         body: JSON.stringify({ name: newNodeName }),
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || payload?.status !== "success") {
+        throw new Error(payload?.message || "添加节点失败，请重新验证后重试。");
       }
       setNewNodeName("");
+      addAuth.reset();
+      setAddOpen(false);
       refreshTable?.();
     } catch (error) {
-      console.error("Failed to add node:", error);
+      addAuth.setError(error instanceof Error ? error.message : "添加节点失败");
     } finally {
       setIsAddingNode(false);
     }
@@ -331,7 +340,11 @@ export function DataTable() {
           }
           className="max-w-2xs"
         />
-        <Dialog.Root>
+        <Dialog.Root open={addOpen} onOpenChange={(open) => {
+          if (isAddingNode) return;
+          addAuth.reset();
+          setAddOpen(open);
+        }}>
           <Dialog.Trigger>
             <Button>
               <PlusIcon className="lg:mr-1" />
@@ -349,11 +362,13 @@ export function DataTable() {
               <TextField.Root
                 placeholder={t("admin.nodeTable.namePlaceholder")}
                 value={newNodeName}
+                disabled={isAddingNode}
                 onChange={(e) => setNewNodeName(e.target.value)}
               />
             </div>
+            <InlineReauthentication auth={addAuth} disabled={isAddingNode} />
             <Flex justify="end" gap="2" className="mt-4">
-              <Button onClick={handleAddNode} disabled={isAddingNode}>
+              <Button onClick={handleAddNode} disabled={isAddingNode || !addAuth.ready}>
                 {isAddingNode ? (
                   <span className="flex items-center gap-1">
                     <LoadingIcon className="animate-spin size-4" />

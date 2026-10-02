@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { useInlineReauthentication } from "./useInlineReauthentication";
+import { fetchWithInlineReauthentication } from "@/lib/reauth";
 
 // Deployment credentials are fetched explicitly, never from the redacted node list.
 export function useDeploymentToken(uuid: string) {
+  const auth = useInlineReauthentication();
+  const resetAuth = auth.reset;
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
   const request = useRef<AbortController | null>(null);
@@ -12,7 +15,8 @@ export function useDeploymentToken(uuid: string) {
     request.current = null;
     setToken("");
     setLoading(false);
-  }, []);
+    resetAuth();
+  }, [resetAuth]);
 
   useEffect(() => {
     clear();
@@ -23,13 +27,14 @@ export function useDeploymentToken(uuid: string) {
   }, [uuid, clear]);
 
   const reveal = async () => {
-    if (request.current) return;
+    if (request.current || !auth.ready) return;
     const controller = new AbortController();
     request.current = controller;
     setToken("");
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/client/${encodeURIComponent(uuid)}/token`, {
+      const response = await fetchWithInlineReauthentication(`/api/admin/client/${encodeURIComponent(uuid)}/token`, {
+        headers: auth.takeHeaders(),
         cache: "no-store",
         signal: controller.signal,
       });
@@ -44,7 +49,7 @@ export function useDeploymentToken(uuid: string) {
       if (request.current === controller) setToken(value.trim());
     } catch (error) {
       if (request.current === controller) {
-        toast.error(error instanceof Error ? error.message : "读取部署凭证失败");
+        auth.setError(error instanceof Error ? error.message : "读取部署凭证失败");
       }
     } finally {
       if (request.current === controller) {
@@ -54,5 +59,5 @@ export function useDeploymentToken(uuid: string) {
     }
   };
 
-  return { token, loading, reveal, clear };
+  return { token, loading, reveal, clear, auth };
 }

@@ -81,6 +81,9 @@ import { useSettings } from "@/lib/api";
 import { SelectOrInput } from "@/components/ui/select-or-input";
 import { useRPC2Call } from "@/contexts/RPC2Context";
 import { useDeploymentToken } from "@/hooks/useDeploymentToken";
+import { InlineReauthentication } from "@/components/admin/InlineReauthentication";
+import { useInlineReauthentication } from "@/hooks/useInlineReauthentication";
+import { fetchWithInlineReauthentication } from "@/lib/reauth";
 
 
 const NodeDetailsPage = () => {
@@ -998,26 +1001,28 @@ const Header = ({
   const { refresh } = useNodeDetails();
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const addAuth = useInlineReauthentication();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const handleAddNode = async (name: string | undefined) => {
-    setDialogOpen(true);
+    if (loading || !addAuth.ready) return;
     setLoading(true);
     try {
-      await fetch("/api/admin/client/add", {
+      const response = await fetchWithInlineReauthentication("/api/admin/client/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...addAuth.takeHeaders() },
         body: JSON.stringify({ name: name || "" }),
       });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || payload?.status !== "success") {
+        throw new Error(payload?.message || "添加节点失败，请重新验证后重试。");
+      }
+      addAuth.reset();
+      setDialogOpen(false);
       refresh();
     } catch (error) {
-      toast.error(
-        `${t("common.error", "Error")}: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
+      addAuth.setError(error instanceof Error ? error.message : "添加节点失败");
     } finally {
       setLoading(false);
-      setDialogOpen(false);
     }
   };
   return (
@@ -1036,9 +1041,13 @@ const Header = ({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog.Root open={dialogOpen} onOpenChange={(open) => {
+          if (loading) return;
+          addAuth.reset();
+          setDialogOpen(open);
+        }}>
           <Dialog.Trigger>
-            <Button onClick={() => setDialogOpen(true)}>
+            <Button>
               <Plus size={16} />
               {t("admin.nodeTable.addNode")}
             </Button>
@@ -1048,11 +1057,13 @@ const Header = ({
             <TextField.Root
               ref={inputRef}
               placeholder={t("admin.nodeTable.nameOptional")}
+              disabled={loading}
             />
+            <InlineReauthentication auth={addAuth} disabled={loading} />
             <Flex justify="end" gap="2" mt="4">
               <Button
                 onClick={() => handleAddNode(inputRef.current?.value)}
-                disabled={loading}
+                disabled={loading || !addAuth.ready}
               >
                 {t("admin.nodeTable.addNode")}
               </Button>
@@ -1453,7 +1464,7 @@ function GenerateCommandButton({
   settings: any;
   isSnapshotBackend: boolean;
 }) {
-  const { token, loading: tokenLoading, reveal, clear } = useDeploymentToken(node.uuid);
+  const { token, loading: tokenLoading, reveal, clear, auth } = useDeploymentToken(node.uuid);
   const [selectedPlatform, setSelectedPlatform] =
     React.useState<Platform>("linux");
   const [installOptions, setInstallOptions] = React.useState<InstallOptions>({
@@ -1643,7 +1654,8 @@ function GenerateCommandButton({
           {t("admin.nodeTable.installCommand", "一键部署指令")}
         </Dialog.Title>
         <div className="flex flex-col gap-4">
-          <Button disabled={tokenLoading || Boolean(token)} onClick={() => void reveal()}>
+          <InlineReauthentication auth={auth} disabled={tokenLoading || Boolean(token)} />
+          <Button disabled={tokenLoading || Boolean(token) || !auth.ready} onClick={() => void reveal()}>
             {tokenLoading ? "正在读取部署凭证…" : token ? "部署凭证已读取" : "获取部署凭证"}
           </Button>
           <SegmentedControl.Root

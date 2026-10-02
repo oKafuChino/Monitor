@@ -1,5 +1,11 @@
 // Secrets exist only for the submitted request. They are never persisted.
 let pending: Promise<Record<string, string> | null> | undefined;
+let directFetch: typeof window.fetch | undefined;
+
+// These forms own their authentication fields and display failures inline.
+export function fetchWithInlineReauthentication(input: RequestInfo | URL, init?: RequestInit) {
+  return (directFetch ?? window.fetch.bind(window))(input, init);
+}
 
 function askCredential(message: string): Promise<Record<string, string> | null> {
   if (pending) return pending;
@@ -44,6 +50,7 @@ function askCredential(message: string): Promise<Record<string, string> | null> 
 
 export function installReauthenticationFetch(): void {
   const original = window.fetch.bind(window);
+  directFetch = original;
   window.fetch = async (input, init) => {
     const retryInput = input instanceof Request ? input.clone() : input;
     const response = await original(input, init);

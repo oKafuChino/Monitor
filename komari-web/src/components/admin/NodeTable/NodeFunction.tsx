@@ -9,6 +9,7 @@ import { EditDialog } from "./NodeEditDialog";
 import { quoteShellArgs } from "@/utils/shellQuote";
 import { AGENT_INSTALL_SCRIPT } from "@/utils/agentDistribution";
 import { useDeploymentToken } from "@/hooks/useDeploymentToken";
+import { InlineReauthentication } from "@/components/admin/InlineReauthentication";
 import {
   Button,
   Checkbox,
@@ -37,7 +38,7 @@ type InstallOptions = {
 export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
   const refreshTable = React.useContext(DataTableRefreshContext);
   const [removing, setRemoving] = React.useState(false);
-  const { token: agentToken, loading: tokenLoading, reveal, clear } = useDeploymentToken(row.original.uuid);
+  const { token: agentToken, loading: tokenLoading, reveal, clear, auth } = useDeploymentToken(row.original.uuid);
   const [installOptions, setInstallOptions] = React.useState<InstallOptions>({
     disableAutoUpdate: false,
     ignoreUnsafeCert: false,
@@ -109,7 +110,8 @@ export function ActionsCell({ row }: { row: Row<z.infer<typeof schema>> }) {
             {t("admin.nodeTable.installCommand", "一键部署指令")}
           </Dialog.Title>
           <div className="flex flex-col gap-4">
-            <Button disabled={tokenLoading || Boolean(agentToken)} onClick={() => void reveal()}>
+            <InlineReauthentication auth={auth} disabled={tokenLoading || Boolean(agentToken)} />
+            <Button disabled={tokenLoading || Boolean(agentToken) || !auth.ready} onClick={() => void reveal()}>
               {tokenLoading ? "正在读取部署凭证…" : agentToken ? "部署凭证已读取" : "获取部署凭证"}
             </Button>
             <Flex direction="column" gap="2">
