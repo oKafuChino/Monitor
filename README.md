@@ -4,7 +4,9 @@
 
 A self-hosted monitoring panel with real-time metrics, history charts and Ping monitoring. The frontend is embedded in the Go server, so deployment needs only one service.
 
-**The server supports Linux deployments only.** This version uses a fixed built-in interface and removes third-party themes, plugins, web terminals, remote command execution, remote file management and notifications. SQL administration remains available.
+**The server supports Linux deployments only.** The public interface uses the original built-in theme by default and supports trusted local theme ZIP packages through **Settings → Appearance** (install/replace, activate, configure, delete, restore default). There is no theme marketplace or remote theme download/update. Plugins, web terminals, remote command execution, remote file management and notifications remain removed. SQL administration remains available.
+
+Theme packages contain `komari-theme.json` and `dist/index.html` at the ZIP root (up to 64 MiB). Admin, installation and recovery pages always use the built-in interface. See [local theme support](docs/本地自定义主题恢复说明.md) for packaging, configuration and compatibility details.
 
 Repository: [oKafuChino/Monitor](https://github.com/oKafuChino/Monitor). The default installation branch is `main`.
 

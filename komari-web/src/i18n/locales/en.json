@@ -1,5 +1,4 @@
 {
-  "liquid": {"reading":"Clear reading","reducedMotion":"Reduce motion","welcome":"Welcome to your monitoring space","explore":"Explore nodes","cores":"{{count}} cores","load":"Load","loadNormalized":"1 min · normalized by cores","up":"Upload","down":"Download","upTotal":"Outbound","downTotal":"Inbound","remaining":"Remaining","expires":"Expires"},
   "diskIO": {
     "title": "Disk I/O",
     "read": "Read",
@@ -1274,5 +1273,26 @@
     "public_base_help": "An HTTPS origin, for example https://share.example.com. Save takes effect immediately for new links and Host checks. Changing domains requires updating DNS/proxy and using the new domain for existing links. Clearing disables share access. HTTP is allowed only on loopback for development.",
     "save": "Save",
     "saved": "Share public URL saved"
+  },
+  "localThemes": {
+    "title": "Local themes",
+    "active": "Active",
+    "description": "Install and manage local ZIP themes. No theme marketplace or remote downloads.",
+    "trust": "I trust this theme’s source. Themes run JavaScript on this site and can act with my signed-in permissions.",
+    "builtin": "Built-in default",
+    "activate": "Activate",
+    "restore": "Restore default",
+    "upload": "Install / replace ZIP",
+    "configuration": "Theme settings",
+    "isolatedSettings": "Settings are stored separately for each theme. Built-in and admin settings are preserved.",
+    "publicSettings": "These values are public frontend settings. Do not enter passwords or secrets.",
+    "objectRequired": "Settings must be a JSON object.",
+    "deleteConfirm": "Delete theme {{theme}} and its saved settings?",
+    "zipLimit": "ZIP only, 1 byte–64 MiB.",
+    "packageHint": "The ZIP root must contain komari-theme.json and dist/index.html. Installing the same short identifier replaces the package; settings are preserved. An active package updates immediately.",
+    "chooseZip": "Choose a trusted theme ZIP",
+    "uploading": "Uploading and validating the theme…",
+    "installed": "Theme installed. Select Activate to switch.",
+    "activated": "Theme switched. Reload the public page to view it."
   }
 }

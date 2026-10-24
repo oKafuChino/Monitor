@@ -3,6 +3,7 @@ import { Button, Callout, Flex, Heading } from "@radix-ui/themes";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import ConfigFormTabs from "@/components/admin/ConfigFormTabs";
+import ThemeManager from "@/components/admin/ThemeManager";
 import { usePublicInfo } from "@/contexts/PublicInfoContext";
 import { readUISettings, saveUISettings } from "@/utils/uiSettings";
 import { resolveI18nText } from "@/utils/i18nText";
@@ -52,6 +53,7 @@ export default function AppearanceSettings() {
 
   return (
     <Flex direction="column" gap="4" className="h-full min-h-0 p-2 md:p-4">
+      <ThemeManager />
       {error && <Callout.Root color="red"><Callout.Text>{error}</Callout.Text></Callout.Root>}
       <ConfigFormTabs
         items={fields}

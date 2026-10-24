@@ -9,7 +9,7 @@ import (
 func rejectRetiredCapabilities(c *gin.Context) {
 	p := c.Request.URL.Path
 	retired := p == "/api/clients/terminal" || (strings.HasPrefix(p, "/api/admin/client/") && strings.HasSuffix(p, "/terminal"))
-	for _, prefix := range []string{"/api/admin/task", "/api/admin/exec", "/api/clients/task", "/api/admin/theme", "/api/admin/plugin", "/api/plugin", "/themes"} {
+	for _, prefix := range []string{"/api/admin/task", "/api/admin/exec", "/api/clients/task", "/api/admin/theme/market", "/api/admin/theme/download", "/api/admin/theme/update", "/api/admin/plugin", "/api/plugin"} {
 		if p == prefix || strings.HasPrefix(p, prefix+"/") {
 			retired = true
 		}

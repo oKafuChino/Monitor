@@ -80,6 +80,11 @@ func registerAdminRoutes(r *gin.Engine) {
 	admin.RegisterPprofRoutes(g)
 	g.GET("/ui/settings", admin.GetUISettings)
 	g.PATCH("/ui/settings", admin.PatchUISettings)
+	g.GET("/theme/list", admin.ListThemes)
+	g.POST("/theme/set", api.RequireSensitive2FA(), admin.SetTheme)
+	g.POST("/theme/delete", api.RequireSensitive2FA(), admin.DeleteTheme)
+	g.GET("/theme/settings", admin.GetThemeSettings)
+	g.PUT("/theme/settings", api.RequireSensitive2FA(), admin.SaveThemeSettings)
 
 	// --- 二进制/流/重定向类，保留 REST handler ---
 	g.GET("/download/backup", api.RequireSensitive2FA(), admin.DownloadBackup)

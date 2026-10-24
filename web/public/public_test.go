@@ -110,6 +110,12 @@ func TestStaticRestrictedDoesNotServeCustomAssetOverride(t *testing.T) {
 		t.Fatal("embedded CSS asset missing")
 	}
 	assetName := filepath.Base(assets[0])
+	for name, content := range map[string]string{
+		"komari-theme.json": `{"short":"custom","name":"Custom"}`,
+		"dist/index.html": `<html><head></head><body>CUSTOM_THEME</body></html>`,
+	} {
+		if err := os.WriteFile(filepath.Join("data/theme/custom", filepath.FromSlash(name)), []byte(content), 0644); err != nil { t.Fatal(err) }
+	}
 	if err := os.WriteFile(filepath.Join(assetPath, assetName), []byte("custom override"), 0o644); err != nil {
 		t.Fatalf("write custom theme asset: %v", err)
 	}
@@ -153,4 +159,8 @@ func TestStaticRestrictedDoesNotServeCustomAssetOverride(t *testing.T) {
 	if strings.Contains(string(indexBody), `vite-plugin-pwa:register-sw`) {
 		t.Fatal("restricted index still registers a service worker")
 	}
+	if strings.Contains(string(indexBody), "CUSTOM_THEME") { t.Fatal("restricted listener served installed theme") }
+	namespace := httptest.NewRecorder()
+	router.ServeHTTP(namespace, httptest.NewRequest("GET", "/themes/custom/dist/index.html", nil))
+	if namespace.Code != 404 { t.Fatal("restricted listener exposes theme namespace") }
 }

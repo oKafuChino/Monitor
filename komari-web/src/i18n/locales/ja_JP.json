@@ -1,5 +1,4 @@
 {
-  "liquid": {"reading":"読みやすく表示","reducedMotion":"動きを減らす","welcome":"すべてのサーバーを、ひとつの場所で","explore":"ノードを見る","cores":"{{count}} コア","load":"負荷","loadNormalized":"1分 · コア数で正規化","up":"送信","down":"受信","upTotal":"送信合計","downTotal":"受信合計","remaining":"残り","expires":"期限"},
   "diskIO": {
     "title": "ディスク I/O",
     "read": "読み取り",
@@ -1274,5 +1273,26 @@
     "public_base_help": "https://share.example.com のような HTTPS origin を入力します。保存後、リンク作成と Host 検証に即時反映されます。ドメイン変更時は DNS/プロキシと既存リンクのドメインも変更してください。空欄で共有アクセスを停止します。HTTP はローカル開発のみ許可されます。",
     "save": "保存",
     "saved": "共有公開 URL を保存しました"
+  },
+  "localThemes": {
+    "title": "ローカルテーマ",
+    "active": "使用中",
+    "description": "ローカル ZIP のテーマを管理します。テーマストアとリモートダウンロードは含みません。",
+    "trust": "テーマの提供元を信頼します。テーマはこのサイトで JavaScript を実行し、ログイン中の権限を使用できます。",
+    "builtin": "組み込みの既定テーマ",
+    "activate": "有効にする",
+    "restore": "既定に戻す",
+    "upload": "ZIP をインストール / 置換",
+    "configuration": "テーマ設定",
+    "isolatedSettings": "設定はテーマごとに保存され、既定テーマや管理画面の設定を上書きしません。",
+    "publicSettings": "設定はフロントエンドに公開されます。パスワードや秘密情報は入力しないでください。",
+    "objectRequired": "設定は JSON オブジェクトで指定してください。",
+    "deleteConfirm": "テーマ {{theme}} と保存済み設定を削除しますか？",
+    "zipLimit": "ZIP のみ、1 バイト〜64 MiB。",
+    "packageHint": "ZIP のルートに komari-theme.json と dist/index.html が必要です。同じ short は設定を保持して置換され、使用中のテーマは即時更新されます。",
+    "chooseZip": "信頼できるテーマ ZIP を選択",
+    "uploading": "アップロードと検証中…",
+    "installed": "インストールしました。有効にするボタンで切り替えてください。",
+    "activated": "切り替えました。公開ページを再読み込みしてください。"
   }
 }

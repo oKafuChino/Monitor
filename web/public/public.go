@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/komari-monitor/komari/internal/config"
+	"github.com/komari-monitor/komari/internal/themes"
 )
 
 //go:embed defaultTheme/komari-theme.json
@@ -107,6 +108,13 @@ func StaticRestricted(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFu
 	static(r, noRoute, true)
 }
 
+func isSystemFrontendPath(requestPath string) bool {
+	for _, prefix := range []string{"/admin", "/install", "/database-recovery"} {
+		if requestPath == prefix || strings.HasPrefix(requestPath, prefix+"/") { return true }
+	}
+	return false
+}
+
 func static(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFunc), forceDefaultTheme bool) {
 	// 初始化嵌入式文件系统，指向 defaultTheme 根目录。
 	defaultThemeFS, err := fs.Sub(PublicFS, "defaultTheme")
@@ -160,13 +168,20 @@ func static(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFunc), force
 		shouldReplace := true
 
 		// 特殊页面：强制使用 default 主题，且不进行内容替换
-		if forceDefaultTheme || strings.HasPrefix(reqPath, "/admin") {
+		if forceDefaultTheme || isSystemFrontendPath(reqPath) {
 			shouldReplace = false
 		}
 
 		// 获取 dist/index.html (相对于主题根目录)
 		targetFile := path.Join(DistDir, IndexFile)
 		content, _, exists := getFileContent(targetFile)
+		if shouldReplace {
+			if short := themes.Active(); short != themes.Default {
+				if custom, err := themes.ReadFile(short, targetFile); err == nil {
+					if prepared, err := themes.PrepareHTML(custom, short); err == nil { content, exists = prepared, true }
+				}
+			}
+		}
 
 		if !exists {
 			c.String(http.StatusNotFound, "Embedded index file missing.")
@@ -174,6 +189,7 @@ func static(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFunc), force
 		}
 
 		htmlStr := string(content)
+		c.Header("Cache-Control", "no-store")
 		if forceDefaultTheme {
 			htmlStr = stripServiceWorkerRegistration(htmlStr)
 		}
@@ -199,6 +215,24 @@ func static(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFunc), force
 	}
 
 	// ================= 路由定义 =================
+	// Custom assets are namespaced and can never shadow management/recovery
+	// entry assets. Restrict service worker scope to the theme's dist directory.
+	if !forceDefaultTheme {
+		r.GET("/themes/:short/*file", func(c *gin.Context) {
+			short := c.Param("short")
+			name := strings.TrimPrefix(c.Param("file"), "/")
+			if short == themes.Default && name == "komari-theme.json" {
+				content, kind, ok := getFileContent(name)
+				if ok { c.Data(http.StatusOK, kind, content); return }
+			}
+			content, err := themes.ReadFile(short, name)
+			if err != nil { c.JSON(http.StatusNotFound, gin.H{"status":"error", "message":"Theme asset not found"}); return }
+			c.Header("Cache-Control", "no-store")
+			c.Header("X-Content-Type-Options", "nosniff")
+			c.Header("Service-Worker-Allowed", themes.AssetPath(short, "")+"/")
+			c.Data(http.StatusOK, mime.TypeByExtension(filepath.Ext(name)), content)
+		})
+	}
 	// 1. Favicon 优先策略
 	r.GET("/favicon.ico", func(c *gin.Context) {
 		// 优先：./data/favicon.ico
@@ -218,6 +252,7 @@ func static(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFunc), force
 			c.Data(http.StatusOK, mimeType, content)
 			return
 		}
+
 
 		c.Status(http.StatusNotFound)
 	})
@@ -242,9 +277,23 @@ func static(r *gin.RouterGroup, noRoute func(handlers ...gin.HandlerFunc), force
 		distPath := path.Join(DistDir, reqPath)
 
 		content, mimeType, exists := getFileContent(distPath)
-		if exists {
+		if exists && reqPath != "/index.html" {
 			c.Data(http.StatusOK, mimeType, content)
 			return
+		}
+
+		// Compatibility for legacy root-based builds. Embedded assets always win,
+		// including same-named scripts used by the administrator interface.
+		if !forceDefaultTheme && !isSystemFrontendPath(reqPath) && reqPath != "/sw.js" && reqPath != "/registerSW.js" && reqPath != "/index.html" && filepath.Ext(reqPath) != "" && filepath.Ext(reqPath) != ".html" {
+			if short := themes.Active(); short != themes.Default {
+				if custom, err := themes.ReadFile(short, distPath); err == nil {
+					c.Header("Cache-Control", "no-store")
+					c.Header("Service-Worker-Allowed", themes.AssetPath(short, "")+"/")
+					c.Header("X-Content-Type-Options", "nosniff")
+					c.Data(http.StatusOK, mime.TypeByExtension(filepath.Ext(reqPath)), custom)
+					return
+				}
+			}
 		}
 
 		if ext := filepath.Ext(reqPath); ext != "" && ext != ".html" {

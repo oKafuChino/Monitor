@@ -1,5 +1,5 @@
-// Package uisettings stores settings for the single embedded interface.
-// Historical theme rows remain inert for backup and rollback compatibility.
+// Package uisettings stores settings for the embedded default/admin interface.
+// Custom themes use separate rows managed by internal/themes.
 package uisettings
 
 import (

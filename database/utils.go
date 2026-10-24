@@ -7,6 +7,7 @@ import (
 	"github.com/komari-monitor/komari/database/dbcore"
 	"github.com/komari-monitor/komari/internal/config"
 	"github.com/komari-monitor/komari/internal/metricstore"
+	"github.com/komari-monitor/komari/internal/themes"
 	"github.com/komari-monitor/komari/internal/uisettings"
 )
 
@@ -57,6 +58,11 @@ func GetPublicInfo() (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	activeTheme := themes.Active()
+	if activeTheme != themes.Default {
+		tc_data, err = themes.Settings(dbcore.GetDBInstance(), activeTheme)
+		if err != nil { return nil, err }
+	}
 
 	return gin.H{
 		"sitename":                  cst.Sitename,
@@ -71,7 +77,7 @@ func GetPublicInfo() (map[string]interface{}, error) {
 		"record_preserve_time":      retention.MaxDays * 24,
 		"ping_record_preserve_time": retention.MaxDays * 24,
 		"private_site":              cst.PrivateSite,
-		"theme":                     "default",
+		"theme":                     activeTheme,
 		"theme_settings":            tc_data,
 	}, nil
 }

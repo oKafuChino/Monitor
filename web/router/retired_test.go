@@ -46,7 +46,22 @@ func TestRetiredRoutesAndUIAuthorization(t *testing.T) {
 	if w := request("GET", "/api/admin/ui/settings", "", "isolated-test-admin-key"); w.Code != 200 {
 		t.Fatalf("admin fixture: %d %s", w.Code, w.Body)
 	}
-	for _, path := range []string{"/api/admin/task/exec", "/api/admin/task/all", "/api/admin/task/test/result", "/api/admin/exec", "/api/admin/theme/list", "/api/admin/theme/settings", "/api/admin/plugin/list", "/api/plugin/old/index.html", "/themes/old/dist/index.html", "/themes/default/komari-theme.json", "/api/admin/client/test-node/terminal", "/api/admin/client/test-node/file/upload", "/api/admin/client/test-node/file/download", "/api/admin/notification/channels", "/api/admin/notification/offline", "/api/admin/test/sendMessage"} {
+	if w := request("GET", "/api/admin/theme/list", "", "isolated-test-admin-key"); w.Code != 200 || !strings.Contains(w.Body.String(), `"short":"default"`) {
+		t.Fatalf("local themes list: %d %s", w.Code, w.Body)
+	}
+	for _, endpoint := range []struct{ method, path, body string }{
+		{"GET", "/api/admin/theme/list", ""},
+		{"POST", "/api/admin/theme/set", `{"short":"default"}`},
+		{"POST", "/api/admin/theme/delete", `{"short":"custom"}`},
+		{"GET", "/api/admin/theme/settings?theme=custom", ""},
+		{"PUT", "/api/admin/theme/settings?theme=custom", `{}`},
+	} {
+		if w := request(endpoint.method, endpoint.path, endpoint.body, ""); w.Code != 401 { t.Fatalf("unauthorized theme endpoint: %s %d", endpoint.path, w.Code) }
+	}
+	if w := request("POST", "/api/admin/theme/set", `{"short":"missing"}`, "isolated-test-admin-key"); w.Code != 400 { t.Fatalf("missing theme selected: %d", w.Code) }
+	if w := request("POST", "/api/admin/theme/set", `{"short":"default"}`, "isolated-test-admin-key"); w.Code != 200 { t.Fatalf("default reset rejected: %d %s", w.Code, w.Body) }
+	if w := request("POST", "/api/admin/upload/init", `{"purpose":"theme","filename":"theme.zip","size":1}`, "isolated-test-admin-key"); w.Code != 200 { t.Fatalf("theme upload rejected: %d %s", w.Code, w.Body) }
+	for _, path := range []string{"/api/admin/task/exec", "/api/admin/task/all", "/api/admin/task/test/result", "/api/admin/exec", "/api/admin/theme/market", "/api/admin/theme/download", "/api/admin/theme/update", "/api/admin/plugin/list", "/api/plugin/old/index.html", "/themes/old/dist/index.html", "/api/admin/client/test-node/terminal", "/api/admin/client/test-node/file/upload", "/api/admin/client/test-node/file/download", "/api/admin/notification/channels", "/api/admin/notification/offline", "/api/admin/test/sendMessage"} {
 		for _, method := range []string{"GET", "POST"} {
 			w := request(method, path, "{}", "isolated-test-admin-key")
 			if w.Code != 404 || !strings.Contains(w.Header().Get("Content-Type"), "application/json") {
@@ -115,7 +130,7 @@ func TestRetiredRoutesAndUIAuthorization(t *testing.T) {
 	if w := request("POST", "/api/admin/settings/", `{"theme":"custom"}`, "isolated-test-admin-key"); w.Code == 200 {
 		t.Fatal("general settings enabled custom theme")
 	}
-	for _, purpose := range []string{"theme", "plugin"} {
+	for _, purpose := range []string{"plugin"} {
 		if w := request("POST", "/api/admin/upload/init", `{"purpose":"`+purpose+`","filename":"old.zip","size":1}`, "isolated-test-admin-key"); w.Code != 400 {
 			t.Fatalf("upload %s accepted: %d", purpose, w.Code)
 		}

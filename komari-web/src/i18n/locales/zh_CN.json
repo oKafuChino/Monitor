@@ -1,5 +1,4 @@
 {
-  "liquid": {"reading":"清晰阅读","reducedMotion":"减少动态","welcome":"每一台服务器，都在此刻与你相连","explore":"查看节点","cores":"{{count}} 核","load":"负载","loadNormalized":"1 分钟 · 按核心数归一化","up":"上行","down":"下行","upTotal":"出站","downTotal":"入站","remaining":"剩余","expires":"到期"},
   "diskIO": {
     "title": "磁盘 I/O",
     "read": "读取",
@@ -1274,5 +1273,26 @@
     "public_base_help": "填写 HTTPS origin，例如 https://share.example.com。保存后链接生成和 Host 校验立即生效。更换域名需调整 DNS/反代，已有链接也需改用新域名；留空停止分享访问。仅本机开发地址允许 HTTP。",
     "save": "保存",
     "saved": "分享公开地址已保存"
+  },
+  "localThemes": {
+    "title": "本地主题",
+    "active": "当前启用",
+    "description": "通过本地 ZIP 安装与管理主题，不包含主题市场和远程下载。",
+    "trust": "我信任主题来源：主题会在本站执行 JavaScript，并可能使用我的登录权限。",
+    "builtin": "内置默认主题",
+    "activate": "启用主题",
+    "restore": "恢复默认主题",
+    "upload": "安装 / 替换 ZIP",
+    "configuration": "主题配置",
+    "isolatedSettings": "每个主题单独保存配置，默认主题和后台配置互不覆盖。",
+    "publicSettings": "这些配置会公开提供给前台，请勿填写密码或密钥。",
+    "objectRequired": "配置必须为 JSON 对象。",
+    "deleteConfirm": "删除主题 {{theme}} 及其已保存配置？",
+    "zipLimit": "仅支持 ZIP，大小为 1 字节至 64 MiB。",
+    "packageHint": "ZIP 根目录需包含 komari-theme.json 和 dist/index.html。同名 short 会替换主题文件并保留配置；替换正在使用的主题会立即生效。",
+    "chooseZip": "选择可信来源的主题 ZIP",
+    "uploading": "正在上传并校验主题…",
+    "installed": "主题安装成功，请点击“启用主题”进行切换。",
+    "activated": "主题已切换，刷新前台页面即可查看。"
   }
 }

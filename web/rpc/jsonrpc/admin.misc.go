@@ -166,7 +166,7 @@ func adminEditSettings(ctx context.Context, req *rpc.JsonRpcRequest) (any, *rpc.
 		return nil, rpc.MakeError(rpc.InvalidParams, "Invalid or missing request body: "+err.Error(), nil)
 	}
 	if value, ok := cfg[config.ThemeKey]; ok && value != "default" {
-		return nil, rpc.MakeError(rpc.InvalidParams, "only the built-in interface is supported", nil)
+		return nil, rpc.MakeError(rpc.InvalidParams, "select installed custom themes through /api/admin/theme/set", nil)
 	}
 	if err := validateSharePublicBaseSetting(cfg); err != nil {
 		return nil, rpc.MakeError(rpc.InvalidParams, err.Error(), nil)

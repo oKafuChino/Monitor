@@ -41,17 +41,13 @@ test("retired remote command clients cannot enter the shipped application", () =
   assert.ok(entries.has("sw.js"));
 });
 
-test("the shipped public layout includes Liquid Kawaii styles and welcome layout", () => {
+test("the shipped application restores default styling and local theme management", () => {
   const entries = archiveEntries();
-  const styles = [...entries].filter(([name]) => name.endsWith(".css") &&
-    entries.get(name).toString().includes("--liquid-surface"));
-  assert.ok(styles.length > 0, "Liquid theme CSS is missing from the Go archive");
-  const scripts = [...entries].filter(([name]) => name.endsWith(".js"));
-  assert.ok(scripts.some(([, data]) => data.toString().includes("liquid-hero-wave")),
-    "The public layout is still the pre-Liquid version");
-  for (const [name, data] of styles) {
-    assert.deepEqual(data, fs.readFileSync(path.join(root, "komari-web/dist", name)));
-    assert.ok(scripts.some(([, script]) => script.toString().includes(path.basename(name))),
-      `Theme stylesheet is not referenced by the shipped application: ${name}`);
-  }
+  const css = [...entries].filter(([name]) => name.endsWith(".css")).map(([, data]) => data.toString()).join("\n");
+  const js = [...entries].filter(([name]) => name.endsWith(".js")).map(([, data]) => data.toString()).join("\n");
+  assert.doesNotMatch(css, /--liquid-surface|liquid-hero-wave/);
+  assert.doesNotMatch(js, /liquid-hero-wave/);
+  assert.match(js, /\/api\/admin\/theme\//);
+  assert.match(js, /localThemes\.restore/);
+  assert.doesNotMatch(js, /\/api\/admin\/theme\/(?:market|download|update)/);
 });

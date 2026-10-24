@@ -1,5 +1,4 @@
 {
-  "liquid": {"reading":"Tampilan jelas","reducedMotion":"Kurangi gerakan","welcome":"Semua server Anda, dalam satu tempat","explore":"Lihat node","cores":"{{count}} inti","load":"Beban","loadNormalized":"1 menit · per inti","up":"Unggah","down":"Unduh","upTotal":"Keluar","downTotal":"Masuk","remaining":"Sisa","expires":"Berakhir"},
   "diskIO": {
     "title": "Disk I/O",
     "read": "Baca",
@@ -1274,5 +1273,26 @@
     "public_base_help": "Masukkan origin HTTPS, misalnya https://share.example.com. Penyimpanan langsung berlaku untuk tautan baru dan validasi Host. Perubahan domain memerlukan pembaruan DNS/proksi serta domain tautan lama. Kosongkan untuk menonaktifkan akses berbagi. HTTP hanya diizinkan pada loopback untuk pengembangan.",
     "save": "Simpan",
     "saved": "URL publik berbagi disimpan"
+  },
+  "localThemes": {
+    "title": "Tema lokal",
+    "active": "Aktif",
+    "description": "Kelola tema ZIP lokal tanpa pasar tema atau unduhan jarak jauh.",
+    "trust": "Saya memercayai sumber tema ini. Tema menjalankan JavaScript di situs ini dan dapat memakai izin akun saya.",
+    "builtin": "Tema bawaan",
+    "activate": "Aktifkan",
+    "restore": "Pulihkan tema bawaan",
+    "upload": "Pasang / ganti ZIP",
+    "configuration": "Pengaturan tema",
+    "isolatedSettings": "Pengaturan disimpan per tema tanpa menimpa pengaturan bawaan atau admin.",
+    "publicSettings": "Pengaturan ini bersifat publik. Jangan masukkan kata sandi atau rahasia.",
+    "objectRequired": "Pengaturan harus berupa objek JSON.",
+    "deleteConfirm": "Hapus tema {{theme}} beserta pengaturannya?",
+    "zipLimit": "Hanya ZIP, 1 byte–64 MiB.",
+    "packageHint": "Akar ZIP harus berisi komari-theme.json dan dist/index.html. short yang sama mengganti paket tanpa menghapus pengaturan. Tema aktif langsung diperbarui.",
+    "chooseZip": "Pilih ZIP tema tepercaya",
+    "uploading": "Mengunggah dan memvalidasi tema…",
+    "installed": "Tema terpasang. Klik Aktifkan untuk beralih.",
+    "activated": "Tema diganti. Muat ulang halaman publik."
   }
 }

@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/komari-monitor/komari/internal/themes"
 	"github.com/komari-monitor/komari/web/backup"
 )
 
@@ -55,6 +56,7 @@ func (s *Store) Init(purpose Purpose, filename string, size int64) (Session, err
 	if size <= 0 || size > s.MaxSize {
 		return Session{}, fmt.Errorf("size must be between 1 and %d bytes", s.MaxSize)
 	}
+	if purpose == PurposeTheme && size > themes.MaxArchiveSize { return Session{}, fmt.Errorf("theme ZIP exceeds 64 MiB") }
 
 	id := uuid.NewString()
 	directory := filepath.Join(s.Root, id)
@@ -197,11 +199,12 @@ func (s *Store) load(uploadID string) (Session, error) {
 	if !isKnownPurpose(metadata.Purpose) || metadata.Size <= 0 || metadata.Size > s.MaxSize {
 		return Session{}, fmt.Errorf("invalid upload metadata")
 	}
+	if metadata.Purpose == PurposeTheme && metadata.Size > themes.MaxArchiveSize { return Session{}, fmt.Errorf("theme ZIP exceeds 64 MiB") }
 	return Session{ID: uploadID, Metadata: metadata, Directory: directory}, nil
 }
 
 func isKnownPurpose(purpose Purpose) bool {
-	return purpose == PurposeBackup
+	return purpose == PurposeBackup || purpose == PurposeTheme
 }
 
 func validUploadID(uploadID string) bool {

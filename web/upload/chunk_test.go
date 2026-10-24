@@ -11,7 +11,7 @@ import (
 
 func TestRetiredUploadPurposesRejectedAtEveryStage(t *testing.T) {
 	store := &Store{Root: t.TempDir(), MaxSize: 100}
-	for _, purpose := range []Purpose{"theme", "plugin"} {
+	for _, purpose := range []Purpose{"plugin"} {
 		if _, err := store.Init(purpose, "archive.zip", 1); err == nil {
 			t.Fatalf("init accepted %s", purpose)
 		}
@@ -52,4 +52,17 @@ func TestBackupChunkRoundTrip(t *testing.T) {
 	if err != nil || string(raw) != "zip" {
 		t.Fatalf("backup transfer failed: %q %v", raw, err)
 	}
+}
+
+func TestThemeChunkRoundTripAndSizeLimit(t *testing.T) {
+	store := &Store{Root:t.TempDir(), MaxSize:128<<20}
+	if _, err := store.Init(PurposeTheme, "large.zip", 65<<20); err == nil { t.Fatal("oversized theme upload accepted") }
+	session, err := store.Init(PurposeTheme, "theme.zip", 3)
+	if err != nil { t.Fatal(err) }
+	if err := store.SaveChunk(session.ID, 0, strings.NewReader("zip")); err != nil { t.Fatal(err) }
+	merged, err := store.Merge(session.ID)
+	if err != nil { t.Fatal(err) }
+	content, err := os.ReadFile(merged.ArchivePath)
+	if err != nil || string(content) != "zip" || merged.Metadata.Purpose != PurposeTheme { t.Fatal("theme transfer failed") }
+	if err := store.Cancel(session.ID); err != nil { t.Fatal(err) }
 }
